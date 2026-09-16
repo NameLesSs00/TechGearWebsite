@@ -1,0 +1,259 @@
+@import "tailwindcss";
+
+:root {
+  --background: #000918;
+  --foreground: #ffffff;
+  --accent: #19cffc;
+  --muted: #94a3b8;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+  --animate-logo-sequence: logo-sequence 5.2s ease-in-out infinite;
+  --animate-logo-marquee: logo-marquee 24s linear infinite;
+
+  @keyframes logo-sequence {
+    0%, 8% { opacity: 0; transform: scale(.94); }
+    16%, 78% { opacity: 1; transform: scale(1); }
+    88%, 100% { opacity: 0; transform: scale(.96); }
+  }
+
+  @keyframes logo-marquee {
+    from { transform: translateX(-50%); }
+    to { transform: translateX(0); }
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-geist-sans), sans-serif;
+  overflow-x: hidden;
+}
+
+* { box-sizing: border-box; }
+a { color: inherit; text-decoration: none; }
+
+.site-header { position: fixed; z-index: 10; top: 0; left: 0; width: 100%; height: 82px; display: flex; align-items: center; justify-content: space-between; padding: 0 clamp(24px, 5vw, 78px); background: rgba(0, 9, 24, 0.72); border-bottom: 1px solid rgba(148, 163, 184, 0.1); backdrop-filter: blur(16px); }
+.brand { display: flex; align-items: center; gap: 10px; font-size: 14px; font-weight: 800; letter-spacing: .14em; }
+.brand-mark { display: grid; place-items: center; width: 31px; height: 31px; color: #000918; background: var(--accent); font-size: 17px; font-weight: 900; transform: skew(-12deg); }
+.brand-accent, .nav-link-active { color: var(--accent); }
+.desktop-nav { display: flex; align-items: center; gap: clamp(16px, 2.3vw, 35px); margin-left: auto; margin-right: clamp(24px, 4vw, 65px); }
+.nav-link { display: inline-flex; align-items: center; gap: 5px; color: var(--muted); font-size: 12px; font-weight: 600; transition: color .2s ease; }
+.nav-link:hover, .nav-link-active { color: #fff; }
+.nav-chevron { color: var(--accent); font-size: 16px; line-height: 8px; }
+.header-tools { display: flex; align-items: center; gap: 23px; }
+.language { display: inline-flex; align-items: center; gap: 7px; border: 0; background: transparent; color: var(--muted); font: inherit; font-size: 12px; cursor: pointer; }
+.button { display: inline-flex; align-items: center; justify-content: center; gap: 11px; min-height: 46px; padding: 0 23px; border: 1px solid transparent; border-radius: 999px; font: inherit; font-size: 12px; font-weight: 700; cursor: pointer; transition: box-shadow .2s ease, opacity .2s ease; }
+.button-primary { color: #000918; background: var(--accent); }
+.button-primary:hover { box-shadow: 0 0 20px rgba(25, 207, 252, .4); }
+.button-secondary { color: #000918; background: #fff; }
+.button-secondary:hover { opacity: .84; }
+.button-arrow { font-size: 17px; }
+.menu-toggle, .mobile-menu { display: none; }
+.hero-shell { position: relative; isolation: isolate; min-height: calc(100vh - 44px); overflow: hidden; background: radial-gradient(ellipse at 50% -12%, rgba(25, 207, 252, .15), transparent 61%), #000918; }
+.particle-canvas, .hero-orbit { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+.particle-canvas { z-index: -1; }
+.hero-orbit { z-index: -1; top: 42%; left: 50%; width: 55vw; height: 20vw; min-width: 420px; min-height: 150px; transform: translate(-50%, -50%); border: 1px solid rgba(25, 207, 252, .16); border-radius: 50%; box-shadow: 0 0 60px rgba(25, 207, 252, .08), inset 0 0 45px rgba(25, 207, 252, .06); }
+.hero-content { display: flex; position: relative; z-index: 1; align-items: center; justify-content: center; min-height: calc(100vh - 44px); padding: 150px 24px 100px; text-align: center; flex-direction: column; }
+.eyebrow { display: flex; align-items: center; gap: 9px; margin: 0 0 22px; color: var(--accent); font-size: 11px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; }
+.eyebrow-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 12px var(--accent); }
+.hero-content h1 { max-width: 850px; margin: 0; font-size: clamp(42px, 6.4vw, 86px); line-height: .98; letter-spacing: -.04em; font-weight: 800; }
+.hero-content h1 span { color: var(--accent); }
+.hero-description { max-width: 650px; margin: 28px 0 0; color: var(--muted); font-size: 15px; line-height: 1.8; }
+.hero-actions { display: flex; gap: 13px; margin-top: 35px; }
+.hero-footnote { display: flex; align-items: center; gap: 13px; margin-top: 74px; color: rgba(148, 163, 184, .55); font-size: 10px; letter-spacing: .12em; text-transform: uppercase; }
+.hero-footnote i { width: 3px; height: 3px; border-radius: 50%; background: var(--accent); }
+.site-footer { display: flex; justify-content: space-between; padding: 14px clamp(24px, 5vw, 78px); color: rgba(148, 163, 184, .5); background: #000918; font-size: 10px; letter-spacing: .08em; text-transform: uppercase; }
+
+.whatsapp-float { position: fixed; bottom: max(16px, env(safe-area-inset-bottom)); z-index: 40; display: inline-flex; align-items: center; width: fit-content; min-height: 52px; padding: 7px; color: #fff; background: #25d366; border: 1px solid rgba(255, 255, 255, .2); border-radius: 999px; box-shadow: 0 12px 30px rgba(0, 0, 0, .28), 0 0 24px rgba(37, 211, 102, .25); transition: transform .25s ease, box-shadow .25s ease, background-color .25s ease; }
+.whatsapp-float-ltr { right: max(12px, env(safe-area-inset-right)); flex-direction: row-reverse; }
+.whatsapp-float-rtl { left: max(12px, env(safe-area-inset-left)); flex-direction: row; }
+.whatsapp-float:hover, .whatsapp-float:focus-visible { background: #20bd5b; box-shadow: 0 16px 36px rgba(0, 0, 0, .34), 0 0 30px rgba(37, 211, 102, .38); transform: scale(1.06); }
+.whatsapp-float:focus-visible { outline: 3px solid rgba(255, 255, 255, .9); outline-offset: 3px; }
+.whatsapp-float-icon { flex: 0 0 auto; width: 38px; height: 38px; }
+.whatsapp-float-number { max-width: 0; overflow: hidden; opacity: 0; white-space: nowrap; font-size: 13px; font-weight: 700; letter-spacing: .02em; transition: max-width .25s ease, margin .25s ease, opacity .2s ease; }
+.whatsapp-float-ltr .whatsapp-float-number { margin-right: 0; }
+.whatsapp-float-rtl .whatsapp-float-number { margin-left: 0; }
+.whatsapp-float:hover .whatsapp-float-number, .whatsapp-float:focus-visible .whatsapp-float-number { max-width: 120px; opacity: 1; }
+.whatsapp-float-ltr:hover .whatsapp-float-number, .whatsapp-float-ltr:focus-visible .whatsapp-float-number { margin-right: 8px; }
+.whatsapp-float-rtl:hover .whatsapp-float-number, .whatsapp-float-rtl:focus-visible .whatsapp-float-number { margin-left: 8px; }
+
+@media (max-width: 1023px) {
+  .desktop-nav, .header-tools { display: none; }
+  .menu-toggle { display: grid; place-items: center; padding: 8px; border: 0; color: #fff; background: transparent; cursor: pointer; }
+  .mobile-menu { position: absolute; top: 81px; right: 0; left: 0; display: flex; gap: 24px; padding: 27px 24px 32px; flex-direction: column; background: rgba(0, 9, 24, .97); border-bottom: 1px solid rgba(25, 207, 252, .18); }
+  .mobile-menu .nav-link { font-size: 15px; }
+  .mobile-menu .button { width: fit-content; margin-top: 5px; }
+}
+@media (max-width: 560px) {
+  .site-header { height: 70px; }
+  .mobile-menu { top: 69px; }
+  .hero-content { padding-top: 125px; }
+  .hero-content h1 { font-size: clamp(40px, 12vw, 59px); }
+  .hero-description { font-size: 14px; line-height: 1.7; }
+  .hero-actions { width: 100%; flex-direction: column; max-width: 260px; }
+  .hero-actions a, .hero-actions .button { width: 100%; }
+  .hero-footnote { margin-top: 52px; }
+  .site-footer { gap: 8px; flex-direction: column; }
+  .whatsapp-float { min-height: 48px; padding: 6px; }
+  .whatsapp-float-icon { width: 35px; height: 35px; }
+  .whatsapp-float-number { font-size: 12px; }
+}
+
+/* RTL Support */
+[dir="rtl"] {
+  direction: rtl;
+}
+
+[dir="ltr"] {
+  direction: ltr;
+}
+
+/* RTL Text Alignment */
+[dir="rtl"] .text-left {
+  text-align: right;
+}
+
+[dir="rtl"] .text-right {
+  text-align: left;
+}
+
+/* RTL Flexbox */
+[dir="rtl"] .flex-row {
+  flex-direction: row-reverse;
+}
+
+/* RTL Margins and Paddings - Use logical properties where possible */
+[dir="rtl"] .ml-auto {
+  margin-left: 0;
+  margin-right: auto;
+}
+
+[dir="rtl"] .mr-auto {
+  margin-right: 0;
+  margin-left: auto;
+}
+
+/* RTL Transforms for animations */
+[dir="rtl"] .animate-logo-marquee {
+  animation: logo-marquee-rtl 24s linear infinite;
+}
+
+@keyframes logo-marquee-rtl {
+  from { transform: translateX(50%); }
+  to { transform: translateX(0); }
+}
+
+/* RTL Border Radius */
+[dir="rtl"] .rounded-l-lg {
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+  border-top-right-radius: 0.5rem;
+  border-bottom-right-radius: 0.5rem;
+}
+
+[dir="rtl"] .rounded-r-lg {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+  border-top-left-radius: 0.5rem;
+  border-bottom-left-radius: 0.5rem;
+}
+
+/* RTL Positioning */
+[dir="rtl"] .left-0 {
+  left: auto;
+  right: 0;
+}
+
+[dir="rtl"] .right-0 {
+  right: auto;
+  left: 0;
+}
+
+/* RTL Dropdown positioning */
+[dir="rtl"] .dropdown-rtl-fix {
+  left: auto;
+  right: 0;
+}
+
+/* RTL Icon flipping for directional icons */
+[dir="rtl"] .flip-rtl {
+  transform: scaleX(-1);
+}
+
+/* Ensure certain elements maintain LTR even in RTL mode */
+[dir="rtl"] .ltr-always {
+  direction: ltr;
+}
+
+/* RTL-specific utility classes */
+.rtl\:text-right[dir="rtl"] {
+  text-align: right;
+}
+
+.rtl\:text-left[dir="rtl"] {
+  text-align: left;
+}
+
+/* Smooth transitions for direction changes */
+* {
+  transition-property: margin, padding;
+  transition-duration: 0s;
+}
+
+/* Fix for Arabic font rendering */
+[dir="rtl"] {
+  font-feature-settings: normal;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* RTL-specific spacing adjustments */
+[dir="rtl"] .space-x-reverse > * + * {
+  margin-left: var(--tw-space-x-reverse);
+  margin-right: calc(var(--tw-space-x-reverse) * 0);
+}
+
+/* Ensure proper text flow in RTL */
+[dir="rtl"] p,
+[dir="rtl"] h1,
+[dir="rtl"] h2,
+[dir="rtl"] h3,
+[dir="rtl"] h4,
+[dir="rtl"] h5,
+[dir="rtl"] h6,
+[dir="rtl"] span,
+[dir="rtl"] div {
+  text-align: inherit;
+}
+
+/* Override text alignment for explicitly centered content */
+[dir="rtl"] .text-center {
+  text-align: center;
+}
+
+/* Navigation specific RTL fixes */
+[dir="rtl"] .desktop-nav {
+  margin-left: clamp(24px, 4vw, 65px);
+  margin-right: auto;
+}
+
+/* Logo marquee RTL fix */
+[dir="rtl"] .animate-logo-marquee {
+  animation-direction: reverse;
+}
+
+.whatsapp-float {
+  transition-property: transform, box-shadow, background-color;
+  transition-duration: .25s;
+}
+
+.whatsapp-float-number {
+  transition-property: max-width, margin, opacity;
+  transition-duration: .25s;
+}
