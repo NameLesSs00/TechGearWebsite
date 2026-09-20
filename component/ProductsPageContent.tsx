@@ -58,14 +58,14 @@ export default function ProductsPageContent({ locale }: ProductsPageContentProps
             {products.map((product) => (
               <article key={product.id} className="relative flex flex-col overflow-hidden rounded-[32px] bg-white shadow-[0_20px_60px_rgba(0,0,0,0.3)]">
                 {/* Hero Image Section */}
-                <div className="relative aspect-[16/10] w-full bg-[#f8fafc]">
+                <div className="relative aspect-[4/3] w-full bg-[#f8fafc]">
                   {product.heroImageUrl ? (
                     <Image
                       src={product.heroImageUrl}
                       alt={product.name || "Product"}
                       fill
                       sizes="(max-width: 1024px) 100vw, 50vw"
-                      className="object-cover object-top"
+                      className="object-cover object-center"
                       unoptimized
                     />
                   ) : (

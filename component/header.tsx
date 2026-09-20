@@ -12,6 +12,7 @@ import { useTranslation } from "@/translations";
 import { getLocaleFromPathname, switchLocaleInPathname } from "@/lib/localeRouting";
 import Button from "./Button";
 import NavLink from "./NavLink";
+import { normalizeSlug } from "@/lib/apiClient";
 const Logo = "/logo.svg";
 
 
@@ -37,7 +38,7 @@ export default function Header({ locale }: HeaderProps) {
   const [isLanguageSwitching, setIsLanguageSwitching] = useState(false);
 
   const { data: fetchedServices = [] } = useServices(currentLocale);
-  const servicesList = fetchedServices.map(s => ({ id: s.id, slug: s.id, name: s.title }));
+  const servicesList = fetchedServices.map(s => ({ id: s.id, slug: s.title ? normalizeSlug(s.title) : s.id, name: s.title }));
 
   const headerRef = useRef<HTMLElement>(null);
 
@@ -57,17 +58,19 @@ export default function Header({ locale }: HeaderProps) {
     setLanguageDropdownOpen(false);
   }, [pathname]);
 
-  // Close menu on outside click
+  // Close menus on outside click
   useEffect(() => {
-    if (!menuOpen) return;
+    if (!menuOpen && !servicesDropdownOpen && !languageDropdownOpen) return;
     const handleClickOutside = (e: MouseEvent) => {
       if (headerRef.current && !headerRef.current.contains(e.target as Node)) {
         setMenuOpen(false);
+        setServicesDropdownOpen(false);
+        setLanguageDropdownOpen(false);
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [menuOpen]);
+  }, [menuOpen, servicesDropdownOpen, languageDropdownOpen]);
 
   // Lock body scroll when mobile menu is open
   useEffect(() => {
@@ -139,8 +142,6 @@ export default function Header({ locale }: HeaderProps) {
                   <div
                     key={item.name}
                     className="relative"
-                    onMouseEnter={() => setServicesDropdownOpen(true)}
-                    onMouseLeave={() => setServicesDropdownOpen(false)}
                   >
                     <button
                       type="button"
@@ -198,8 +199,6 @@ export default function Header({ locale }: HeaderProps) {
             {/* Language switcher */}
             <div
               className="relative"
-              onMouseEnter={() => setLanguageDropdownOpen(true)}
-              onMouseLeave={() => setLanguageDropdownOpen(false)}
             >
               <button
                 className="flex items-center gap-1.5 rounded-full px-3 py-2 text-sm font-semibold text-white/90 transition-colors hover:text-[#19CFFC]"
