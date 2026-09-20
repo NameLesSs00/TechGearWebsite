@@ -62,7 +62,7 @@ export default async function Home({ params }: HomePageProps) {
       <ServiceSection locale={locale} />
       <ProjectSection locale={locale} />
       <TestimonialsSection locale={locale} />
-      <FaqSection locale={locale} />
+      <FaqSection locale={locale} limit={5} />
     </>
   );
 }

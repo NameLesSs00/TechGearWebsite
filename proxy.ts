@@ -38,7 +38,17 @@ function getPreferredLocale(request: NextRequest): string {
 }
 
 export function proxy(request: NextRequest) {
-  const pathname = request.nextUrl.pathname;
+  let url = request.nextUrl.clone();
+  
+  // Strip iisnode pipe from pathname if present
+  let isRewritten = false;
+  const pipeRegex = /^\/pipe\/[^/]+/;
+  if (pipeRegex.test(url.pathname)) {
+    url.pathname = url.pathname.replace(pipeRegex, '');
+    isRewritten = true;
+  }
+
+  const pathname = url.pathname;
 
   // Check if the pathname already has a locale
   const pathnameHasLocale = locales.some(
@@ -46,7 +56,7 @@ export function proxy(request: NextRequest) {
   );
 
   if (pathnameHasLocale) {
-    return NextResponse.next();
+    return isRewritten ? NextResponse.rewrite(url) : NextResponse.next();
   }
 
   // Redirect root path to locale-specific path
@@ -54,14 +64,12 @@ export function proxy(request: NextRequest) {
 
   // Handle root path
   if (pathname === "/") {
-    const url = request.nextUrl.clone();
     url.pathname = `/${locale}`;
     return NextResponse.redirect(url);
   }
 
   // Handle other paths without locale (redirect old routes to new locale-based routes)
   // This ensures backward compatibility with old URLs
-  const url = request.nextUrl.clone();
   url.pathname = `/${locale}${pathname}`;
   return NextResponse.redirect(url);
 }

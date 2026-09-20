@@ -1,6 +1,6 @@
 import axios, { AxiosInstance, AxiosRequestConfig, InternalAxiosRequestConfig } from "axios";
-
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "https://gear-site-backend.runasp.net";
+const ImageUrl = "https://tech-gear-backend-site.premiumasp.net"
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "https://tech-gear-backend-site.premiumasp.net";
 
 // Create axios instance
 const apiClient: AxiosInstance = axios.create({
@@ -66,7 +66,8 @@ export function resolveImageUrl(imageUrl?: string | null): string {
     return imageUrl;
   }
 
-  return `${API_BASE_URL}${imageUrl}`;
+  // Use the remote backend server for images since they are not hosted on localhost
+  return `${ImageUrl}${imageUrl}`;
 }
 
 /**

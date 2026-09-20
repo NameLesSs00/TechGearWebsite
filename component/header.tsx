@@ -6,22 +6,15 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import { serviceService, type ServiceApiItem } from "@/services/serviceService";
+import { useServices } from "@/hooks/useServices";
 import { useLanguage } from "@/context/LanguageContext";
 import { useTranslation } from "@/translations";
 import { getLocaleFromPathname, switchLocaleInPathname } from "@/lib/localeRouting";
 import Button from "./Button";
 import NavLink from "./NavLink";
-import Logo from "../prompts/logo.png";
+const Logo = "/logo.svg";
 
-const fallbackServices = [
-  { id: "web-development", slug: "web-development", name: "Web Development" },
-  { id: "mobile-development", slug: "mobile-development", name: "Mobile Development" },
-  { id: "software-development", slug: "software-development", name: "Software Development" },
-  { id: "marketing", slug: "marketing", name: "Marketing" },
-  { id: "graphic-design", slug: "graphic-design", name: "Graphic Design" },
-  { id: "seo", slug: "seo", name: "SEO" },
-];
+
 
 interface HeaderProps {
   locale: string;
@@ -41,14 +34,16 @@ export default function Header({ locale }: HeaderProps) {
   const [servicesDropdownOpen, setServicesDropdownOpen] = useState(false);
   const [mobileServicesOpen, setMobileServicesOpen] = useState(false);
   const [languageDropdownOpen, setLanguageDropdownOpen] = useState(false);
-  const [servicesList, setServicesList] = useState<Array<{ id: string; slug: string; name: string }>>(fallbackServices);
   const [isLanguageSwitching, setIsLanguageSwitching] = useState(false);
+
+  const { data: fetchedServices = [] } = useServices(currentLocale);
+  const servicesList = fetchedServices.map(s => ({ id: s.id, slug: s.id, name: s.title }));
 
   const headerRef = useRef<HTMLElement>(null);
 
   const navItems = [
     { name: t("nav_home"), href: `/${currentLocale}` },
-    { name: t("nav_service"), href: `/${currentLocale}/services`, hasDropdown: true },
+    { name: t("nav_service"), href: "#", hasDropdown: true },
     { name: t("nav_work"), href: `/${currentLocale}/work` },
     { name: t("nav_products"), href: `/${currentLocale}/products` },
     { name: t("nav_about_us"), href: `/${currentLocale}/aboutus` },
@@ -80,23 +75,7 @@ export default function Header({ locale }: HeaderProps) {
     return () => { document.body.style.overflow = ""; };
   }, [menuOpen]);
 
-  useEffect(() => {
-    const loadServices = async () => {
-      try {
-        const services = await serviceService.getServices(currentLocale, 1, 20);
-        if (services.length > 0) {
-          setServicesList(services.map((s: ServiceApiItem) => ({ 
-            id: s.id, 
-            slug: s.slug || s.id,
-            name: s.title 
-          })));
-        }
-      } catch {
-        // keep fallback
-      }
-    };
-    loadServices();
-  }, [currentLocale]);
+
 
   useEffect(() => {
     const updateScrollState = () => setScrolled(window.scrollY > 20);
@@ -153,7 +132,7 @@ export default function Header({ locale }: HeaderProps) {
           </Link>
 
           {/* Desktop nav */}
-          <nav className="hidden min-w-0 items-center justify-center gap-3 lg:flex xl:gap-6" aria-label="Main navigation">
+          <nav className="hidden min-w-0 items-center justify-center gap-6 lg:flex xl:gap-10" aria-label="Main navigation">
             {navItems.map((item) => {
               if (item.hasDropdown) {
                 return (
@@ -228,8 +207,12 @@ export default function Header({ locale }: HeaderProps) {
                 aria-label={t("select_language")}
                 onClick={() => setLanguageDropdownOpen(!languageDropdownOpen)}
               >
-                <Globe className="h-4 w-4" />
-                <span>{t("language")}</span>
+                {language === "en" ? (
+                  <img src="https://flagcdn.com/w40/gb.png" alt="UK Flag" className="w-[22px] h-auto rounded-[2px]" />
+                ) : (
+                  <img src="https://flagcdn.com/w40/sa.png" alt="SA Flag" className="w-[22px] h-auto rounded-[2px]" />
+                )}
+                <span>{language === "en" ? "EN" : "AR"}</span>
                 <ChevronDown className={`h-3.5 w-3.5 transition-transform duration-200 ${languageDropdownOpen ? "rotate-180" : ""}`} />
               </button>
 
@@ -242,17 +225,24 @@ export default function Header({ locale }: HeaderProps) {
                     transition={{ duration: 0.18 }}
                     className="absolute end-0 top-[calc(100%+10px)] z-50 w-36 rounded-2xl border border-white/10 bg-[#020d1d]/95 p-2 shadow-2xl backdrop-blur-xl"
                   >
-                    {(["en", "ar"] as const).map((lang) => (
-                      <button
-                        key={lang}
-                        onClick={() => handleLanguageChange(lang)}
-                        className={`block w-full cursor-pointer rounded-xl px-4 py-2.5 text-start text-sm transition-colors hover:bg-white/10 hover:text-[#19CFFC] ${
-                          language === lang ? "bg-white/10 font-semibold text-[#19CFFC]" : "text-white/80"
-                        }`}
-                      >
-                        {lang === "en" ? "English" : "العربية"}
-                      </button>
-                    ))}
+                    <div className="flex flex-col gap-1">
+                      {(["en", "ar"] as const).map((lang) => (
+                        <button
+                          key={lang}
+                          onClick={() => handleLanguageChange(lang)}
+                          className={`flex w-full cursor-pointer items-center justify-between rounded-xl px-4 py-2.5 text-start text-sm transition-colors hover:bg-white/10 hover:text-[#19CFFC] ${
+                            language === lang ? "bg-white/10 font-semibold text-[#19CFFC]" : "text-white/80"
+                          }`}
+                        >
+                          <span>{lang === "en" ? "English" : "العربية"}</span>
+                          {lang === "en" ? (
+                            <img src="https://flagcdn.com/w40/gb.png" alt="UK Flag" className="w-6 h-auto rounded-[2px]" />
+                          ) : (
+                            <img src="https://flagcdn.com/w40/sa.png" alt="SA Flag" className="w-6 h-auto rounded-[2px]" />
+                          )}
+                        </button>
+                      ))}
+                    </div>
                   </motion.div>
                 )}
               </AnimatePresence>
@@ -365,8 +355,7 @@ export default function Header({ locale }: HeaderProps) {
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               {/* Language switcher */}
               <div className="flex flex-col gap-2">
-                <p className="flex items-center gap-2 px-1 text-xs font-semibold uppercase tracking-widest text-white/40">
-                  <Globe className="h-3.5 w-3.5" />
+                <p className="px-1 text-xs font-semibold uppercase tracking-widest text-white/40">
                   {t("select_language")}
                 </p>
                 <div className="flex gap-2">
@@ -374,13 +363,18 @@ export default function Header({ locale }: HeaderProps) {
                     <button
                       key={lang}
                       onClick={() => { handleLanguageChange(lang); setMenuOpen(false); }}
-                      className={`flex-1 rounded-xl px-4 py-2.5 text-sm font-semibold transition-colors sm:flex-none sm:min-w-[90px] ${
+                      className={`flex flex-1 items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition-colors sm:flex-none sm:min-w-[100px] ${
                         language === lang
                           ? "bg-[#19CFFC]/15 text-[#19CFFC] ring-1 ring-[#19CFFC]/40"
                           : "bg-white/5 text-white/70 hover:bg-white/10 hover:text-white"
                       }`}
                     >
-                      {lang === "en" ? "English" : "العربية"}
+                      {lang === "en" ? (
+                        <img src="https://flagcdn.com/w40/gb.png" alt="UK Flag" className="w-6 h-auto rounded-[2px]" />
+                      ) : (
+                        <img src="https://flagcdn.com/w40/sa.png" alt="SA Flag" className="w-6 h-auto rounded-[2px]" />
+                      )}
+                      <span>{lang === "en" ? "English" : "العربية"}</span>
                     </button>
                   ))}
                 </div>

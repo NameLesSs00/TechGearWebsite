@@ -7,51 +7,9 @@ import { faqService, FaqItem } from "@/services/faqService";
 import { useLanguage } from "@/context/LanguageContext";
 import { useTranslation } from "@/translations";
 
-const defaultFaqItems: FaqItem[] = [
-  {
-    id: "default-1",
-    displayOrder: 1,
-    isActive: true,
-    createdAt: new Date().toISOString(),
-    updatedAt: null,
-    question: "What services do you offer?",
-    answer: "We provide complete digital solutions, including web and mobile development, custom software, UI/UX design, SEO, digital marketing, and graphic design.",
-    resolvedLanguage: "en",
-  },
-  {
-    id: "default-2",
-    displayOrder: 2,
-    isActive: true,
-    createdAt: new Date().toISOString(),
-    updatedAt: null,
-    question: "How do you start a new project?",
-    answer: "We start with a conversation about your goals, audience, and challenges. From there, we define the right scope, timeline, and next steps together.",
-    resolvedLanguage: "en",
-  },
-  {
-    id: "default-3",
-    displayOrder: 3,
-    isActive: true,
-    createdAt: new Date().toISOString(),
-    updatedAt: null,
-    question: "How long does a project take?",
-    answer: "Every project is different, but we provide a clear delivery plan before work begins and keep you updated throughout each phase.",
-    resolvedLanguage: "en",
-  },
-  {
-    id: "default-4",
-    displayOrder: 4,
-    isActive: true,
-    createdAt: new Date().toISOString(),
-    updatedAt: null,
-    question: "Can you work with an existing website or application?",
-    answer: "Yes. We can improve, redesign, extend, or maintain an existing website or application while preserving the parts that already work well.",
-    resolvedLanguage: "en",
-  },
-];
-
 interface FaqSectionProps {
   locale?: string;
+  limit?: number;
 }
 
 interface FaqRowProps {
@@ -62,7 +20,7 @@ interface FaqRowProps {
 
 function FaqRow({ item, isOpen, onToggle }: FaqRowProps) {
   return (
-    <div className={`overflow-hidden bg-white text-[#071a32] ${isOpen ? "rounded-2xl" : "rounded-none"}`}>
+    <div className="overflow-hidden bg-white text-[#071a32] rounded-2xl">
       <button
         type="button"
         onClick={onToggle}
@@ -83,11 +41,11 @@ function FaqRow({ item, isOpen, onToggle }: FaqRowProps) {
   );
 }
 
-export default function FaqSection(_props: FaqSectionProps = {}) {
+export default function FaqSection({ limit }: FaqSectionProps = {}) {
   const { language } = useLanguage();
   const { t } = useTranslation(language);
   
-  const [faqItems, setFaqItems] = useState<FaqItem[]>(defaultFaqItems);
+  const [faqItems, setFaqItems] = useState<FaqItem[]>([]);
   const [openIndex, setOpenIndex] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -97,7 +55,7 @@ export default function FaqSection(_props: FaqSectionProps = {}) {
       try {
         setLoading(true);
         setError(null);
-        const faqs = await faqService.getFaqs(language, 1, 20);
+        const faqs = await faqService.getFaqs(language, 1, limit || 100);
         if (faqs && faqs.length > 0) {
           setFaqItems(faqs);
         }
@@ -114,9 +72,9 @@ export default function FaqSection(_props: FaqSectionProps = {}) {
   }, [language, t]);
 
   return (
-    <section className="relative overflow-hidden bg-[#000918] px-5 py-20 text-white sm:px-8 sm:py-24 lg:px-12 lg:py-28" aria-labelledby="faq-heading">
-      <div className="absolute bottom-0 left-1/2 -z-0 h-52 w-[min(700px,90vw)] -translate-x-1/2 rounded-full bg-[#22D3EE]/[0.06] blur-3xl" aria-hidden="true" />
-      <div className="relative z-10 mx-auto max-w-[1175px]">
+    <section className="relative z-10 bg-[#000918] px-5 py-20 text-white sm:px-8 sm:py-24 lg:px-12 lg:py-28" aria-labelledby="faq-heading">
+      <div className="absolute bottom-0 left-1/2 z-0 h-52 w-[min(700px,90vw)] -translate-x-1/2 translate-y-1/2 rounded-full bg-[#22D3EE]/[0.06] blur-3xl pointer-events-none" aria-hidden="true" />
+      <div className="relative z-20 mx-auto max-w-[1175px]">
         <header className="mb-14 text-center sm:mb-16">
           <p className="mb-4 text-sm font-medium uppercase tracking-[0.42em] text-[#22D3EE]">{t("faq_label")}</p>
           <h2 id="faq-heading" className="text-3xl font-semibold leading-tight tracking-tight sm:text-4xl">{t("faq_heading")}</h2>
@@ -133,6 +91,10 @@ export default function FaqSection(_props: FaqSectionProps = {}) {
               <div className="h-8 w-8 animate-spin rounded-full border-4 border-[#22D3EE]/20 border-t-[#22D3EE] mx-auto mb-4" />
               <p className="text-slate-400">{t("faq_loading")}</p>
             </div>
+          </div>
+        ) : faqItems.length === 0 ? (
+          <div className="flex justify-center py-12">
+            <p className="text-slate-400 text-lg">{t("faq_no_data")}</p>
           </div>
         ) : (
           <div className="space-y-5">

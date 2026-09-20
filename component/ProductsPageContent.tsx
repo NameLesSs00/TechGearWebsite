@@ -32,12 +32,18 @@ export default function ProductsPageContent({ locale }: ProductsPageContentProps
     loadProducts();
   }, [locale]);
 
+  const formatLink = (link: string | null) => {
+    if (!link) return "#";
+    if (link.startsWith("http://") || link.startsWith("https://")) return link;
+    return `https://${link}`;
+  };
+
   return (
     <main className="min-h-screen bg-[#000918] px-5 pb-20 pt-32 text-white sm:px-8 sm:pt-40 lg:px-12">
       <div className="mx-auto max-w-[1280px]">
         <nav aria-label="Breadcrumb" className="mb-20 text-center text-sm sm:mb-24 sm:text-base">
-          <Link href={`/${locale}`} className="hover:text-[#22D3EE]">{t("nav_home")}</Link>
-          <span className="mx-1.5 text-[#22D3EE]">{language === "ar" ? "<" : ">"}</span>
+          <Link href={`/${locale}`} className="hover:text-[#22D3EE] transition-colors">{t("nav_home")}</Link>
+          <span className="mx-2 text-[#22D3EE]">{language === "ar" ? "<" : ">"}</span>
           <span className="text-[#22D3EE]">{t("products_breadcrumb")}</span>
         </nav>
 
@@ -48,36 +54,52 @@ export default function ProductsPageContent({ locale }: ProductsPageContentProps
         ) : products.length === 0 ? (
           <div className="rounded-2xl border border-white/10 bg-[#0a1627] p-8 text-center text-white/70">No products available.</div>
         ) : (
-          <div className="grid gap-8 lg:grid-cols-2">
+          <div className="grid gap-10 lg:grid-cols-2">
             {products.map((product) => (
-              <article key={product.id} className="overflow-hidden rounded-[28px] border border-white/10 bg-[#f4f7fb] shadow-[0_20px_60px_rgba(15,23,42,0.35)]">
-                <div className="relative aspect-[1.42] overflow-hidden border-b border-black/5 bg-[#eef3f8]">
-                  {product.photoUrl ? (
+              <article key={product.id} className="relative flex flex-col overflow-hidden rounded-[32px] bg-white shadow-[0_20px_60px_rgba(0,0,0,0.3)]">
+                {/* Hero Image Section */}
+                <div className="relative aspect-[16/10] w-full bg-[#f8fafc]">
+                  {product.heroImageUrl ? (
                     <Image
-                      src={product.photoUrl}
-                      alt={product.title || "Product image"}
+                      src={product.heroImageUrl}
+                      alt={product.name || "Product"}
                       fill
                       sizes="(max-width: 1024px) 100vw, 50vw"
                       className="object-cover object-top"
-                      priority={false}
+                      unoptimized
                     />
                   ) : (
-                    <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-[#0d2333] to-[#1a4059] text-lg font-bold text-white/80">
-                      {product.title}
+                    <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-[#e2e8f0] to-[#cbd5e1] text-lg font-bold text-slate-500">
+                      {product.name}
                     </div>
                   )}
+                  
+                  {/* Floating Icon Pill */}
+                  <div className="absolute right-6 top-6 flex h-[64px] items-center justify-center rounded-[20px] bg-white px-7 shadow-[0_8px_24px_rgba(0,0,0,0.08)]">
+                    <Image 
+                      src={product.iconImageUrl || "/logo.svg"} 
+                      alt="Product Icon" 
+                      width={120} 
+                      height={36} 
+                      className="h-9 w-auto object-contain" 
+                      unoptimized
+                    />
+                  </div>
                 </div>
 
-                <div className="flex items-center justify-between gap-4 p-5 sm:p-6">
-                  <h2 className="max-w-[58%] text-xl font-bold leading-tight tracking-tight text-[#03111c] sm:text-2xl lg:text-3xl">
-                    {product.title}
+                {/* Bottom Section */}
+                <div className="flex flex-wrap items-center justify-between gap-5 p-6 sm:flex-nowrap sm:px-9 sm:py-8">
+                  <h2 className="flex-1 min-w-[200px] text-[22px] font-bold leading-[1.25] tracking-tight text-[#011022] sm:text-3xl lg:text-[28px]">
+                    {product.name}
                   </h2>
-                  <Link
-                    href={`/${locale}/products/${product.slug}`}
-                    className="inline-flex items-center justify-center rounded-full bg-[#22D3EE] px-6 py-3 text-sm font-bold text-[#00121F] transition-transform duration-200 hover:scale-[1.02]"
+                  <a
+                    href={formatLink(product.productLink)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex shrink-0 items-center justify-center rounded-full bg-[#22D3EE] px-7 py-3.5 sm:px-8 sm:py-3.5 text-[15px] font-bold !text-[#011022] shadow-[0_0_20px_rgba(34,211,238,0.2)] transition-all duration-300 hover:scale-[1.03] hover:bg-[#1bb8d0] hover:shadow-[0_0_25px_rgba(34,211,238,0.4)]"
                   >
                     View Product
-                  </Link>
+                  </a>
                 </div>
               </article>
             ))}

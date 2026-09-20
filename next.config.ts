@@ -1,6 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  output: "standalone",
   turbopack: {
     root: process.cwd(),
   },
@@ -8,7 +9,13 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       {
         protocol: "https",
-        hostname: "gear-site-backend.runasp.net",
+        hostname: "tech-gear-backend-site.premiumasp.net",
+        pathname: "/uploads/**",
+      },
+      {
+        protocol: "http",
+        hostname: "localhost",
+        port: "5069",
         pathname: "/uploads/**",
       },
       {

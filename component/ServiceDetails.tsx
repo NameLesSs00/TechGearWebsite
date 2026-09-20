@@ -2,12 +2,13 @@
 
 import { ArrowUpRight, Check, CloudCog, Megaphone, Monitor, PenTool, Search, Smartphone } from "lucide-react";
 import type { ComponentType } from "react";
+import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { normalizeServiceSlug, serviceService, type ServiceApiItem } from "@/services/serviceService";
-import { isValidGuid } from "@/lib/apiClient";
+import { serviceService, type ServiceApiItem } from "@/services/serviceService";
+import { isValidGuid, normalizeSlug } from "@/lib/apiClient";
 import { useLanguage } from "@/context/LanguageContext";
 import { useTranslation } from "@/translations";
 
@@ -27,6 +28,7 @@ interface ServiceDetailsData {
   description: string;
   deliverables: string[];
   icon: ComponentType<{ size?: number; strokeWidth?: number; className?: string }>;
+  iconImageUrl?: string;
   image: string;
 }
 
@@ -100,7 +102,7 @@ export default function ServiceDetails({ locale, serviceSlug }: { locale: string
   const { language } = useLanguage();
   const { t } = useTranslation(language);
   const router = useRouter();
-  const [serviceData, setServiceData] = useState<ServiceDetailsData>(defaultServiceDetails[serviceSlug] ?? defaultServiceDetails["web-development"]);
+  const [serviceData, setServiceData] = useState<ServiceDetailsData | null>(null);
   const [technologies, setTechnologies] = useState<Technology[]>([]);
   const [allServices, setAllServices] = useState<ServiceApiItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -121,29 +123,31 @@ export default function ServiceDetails({ locale, serviceSlug }: { locale: string
   useEffect(() => {
     const loadService = async () => {
       try {
-        const response = await serviceService.getServiceBySlug(serviceSlug, locale);
+        const services = await serviceService.getServices(locale, 1, 50);
+        const response = services.find((s) => normalizeSlug(s.title) === serviceSlug);
 
         if (response) {
-          const slugKey = normalizeServiceSlug(response.title) || normalizeServiceSlug(serviceSlug) || response.id;
+          const slugKey = normalizeSlug(response.title) || normalizeSlug(serviceSlug) || response.id;
           const serviceIcon = slugKey.includes("mobile") ? Smartphone : slugKey.includes("web") || slugKey.includes("website") ? Monitor : slugKey.includes("software") ? CloudCog : slugKey.includes("market") ? Megaphone : slugKey.includes("design") ? PenTool : slugKey.includes("seo") ? Search : Monitor;
 
           const mappedService: ServiceDetailsData = {
             title: response.title || "Service",
-            eyebrow: response.subTitle || response.title || "Our service",
+            eyebrow: response.subtitle || response.title || "Our service",
             description: response.description || "We build modern digital solutions tailored to your business goals.",
-            deliverables: response.serviceDetails?.map((detail) => detail.description) || [],
+            deliverables: response.whatWeDeliver || [],
             icon: serviceIcon,
-            image: response.photoUrl || defaultServiceDetails[slugKey]?.image || WebVisual.src,
+            iconImageUrl: response.iconImageUrl ?? undefined,
+            image: response.serviceImageUrl || defaultServiceDetails[slugKey]?.image || WebVisual.src,
           };
 
           setServiceData(mappedService);
           setTechnologies(
-            (response.technologies ?? [])
-              .filter((technology) => !!technology.image)
-              .map((technology, index) => ({
-                id: technology.id || `${technology.name || "technology"}-${index}`,
-                name: technology.name || "Technology",
-                logo: technology.image || "",
+            (response.features ?? [])
+              .filter((feature) => !!feature.imageUrl)
+              .map((feature, index) => ({
+                id: feature.id || `${feature.name || "technology"}-${index}`,
+                name: feature.name || "Technology",
+                logo: feature.imageUrl || "",
               }))
           );
         }
@@ -157,26 +161,45 @@ export default function ServiceDetails({ locale, serviceSlug }: { locale: string
     loadService();
   }, [serviceSlug, locale]);
 
-  const Icon = serviceData.icon;
+  const Icon = serviceData?.icon ?? Monitor;
   const visibleTechnologies = useMemo(() => technologies.filter((tech) => Boolean(tech.logo)), [technologies]);
 
   return (
     <main className="min-h-screen overflow-hidden bg-[#000918] px-5 pb-24 pt-32 text-white sm:px-8 sm:pt-40 lg:px-12">
       <div className="mx-auto max-w-[1280px]">
-        <nav aria-label="Breadcrumb" className="mb-12 text-center text-sm sm:mb-16 sm:text-base">
+        <motion.nav
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          aria-label="Breadcrumb"
+          className="mb-12 text-center text-sm sm:mb-16 sm:text-base"
+        >
           <Link href={`/${locale}`} className="hover:text-[#22D3EE]">{t("nav_home")}</Link>
           <span className="mx-1 text-white/70">{language === "ar" ? "<" : ">"}</span>
           <Link href={`/${locale}/services`} className="text-white/70 hover:text-[#22D3EE]">{t("service_breadcrumb")}</Link>
           <span className="mx-1 text-white/70">{language === "ar" ? "<" : ">"}</span>
-          <span className="text-[#22D3EE]">{serviceData.title}</span>
-        </nav>
+          <span className="text-[#22D3EE]">{serviceData?.title ?? "Loading..."}</span>
+        </motion.nav>
 
-      
-
-        <section className="-mt-[40px] grid items-center gap-10 lg:grid-cols-[1fr_.9fr] lg:gap-[200px]" aria-labelledby="service-heading">
-          <div className="order-2 lg:order-1">
-            <div className="mb-7  flex items-center gap-3 text-[#22D3EE]">
-              <Icon size={28} strokeWidth={1.6} />
+        {loading || !serviceData ? (
+          <div className="flex min-h-[50vh] items-center justify-center">
+            <div className="h-10 w-10 animate-spin rounded-full border-4 border-[#22D3EE]/20 border-t-[#22D3EE]" />
+          </div>
+        ) : (
+          <>
+          <section className="-mt-[40px] grid items-center gap-10 lg:grid-cols-[1fr_.9fr] lg:gap-[200px]" aria-labelledby="service-heading">
+          <motion.div
+            initial={{ opacity: 0, x: -30 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.6, delay: 0.1 }}
+            className="order-2 lg:order-1"
+          >
+            <div className="mb-7 flex items-center gap-3 text-[#22D3EE]">
+              {serviceData.iconImageUrl ? (
+                <Image src={serviceData.iconImageUrl} alt={serviceData.title} width={28} height={28} className="object-contain" />
+              ) : (
+                <Icon size={28} strokeWidth={1.6} />
+              )}
               <span className="text-xs font-semibold uppercase tracking-[0.25em]">Our service</span>
             </div>
             <h1 id="service-heading" className="text-3xl font-bold leading-tight sm:text-4xl">{serviceData.eyebrow}</h1>
@@ -184,35 +207,58 @@ export default function ServiceDetails({ locale, serviceSlug }: { locale: string
             <h2 className="mt-12 text-2xl font-bold leading-tight sm:text-3xl">What We Deliver</h2>
             <ul className="mt-6 space-y-4">
               {serviceData.deliverables.length > 0 ? (
-                serviceData.deliverables.map((item) => (
-                  <li key={item} className="flex items-center gap-3 text-sm text-white/90 sm:text-base">
+                serviceData.deliverables.map((item, index) => (
+                  <motion.li
+                    key={`${item}-${index}`}
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    whileHover={{ x: 5, color: "#22D3EE" }}
+                    transition={{ duration: 0.4, delay: 0.3 + (index * 0.1) }}
+                    className="flex items-center gap-3 text-sm text-white/90 sm:text-base cursor-default transition-colors"
+                  >
                     <Check size={23} className="text-[#86EFAC]" />
                     {item}
-                  </li>
+                  </motion.li>
                 ))
               ) : (
                 <li className="text-white/70">No deliverables available.</li>
               )}
             </ul>
-          </div>
+          </motion.div>
 
-          <div className="order-1 relative mx-auto flex aspect-square w-full max-w-[540px] items-center justify-center rounded-full border border-[#22D3EE] p-8 shadow-[0_0_30px_rgba(34,211,238,0.15)] sm:p-14 lg:order-2">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.7, delay: 0.2, type: "spring", bounce: 0.3 }}
+            className="order-1 relative mx-auto flex aspect-square w-full max-w-[540px] items-center justify-center rounded-full border border-[#22D3EE] p-8 shadow-[0_0_30px_rgba(34,211,238,0.15)] sm:p-14 lg:order-2"
+          >
             <div className="absolute inset-5 rounded-full border border-[#22D3EE]/30 sm:inset-10" />
             {serviceData.image ? (
-              <div className="relative h-full w-full overflow-hidden rounded-full bg-white">
+              <motion.div 
+                animate={{ y: [-8, 8, -8] }}
+                transition={{ repeat: Infinity, duration: 5, ease: "easeInOut" }}
+                className="relative h-full w-full overflow-hidden rounded-full bg-white shadow-[0_0_20px_rgba(34,211,238,0.2)]"
+              >
                 <Image src={serviceData.image} alt={`${serviceData.title} preview`} fill sizes="(max-width: 1024px) 90vw, 45vw" className="object-cover object-top" />
-              </div>
+              </motion.div>
             ) : null}
-          </div>
+          </motion.div>
         </section>
 
         {visibleTechnologies.length > 0 && (
-          <section className="mt-24 text-center sm:mt-32" aria-labelledby="technology-heading">
+          <motion.section
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{ duration: 0.6 }}
+            className="mt-24 text-center sm:mt-32"
+            aria-labelledby="technology-heading"
+          >
             <h2 id="technology-heading" className="text-3xl font-bold leading-tight sm:text-4xl">Tools &amp; Technologies We Use</h2>
             <span className="mx-auto mt-5 block h-1.5 w-28 rounded-full bg-[#22D3EE] shadow-[0_0_15px_rgba(34,211,238,0.6)]" />
             <div className="mt-12 flex flex-wrap justify-center gap-6 sm:gap-8">
               {visibleTechnologies.map((tech, index) => (
-                <div key={tech.id ?? `${tech.name}-${tech.logo || index}`} className="group flex cursor-pointer flex-col items-center justify-center gap-3">
+                <div key={tech.id ?? `${tech.name}-${tech.logo || index}`} className="group relative flex cursor-pointer flex-col items-center justify-center gap-3">
                   <div className="flex h-24 w-24 items-center justify-center p-3 transition-all duration-300 group-hover:scale-110">
                     {tech.logo ? (
                       <Image src={tech.logo} alt={tech.name} width={80} height={80} className="h-full w-full object-contain" />
@@ -220,22 +266,28 @@ export default function ServiceDetails({ locale, serviceSlug }: { locale: string
                       <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[#22D3EE]/20 text-sm font-bold text-[#22D3EE]">{tech.name.slice(0, 2).toUpperCase()}</div>
                     )}
                   </div>
-                  <p className="text-sm font-semibold text-white/80 group-hover:text-[#22D3EE]">{tech.name}</p>
+                  <div className="pointer-events-none absolute -bottom-4 z-10 whitespace-nowrap rounded border border-[#22D3EE]/30 bg-[#00121F] px-3 py-1.5 text-xs font-semibold text-white opacity-0 shadow-lg transition-opacity duration-300 group-hover:opacity-100">
+                    {tech.name}
+                  </div>
                 </div>
               ))}
             </div>
-          </section>
+          </motion.section>
         )}
 
-        {loading && (
-          <div className="mt-10 flex justify-center">
-            <div className="h-8 w-8 animate-spin rounded-full border-4 border-[#22D3EE]/20 border-t-[#22D3EE]" />
-          </div>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-50px" }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+          className="mx-auto mt-16 flex w-fit"
+        >
+          <Link href={`/${locale}/contactus`} className="inline-flex min-w-[190px] items-center justify-center gap-2 rounded-full bg-[#22D3EE] px-8 py-3.5 text-sm font-bold !text-[#011022] shadow-[0_0_20px_rgba(34,211,238,0.2)] transition-shadow hover:shadow-[0_0_25px_rgba(34,211,238,0.4)] focus:outline-none focus:ring-2 focus:ring-[#22D3EE] focus:ring-offset-2 focus:ring-offset-[#202d3b] md:mt-[0px] mt-[40px] sm:text-base">
+            Start a project <ArrowUpRight size={17} />
+          </Link>
+        </motion.div>
+        </>
         )}
-
-        <Link href={`/${locale}/contactus`} className="mx-auto mt-16 flex w-fit items-center gap-2 rounded-full bg-[#22D3EE] px-8 py-3.5 text-sm font-bold text-[#00121F] transition-transform hover:scale-105">
-          Start a project <ArrowUpRight size={17} />
-        </Link>
       </div>
     </main>
   );

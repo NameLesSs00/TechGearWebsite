@@ -5,7 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import Logo from "../prompts/logo.png";
+const Logo = "/logo.svg";
 import { teamMemberService, TeamMember } from "@/services/teamMemberService";
 import { journeyService, Journey } from "@/services/journeyService";
 import { useLanguage } from "@/context/LanguageContext";
@@ -40,7 +40,7 @@ const circlePositionsMedium = [
 ];
 
 export default function AboutSection(_props?: { locale?: string }) {
-  const { language } = useLanguage();
+  const { language, direction } = useLanguage();
   const { t } = useTranslation(language);
   
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
@@ -94,27 +94,72 @@ export default function AboutSection(_props?: { locale?: string }) {
   return (
     <main className="min-h-screen overflow-hidden bg-[#000918] px-5 pb-24 pt-32 text-white sm:px-8 sm:pt-40 lg:px-12">
       <div className="mx-auto max-w-[1280px]">
-        <nav aria-label="Breadcrumb" className="mb-20 text-center text-sm sm:mb-24 sm:text-base"><Link href="/" className="hover:text-[#22D3EE]">{t("nav_home")}</Link><span className="mx-1.5 text-[#22D3EE]">{language === "ar" ? "<" : ">"}</span><span className="text-[#22D3EE]">{t("about_breadcrumb")}</span></nav>
+        <motion.nav 
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-16 text-center text-sm font-medium sm:text-base"
+        >
+          <Link href="/" className="text-white hover:text-[#22D3EE] transition-colors">{t("nav_home")}</Link>
+          <span className="mx-2 text-white">{language === "ar" ? "<" : ">"}</span>
+          <span className="text-[#22D3EE]">{t("about_breadcrumb")}</span>
+        </motion.nav>
 
-        <section className="grid items-center gap-14 lg:grid-cols-[1.05fr_.95fr] lg:gap-20" aria-labelledby="about-heading">
-          <div>
-            <h1 id="about-heading" className="max-w-[620px] text-3xl font-bold leading-tight sm:text-4xl">{t("about_heading")}</h1>
-            <div className="mt-7 max-w-[650px] space-y-2 text-sm leading-relaxed text-white/90 sm:text-base lg:text-lg">
+        <section className="grid items-center gap-16 lg:grid-cols-[1.1fr_.9fr] lg:gap-12" aria-labelledby="about-heading">
+          <motion.div 
+            initial={{ opacity: 0, x: direction === "rtl" ? 30 : -30 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.6 }}
+          >
+            <h1 id="about-heading" className="max-w-[620px] text-3xl font-bold leading-tight sm:text-4xl text-white">
+              {t("about_heading")}
+            </h1>
+            <div className="mt-8 max-w-[650px] space-y-4 text-sm leading-[1.8] text-slate-300 sm:text-base lg:text-[17px]">
               <p>{t("about_description_1")}</p>
               <p>{t("about_description_2")}</p>
             </div>
-          </div>
-          <div className="relative mx-auto flex h-[280px] w-full max-w-[520px] items-center justify-center sm:h-[360px]"><Image src={Logo} alt="Tech Gear" width={180} height={145} className="relative z-10 w-36 object-contain sm:w-48" /></div>
+          </motion.div>
+
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.8, delay: 0.2 }}
+            className="relative mx-auto flex h-[280px] w-full max-w-[520px] items-center justify-center sm:h-[360px]"
+          >
+            <Image 
+              src={Logo} 
+              alt="Tech Gear" 
+              width={180} 
+              height={145} 
+              className="relative z-10 w-36 object-contain sm:w-48" 
+            />
+          </motion.div>
         </section>
 
-        <section className="mt-24 sm:mt-32 grid gap-12 md:grid-cols-2 border-t border-white/10 pt-16" aria-label="Mission and vision">
-          {missionVisionData.map((item) => (
-            <article key={item.title} className="flex flex-col gap-4">
-              <h2 className="text-2xl font-bold tracking-tight text-[#22D3EE]">{item.title}</h2>
-              <p className="max-w-[500px] text-sm leading-relaxed text-slate-300 sm:text-base lg:text-lg">
+        <section className="mt-20 grid gap-8 md:grid-cols-2" aria-label="Mission and vision">
+          {missionVisionData.map((item, index) => (
+            <motion.article 
+              key={item.title}
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.4 + (index * 0.2) }}
+              className="flex flex-col gap-6 rounded-3xl bg-white/[0.05] backdrop-blur-xl p-8 sm:p-10 border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.2)] transition-colors hover:bg-white/[0.08] hover:border-white/20"
+            >
+              <div>
+                <h2 
+                  className="text-[32px] font-medium leading-none text-white"
+                  style={{ fontFamily: "'Rubik', sans-serif" }}
+                >
+                  {item.title}
+                </h2>
+                <div className="mt-4 h-[3px] w-16 bg-[#22D3EE] rounded-full shadow-[0_0_10px_rgba(34,211,238,0.5)]" />
+              </div>
+              <p 
+                className="text-[20px] font-normal leading-[1.6] text-slate-300"
+                style={{ fontFamily: "'Rubik', sans-serif" }}
+              >
                 {item.text}
               </p>
-            </article>
+            </motion.article>
           ))}
         </section>
 
@@ -477,7 +522,7 @@ export default function AboutSection(_props?: { locale?: string }) {
 
         <section className="mt-24 rounded-2xl border border-white/10 bg-white/[0.04] p-7 sm:mt-32 sm:p-10 lg:flex lg:items-center lg:justify-between lg:px-14" aria-label="Contact call to action">
           <h2 className="max-w-xl text-center text-3xl font-bold leading-tight sm:text-4xl">{t("about_cta_heading")}</h2>
-          <Link href="/contactus" className="mt-6 inline-flex items-center justify-center gap-2 rounded-full bg-[#22D3EE] px-8 py-3.5 text-sm font-bold text-[#00121F] transition-transform hover:scale-105 lg:mt-0">{t("footer_contact_us")} <ArrowUpRight size={17} /></Link>
+          <Link href="/contactus" className="mt-6 inline-flex items-center justify-center gap-2 rounded-full bg-[#22D3EE] px-8 py-3.5 text-sm font-bold !text-[#011022] transition-transform hover:scale-105 lg:mt-0">{t("footer_contact_us")} <ArrowUpRight size={17} className="!text-[#011022]" /></Link>
         </section>
       </div>
     </main>

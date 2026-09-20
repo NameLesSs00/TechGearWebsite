@@ -1,6 +1,7 @@
 import { serviceService } from "@/services/serviceService";
 import { productService } from "@/services/productService";
 import { projectService } from "@/services/projectService";
+import { normalizeSlug } from "@/lib/apiClient";
 
 /**
  * Extract locale from pathname
@@ -76,28 +77,30 @@ export async function switchLocaleInPathname(
     let translatedSlug = slug;
     
     if (resource === "services") {
-      const service = await serviceService.getServiceBySlug(slug, currentLocale);
+      const allServices = await serviceService.getServices(currentLocale, 1, 100);
+      const service = allServices.find((s) => normalizeSlug(s.title) === slug || s.id === slug);
       if (service) {
-        // Fetch the same service in the new locale to get translated slug
         const translatedService = await serviceService.getServiceById(service.id, newLocale);
-        if (translatedService?.slug) {
-          translatedSlug = translatedService.slug;
+        if (translatedService?.title) {
+          translatedSlug = normalizeSlug(translatedService.title);
         }
       }
     } else if (resource === "products") {
-      const product = await productService.getProductBySlug(slug, currentLocale);
+      const allProducts = await productService.getProducts(currentLocale, 1, 100);
+      const product = allProducts.find((p) => normalizeSlug(p.name) === slug || p.id === slug);
       if (product) {
         const translatedProduct = await productService.getProductById(product.id, newLocale);
-        if (translatedProduct?.slug) {
-          translatedSlug = translatedProduct.slug;
+        if (translatedProduct?.name) {
+          translatedSlug = normalizeSlug(translatedProduct.name);
         }
       }
     } else if (resource === "work") {
-      const project = await projectService.getProjectBySlug(slug, currentLocale);
+      const allProjects = await projectService.getProjects(currentLocale, null, 1, 100);
+      const project = allProjects.items.find((p) => normalizeSlug(p.title) === slug || p.id === slug);
       if (project) {
         const translatedProject = await projectService.getProjectById(project.id, newLocale);
-        if (translatedProject?.slug) {
-          translatedSlug = translatedProject.slug;
+        if (translatedProject?.title) {
+          translatedSlug = normalizeSlug(translatedProject.title);
         }
       }
     }

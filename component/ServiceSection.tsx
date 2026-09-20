@@ -3,9 +3,10 @@
 import { motion } from "framer-motion";
 import { ArrowUpRight, CloudCog, Megaphone, Monitor, PenTool, Search, Smartphone } from "lucide-react";
 import type { ComponentType } from "react";
+import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
-import { serviceService, type ServiceApiItem } from "@/services/serviceService";
+import { useMemo } from "react";
+import { useServices } from "@/hooks/useServices";
 import { useLanguage } from "@/context/LanguageContext";
 import { useTranslation } from "@/translations";
 
@@ -14,6 +15,7 @@ interface ServiceItem {
   title: string;
   href: string;
   icon: ComponentType<{ size?: number; strokeWidth?: number; className?: string }>;
+  iconImageUrl?: string | null;
   subtitle?: string;
 }
 
@@ -40,29 +42,35 @@ function ServiceCard({ service, index }: ServiceCardProps) {
   const Icon = service.icon;
 
   return (
-    <motion.article
-      initial={{ opacity: 0, y: 16 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, amount: 0.15 }}
-      transition={{
-        duration: 0.31,
-        delay: Math.min(index * 0.05, 0.3),
-      }}
-      whileHover={{ y: -4 }}
-      className="group relative flex min-h-[220px] flex-col items-center justify-center rounded-[3rem] border border-[#22D3EE] bg-[#132D3A] px-8 py-10 text-center shadow-[0_0_12px_rgba(34,211,238,0.2)] transition-shadow duration-300 hover:shadow-[0_0_18px_rgba(34,211,238,0.35)] sm:min-h-[238px]"
-    >
-      <Icon size={58} strokeWidth={1.7} className="mb-7 text-white" />
-
-      <h3 className="text-xl lg:mb-5 mb-0 font-bold leading-tight text-white sm:text-2xl">{service.title}</h3>
-
-      <Link
-        href={service.href}
-        aria-label={`Explore ${service.title}`}
-        className="absolute bottom-5 right-8 grid h-12 w-12 place-items-center rounded-full border border-[#22D3EE] text-white transition-colors hover:bg-[#22D3EE] hover:text-[#000918]"
+    <Link href={service.href} aria-label={`Explore ${service.title}`}>
+      <motion.article
+        initial={{ opacity: 0, y: 16 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, amount: 0.15 }}
+        transition={{
+          duration: 0.31,
+          delay: Math.min(index * 0.05, 0.3),
+        }}
+        whileHover={{ y: -4 }}
+        className="group relative flex min-h-[220px] flex-col items-center justify-center rounded-[3rem] border border-[#22D3EE] bg-[#132D3A] px-8 py-10 text-center shadow-[0_0_12px_rgba(34,211,238,0.2)] transition-shadow duration-300 hover:shadow-[0_0_18px_rgba(34,211,238,0.35)] sm:min-h-[238px] cursor-pointer"
       >
-        <ArrowUpRight size={24} strokeWidth={1.6} />
-      </Link>
-    </motion.article>
+        {service.iconImageUrl ? (
+          <div className="relative mb-7 h-[58px] w-[58px]">
+            <Image src={service.iconImageUrl} alt={service.title} fill className="object-contain" />
+          </div>
+        ) : (
+          <Icon size={58} strokeWidth={1.7} className="mb-7 text-white" />
+        )}
+
+        <h3 className="text-xl lg:mb-5 mb-0 font-bold leading-tight text-white sm:text-2xl">{service.title}</h3>
+
+        <div
+          className="absolute bottom-5 right-8 grid h-12 w-12 place-items-center rounded-full border border-[#22D3EE] text-white transition-colors group-hover:bg-[#22D3EE] group-hover:text-[#011022]"
+        >
+          <ArrowUpRight size={24} strokeWidth={1.6} />
+        </div>
+      </motion.article>
+    </Link>
   );
 }
 
@@ -70,39 +78,27 @@ export default function ServiceSection({ locale }: ServiceSectionProps) {
   const { language } = useLanguage();
   const { t } = useTranslation(language);
   const currentLocale = locale || language;
-  const [services, setServices] = useState<ServiceItem[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { data: fetchedServices = [], isLoading: loading } = useServices(currentLocale);
 
-  useEffect(() => {
-    const loadServices = async () => {
-      try {
-        const fetchedServices = await serviceService.getServices(currentLocale, 1, 20);
+  const services = useMemo(() => {
+    return fetchedServices.map((service) => {
+      // Use normalized title as slug so ServiceDetails can match it
+      const slug = service.title
+        .toLowerCase()
+        .replace(/[^a-z0-9\u0600-\u06FF]+/g, "-")
+        .replace(/(^-|-$)/g, "") || service.id;
+      const iconKey = slug.includes("mobile") ? "mobile" : slug.includes("web") || slug.includes("website") ? "web" : slug.includes("software") ? "software" : slug.includes("market") ? "marketing" : slug.includes("design") ? "design" : slug.includes("seo") ? "seo" : "web";
 
-        if (fetchedServices.length > 0) {
-          const mappedServices = fetchedServices.map((service: ServiceApiItem) => {
-            const slug = service.slug || service.title.toLowerCase().replace(/[^a-z0-9\u0600-\u06FF]+/g, "-").replace(/(^-|-$)/g, "") || service.id;
-            const iconKey = slug.includes("mobile") ? "mobile" : slug.includes("web") || slug.includes("website") ? "web" : slug.includes("software") ? "software" : slug.includes("market") ? "marketing" : slug.includes("design") ? "design" : slug.includes("seo") ? "seo" : "web";
-
-            return {
-              id: service.id,
-              title: service.title,
-              subtitle: service.subTitle || undefined,
-              href: `/${currentLocale}/services/${slug}`,
-              icon: defaultIcons[iconKey] ?? Monitor,
-            };
-          });
-
-          setServices(mappedServices);
-        }
-      } catch (error) {
-        console.error("Failed to fetch services for homepage:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadServices();
-  }, [currentLocale]);
+      return {
+        id: service.id,
+        title: service.title,
+        subtitle: service.subtitle || undefined,
+        href: `/${currentLocale}/services/${slug}`,
+        icon: defaultIcons[iconKey] ?? Monitor,
+        iconImageUrl: service.iconImageUrl,
+      };
+    });
+  }, [fetchedServices, currentLocale]);
 
   const visibleServices = useMemo(() => services, [services]);
 
@@ -124,11 +120,17 @@ export default function ServiceSection({ locale }: ServiceSectionProps) {
           </div>
         ) : null}
 
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3 xl:gap-7">
-          {visibleServices.map((service, index) => (
-            <ServiceCard key={service.id || service.title} service={service} index={index} />
-          ))}
-        </div>
+        {!loading && visibleServices.length === 0 ? (
+          <div className="mt-12 text-center text-slate-400">
+            {language === "ar" ? "لا توجد خدمات متاحة حالياً" : "No services available at the moment."}
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3 xl:gap-7">
+            {visibleServices.map((service, index) => (
+              <ServiceCard key={service.id || service.title} service={service} index={index} />
+            ))}
+          </div>
+        )}
       </div>
     </section>
   );

@@ -1,6 +1,7 @@
 import ServiceDetails from "@/component/ServiceDetails";
 import { serviceService } from "@/services/serviceService";
 import { constructMetadata, generateBreadcrumbSchema, generateServiceSchema } from "@/lib/seo";
+import { normalizeSlug } from "@/lib/apiClient";
 
 interface ServiceDetailsPageProps {
   params: Promise<{ locale: string; slug: string }>;
@@ -54,7 +55,8 @@ export async function generateMetadata({ params }: ServiceDetailsPageProps) {
 
   // Fallback to API lookup
   try {
-    const apiService = await serviceService.getServiceBySlug(slug, locale);
+    const services = await serviceService.getServices(locale, 1, 100);
+    const apiService = services.find((s) => normalizeSlug(s.title) === slug || s.id === slug);
     if (apiService) {
       return constructMetadata({
         title: `${apiService.title} | Services | Tech Gear Solutions`,
@@ -85,7 +87,8 @@ export default async function ServiceDetailsPage({ params }: ServiceDetailsPageP
 
   if (!knownService) {
     try {
-      const apiService = await serviceService.getServiceBySlug(slug, locale);
+      const services = await serviceService.getServices(locale, 1, 100);
+      const apiService = services.find((s) => normalizeSlug(s.title) === slug || s.id === slug);
       if (apiService) {
         title = apiService.title;
         description = apiService.description || description;
