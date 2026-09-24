@@ -314,7 +314,7 @@ export default function HeroSection({ locale }: HeroSectionProps) {
                 </Button>
               </Link>
 
-              <Link href={`/${currentLocale}/work`} className="block">
+              <Link href={`/${currentLocale}/projects`} className="block">
                 <Button
                   variant="secondary"
                   className="min-h-[50px] min-w-[180px] rounded-full border border-white/20 bg-white/5 px-6 text-sm font-bold text-white shadow-[0_0_22px_rgba(25,207,252,0.1)] transition-colors duration-300 hover:border-[#19CFFC]/60 hover:bg-[#19CFFC]/8 hover:text-[#19CFFC] sm:min-w-[190px] sm:text-base"

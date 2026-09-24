@@ -93,7 +93,7 @@ export default function ProjectDetails({ locale, projectId }: { locale: string; 
         <motion.nav initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }} aria-label="Breadcrumb" className="mb-12 text-center text-sm sm:mb-16 sm:text-base">
           <Link href={`/${locale}`} className="hover:text-[#22D3EE]">{t("nav_home")}</Link>
           <span className="mx-1.5 text-white/70">&gt;</span>
-          <Link href={`/${locale}/work`} className="hover:text-[#22D3EE]">{t("work_breadcrumb")}</Link>
+          <Link href={`/${locale}/projects`} className="hover:text-[#22D3EE]">{t("work_breadcrumb")}</Link>
           {project && <><span className="mx-1.5 text-white/70">&gt;</span><span className="text-[#22D3EE]">{project.title}</span></>}
         </motion.nav>
 

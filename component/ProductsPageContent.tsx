@@ -1,8 +1,10 @@
 "use client";
 
+import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { ArrowUpRight, CheckCircle2 } from "lucide-react";
 import { productService, type ProductApiItem } from "@/services/productService";
 import { useLanguage } from "@/context/LanguageContext";
 import { useTranslation } from "@/translations";
@@ -10,6 +12,24 @@ import { useTranslation } from "@/translations";
 interface ProductsPageContentProps {
   locale: string;
 }
+
+const ease = [0.16, 1, 0.3, 1] as const;
+
+const fadeUp = {
+  hidden: { opacity: 0, y: 28 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.7, ease },
+  },
+};
+
+const stagger = {
+  hidden: {},
+  visible: {
+    transition: { staggerChildren: 0.1 },
+  },
+};
 
 export default function ProductsPageContent({ locale }: ProductsPageContentProps) {
   const { language } = useLanguage();
@@ -21,7 +41,13 @@ export default function ProductsPageContent({ locale }: ProductsPageContentProps
     const loadProducts = async () => {
       try {
         const data = await productService.getProducts(locale, 1, 20);
-        setProducts(data);
+        const detailedProducts = await Promise.all(
+          data.map(async (product) => {
+            const detail = await productService.getProductById(product.id, locale);
+            return detail ?? product;
+          }),
+        );
+        setProducts(detailedProducts);
       } catch (error) {
         console.error("Failed to fetch products:", error);
       } finally {
@@ -32,20 +58,27 @@ export default function ProductsPageContent({ locale }: ProductsPageContentProps
     loadProducts();
   }, [locale]);
 
-  const formatLink = (link: string | null) => {
-    if (!link) return "#";
-    if (link.startsWith("http://") || link.startsWith("https://")) return link;
-    return `https://${link}`;
-  };
-
   return (
     <main className="min-h-screen bg-[#000918] px-5 pb-20 pt-32 text-white sm:px-8 sm:pt-40 lg:px-12">
-      <div className="mx-auto max-w-[1280px]">
-        <nav aria-label="Breadcrumb" className="mb-20 text-center text-sm sm:mb-24 sm:text-base">
+      <div className="mx-auto max-w-[1120px]">
+        <nav aria-label="Breadcrumb" className="mb-14 text-center text-sm sm:mb-16 sm:text-base">
           <Link href={`/${locale}`} className="hover:text-[#22D3EE] transition-colors">{t("nav_home")}</Link>
           <span className="mx-2 text-[#22D3EE]">{language === "ar" ? "<" : ">"}</span>
           <span className="text-[#22D3EE]">{t("products_breadcrumb")}</span>
         </nav>
+
+        <motion.header
+          variants={fadeUp}
+          initial="hidden"
+          animate="visible"
+          className="mb-12 text-center"
+        >
+          <p className="mb-3 text-sm font-semibold uppercase tracking-[0.45em] text-[#22D3EE]">Our Products</p>
+          <h1 className="text-3xl font-extrabold tracking-tight text-white sm:text-4xl">
+            Digital products built for real world impact.
+          </h1>
+          <div className="mx-auto mt-4 h-1 w-20 rounded-full bg-[#22D3EE]" />
+        </motion.header>
 
         {loading ? (
           <div className="flex justify-center py-12">
@@ -54,56 +87,89 @@ export default function ProductsPageContent({ locale }: ProductsPageContentProps
         ) : products.length === 0 ? (
           <div className="rounded-2xl border border-white/10 bg-[#0a1627] p-8 text-center text-white/70">No products available.</div>
         ) : (
-          <div className="grid gap-10 lg:grid-cols-2">
+          <motion.div
+            variants={stagger}
+            initial="hidden"
+            animate="visible"
+            className="space-y-8"
+          >
             {products.map((product) => (
-              <article key={product.id} className="relative flex flex-col overflow-hidden rounded-[32px] bg-white shadow-[0_20px_60px_rgba(0,0,0,0.3)]">
-                {/* Hero Image Section */}
-                <div className="relative aspect-[4/3] w-full bg-[#f8fafc]">
+              <motion.article
+                variants={fadeUp}
+                key={product.id}
+                className="grid overflow-hidden rounded-[20px] border border-[#22D3EE] bg-[#1d3140] shadow-[0_20px_55px_rgba(0,0,0,0.28)] lg:grid-cols-[1.18fr_1fr]"
+              >
+                <div className="flex min-h-[360px] flex-col justify-center p-7 sm:p-9">
+                  {product.iconImageUrl ? (
+                    <div className="mb-7 flex h-9 w-fit items-center justify-center rounded-full bg-white px-4">
+                      <Image
+                        src={product.iconImageUrl}
+                        alt={`${product.name || "Product"} icon`}
+                        width={116}
+                        height={32}
+                        className="max-h-6 w-auto object-contain"
+                        unoptimized
+                      />
+                    </div>
+                  ) : null}
+
+                  <h2 className="text-2xl font-extrabold leading-tight text-white sm:text-3xl">
+                    {product.name || "Untitled Product"}
+                  </h2>
+
+                  {product.description ? (
+                    <p className="mt-5 max-w-xl text-sm leading-7 text-white/90 sm:text-base">
+                      {product.description}
+                    </p>
+                  ) : null}
+
+                  {product.featuresSummary && product.featuresSummary.length > 0 ? (
+                    <div className="mt-5">
+                      <div className="mb-3 flex items-center gap-2 text-sm font-bold text-white">
+                        <CheckCircle2 className="h-4 w-4 text-emerald-300" />
+                        Key Features
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        {product.featuresSummary.map((feature, index) => (
+                          <span
+                            key={`${feature}-${index}`}
+                            className="rounded-full bg-slate-300/75 px-3 py-1.5 text-xs font-medium text-[#011022]"
+                          >
+                            {feature}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  ) : null}
+
+                  <Link
+                    href={`/${locale}/products/${product.id}`}
+                    className="mt-7 inline-flex w-full max-w-md items-center justify-center gap-2 rounded-full bg-[#22D3EE] px-7 py-3 text-sm font-extrabold !text-[#011022] transition-colors hover:bg-[#1bb8d0]"
+                  >
+                    View Product
+                    <ArrowUpRight className="h-4 w-4" />
+                  </Link>
+                </div>
+
+                <div className="relative min-h-[280px] bg-[#0f1b29] lg:min-h-[376px]">
                   {product.heroImageUrl ? (
                     <Image
                       src={product.heroImageUrl}
                       alt={product.name || "Product"}
                       fill
-                      sizes="(max-width: 1024px) 100vw, 50vw"
+                      sizes="(max-width: 1024px) 100vw, 560px"
                       className="object-cover object-center"
                       unoptimized
                     />
                   ) : (
-                    <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-[#e2e8f0] to-[#cbd5e1] text-lg font-bold text-slate-500">
+                    <div className="flex h-full w-full items-center justify-center bg-[#101d2a] text-lg font-bold text-slate-500">
                       {product.name}
                     </div>
                   )}
-                  
-                  {/* Floating Icon Pill */}
-                  <div className="absolute right-6 top-6 flex h-[64px] items-center justify-center rounded-[20px] bg-white px-7 shadow-[0_8px_24px_rgba(0,0,0,0.08)]">
-                    <Image 
-                      src={product.iconImageUrl || "/logo.svg"} 
-                      alt="Product Icon" 
-                      width={120} 
-                      height={36} 
-                      className="h-9 w-auto object-contain" 
-                      unoptimized
-                    />
-                  </div>
                 </div>
-
-                {/* Bottom Section */}
-                <div className="flex flex-wrap items-center justify-between gap-5 p-6 sm:flex-nowrap sm:px-9 sm:py-8">
-                  <h2 className="flex-1 min-w-[200px] text-[22px] font-bold leading-[1.25] tracking-tight text-[#011022] sm:text-3xl lg:text-[28px]">
-                    {product.name}
-                  </h2>
-                  <a
-                    href={formatLink(product.productLink)}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex shrink-0 items-center justify-center rounded-full bg-[#22D3EE] px-7 py-3.5 sm:px-8 sm:py-3.5 text-[15px] font-bold !text-[#011022] shadow-[0_0_20px_rgba(34,211,238,0.2)] transition-all duration-300 hover:scale-[1.03] hover:bg-[#1bb8d0] hover:shadow-[0_0_25px_rgba(34,211,238,0.4)]"
-                  >
-                    View Product
-                  </a>
-                </div>
-              </article>
+              </motion.article>
             ))}
-          </div>
+          </motion.div>
         )}
       </div>
     </main>

@@ -70,7 +70,7 @@ export default function ProjectSection({ locale }: ProjectSectionProps) {
           <p className="mb-4 text-sm font-medium uppercase tracking-[0.42em] text-[#22D3EE]">{t("projects_label")}</p>
           <h2 id="projects-heading" className="text-3xl font-semibold leading-tight tracking-tight sm:text-4xl">{t("projects_heading")}</h2>
           <span className="mx-auto mt-5 block h-1.5 w-28 rounded-full bg-[#22D3EE] shadow-[0_0_16px_rgba(34,211,238,0.6)]" aria-hidden="true" />
-          <Link href={`/${currentLocale}/work`} className={`translate-y-8 flex items-center gap-2 text-sm text-[#22D3EE] transition-colors hover:text-white sm:absolute sm:bottom-0 sm:mt-0 sm:text-base ${direction === "rtl" ? "sm:left-0" : "sm:right-0"}`}>
+          <Link href={`/${currentLocale}/projects`} className={`translate-y-8 flex items-center gap-2 text-sm text-[#22D3EE] transition-colors hover:text-white sm:absolute sm:bottom-0 sm:mt-0 sm:text-base ${direction === "rtl" ? "sm:left-0" : "sm:right-0"}`}>
             {t("projects_view_all")} <ArrowRight size={19} className={direction === "rtl" ? "rotate-180" : ""} />
           </Link>
         </motion.header>

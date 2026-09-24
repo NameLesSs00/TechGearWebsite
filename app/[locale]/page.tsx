@@ -4,6 +4,7 @@ import ServiceSection from "../../component/ServiceSection";
 import ProjectSection from "../../component/ProjectSection";
 import FaqSection from "../../component/FaqSection";
 import TestimonialsSection from "../../component/TestimonialsSection";
+import HomeProductsSection from "../../component/HomeProductsSection";
 import { constructMetadata, generateFaqSchema } from "@/lib/seo";
 
 interface HomePageProps {
@@ -62,6 +63,7 @@ export default async function Home({ params }: HomePageProps) {
       <ServiceSection locale={locale} />
       <ProjectSection locale={locale} />
       <TestimonialsSection locale={locale} />
+      <HomeProductsSection locale={locale} />
       <FaqSection locale={locale} limit={5} />
     </>
   );

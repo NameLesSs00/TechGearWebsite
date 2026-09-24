@@ -1,24 +1,24 @@
 import ProjectsPageContent from "@/component/ProjectsPageContent";
 import { constructMetadata, generateBreadcrumbSchema } from "@/lib/seo";
 
-interface WorkPageProps {
+interface ProjectsPageProps {
   params: Promise<{ locale: string }>;
 }
 
 export const metadata = constructMetadata({
-  title: "Our Work | Projects & Case Studies | Tech Gear Solutions",
+  title: "Our Projects | Projects & Case Studies | Tech Gear Solutions",
   description:
     "Explore our portfolio of successful projects: mobile apps, websites, and custom software solutions delivered for clients worldwide.",
-  path: "/work",
-  keywords: ["Projects", "Portfolio", "Case Studies", "Our Work", "Tech Gear"],
+  path: "/projects",
+  keywords: ["Projects", "Portfolio", "Case Studies", "Our Projects", "Tech Gear"],
 });
 
-export default async function WorkPage({ params }: WorkPageProps) {
+export default async function ProjectsPage({ params }: ProjectsPageProps) {
   const { locale } = await params;
 
   const breadcrumbSchema = generateBreadcrumbSchema([
     { name: "Home", item: `/${locale}` },
-    { name: "Work", item: `/${locale}/work` },
+    { name: "Projects", item: `/${locale}/projects` },
   ]);
 
   return (

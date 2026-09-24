@@ -23,7 +23,7 @@ export const ProjectCard = forwardRef<HTMLElement, ProjectCardProps>(
           {categoryLabel && <span className="inline-flex items-center justify-center rounded-full bg-[#6ba2ad] px-6 py-2 text-sm font-medium text-white">{categoryLabel}</span>}
           <h3 className="mt-6 text-4xl font-bold tracking-tight sm:text-5xl lg:text-6xl">{project.title}</h3>
           <p className="mt-6 max-w-xl text-base leading-relaxed text-white/90 sm:text-lg lg:text-xl">{project.description}</p>
-          <Link href={`/${locale}/work/${project.id}`} className="mt-8 inline-flex items-center justify-center gap-2 rounded-full bg-[#22D3EE] px-8 py-3 text-sm font-bold text-[#011022] transition-transform hover:scale-105">
+          <Link href={`/${locale}/projects/${project.id}`} className="mt-8 inline-flex items-center justify-center gap-2 rounded-full bg-[#22D3EE] px-8 py-3 text-sm font-bold text-[#011022] transition-transform hover:scale-105">
             {language === "ar" ? "اقرأ المزيد" : "Read More"}
           </Link>
         </div>

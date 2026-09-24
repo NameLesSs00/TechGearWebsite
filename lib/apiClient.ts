@@ -19,6 +19,16 @@ export function setApiLanguage(language: string) {
   currentLanguage = language;
 }
 
+/**
+ * Utility to get a cookie value by name (client-side only)
+ */
+function getCookie(name: string): string | null {
+  if (typeof document === 'undefined') return null;
+  const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+  if (match) return match[2];
+  return null;
+}
+
 
 // Request interceptor to automatically add Accept-Language header
 apiClient.interceptors.request.use(
@@ -31,6 +41,12 @@ apiClient.interceptors.request.use(
     // Only add Accept-Language if it's not already present
     if (!config.headers['Accept-Language']) {
       config.headers['Accept-Language'] = currentLanguage;
+    }
+
+    // Attach admin token if it exists
+    const token = getCookie('admin_token');
+    if (token && !config.headers['Authorization']) {
+      config.headers['Authorization'] = `Bearer ${token}`;
     }
 
     return config;

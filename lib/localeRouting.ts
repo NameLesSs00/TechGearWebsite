@@ -94,7 +94,7 @@ export async function switchLocaleInPathname(
           translatedSlug = normalizeSlug(translatedProduct.name);
         }
       }
-    } else if (resource === "work") {
+    } else if (resource === "projects") {
       const allProjects = await projectService.getProjects(currentLocale, null, 1, 100);
       const project = allProjects.items.find((p) => normalizeSlug(p.title) === slug || p.id === slug);
       if (project) {

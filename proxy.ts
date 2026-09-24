@@ -46,10 +46,17 @@ export function proxy(request: NextRequest) {
 
   const pathname = url.pathname;
 
-  // Skip static assets and API routes entirely — no redirect needed
+  // Protect the login route: if already logged in, redirect to dashboard
+  if (pathname === "/admin/login" && request.cookies.has("admin_token")) {
+    url.pathname = "/admin";
+    return NextResponse.redirect(url);
+  }
+
+  // Skip static assets, API routes, and admin routes entirely — no redirect needed
   const isStaticOrApi =
     pathname.startsWith("/_next") ||
     pathname.startsWith("/api") ||
+    pathname.startsWith("/admin") ||
     /\.(?:svg|png|jpg|jpeg|gif|webp|ico|woff|woff2|js|css|map|txt|xml)$/.test(pathname);
 
   if (isStaticOrApi) {

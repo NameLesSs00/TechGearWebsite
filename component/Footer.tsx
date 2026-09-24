@@ -26,7 +26,7 @@ export default function Footer({ locale }: FooterProps) {
   const quickLinks = [
     { label: t("nav_home"), href: `/${locale}` },
     { label: t("nav_service"), isDropdown: true },
-    { label: t("nav_work"), href: `/${locale}/work` },
+    { label: t("nav_work"), href: `/${locale}/projects` },
     { label: t("nav_products"), href: `/${locale}/products` },
     { label: t("nav_about_us"), href: `/${locale}/aboutus` },
     { label: t("nav_contact_us"), href: `/${locale}/contactus` },

@@ -3,8 +3,15 @@
 import { ArrowUpRight } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { motion } from "framer-motion";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { useGSAP } from "@gsap/react";
+
+if (typeof window !== "undefined") {
+  gsap.registerPlugin(ScrollTrigger, useGSAP);
+}
 const Logo = "/logo.svg";
 import { teamMemberService, TeamMember } from "@/services/teamMemberService";
 import { journeyService, Journey } from "@/services/journeyService";
@@ -21,23 +28,204 @@ function SectionTitle({ children }: { children: string }) {
   );
 }
 
-// Journey timeline layout constants
-const STEP_H = 3000;       // Spacing between steps
-const C_SIZE = 120;        // Circle diameter
+// ─── Journey Timeline Sub-components ───────────────────────────────────────
 
-const circlePositions = [
-  { left: 130, top: 0 },
-  { left: 590, top: 200 },
-  { left: 510, top: 410 },
-  { left: 30, top: 540 },
-];
+/** Null-image fallback: a stylised gradient placeholder with a subtle icon */
+function ImagePlaceholder() {
+  return (
+    <div
+      className="w-full rounded-xl overflow-hidden"
+      style={{
+        aspectRatio: "16/9",
+        background: "linear-gradient(135deg, rgba(34,211,238,0.12) 0%, rgba(42,159,176,0.08) 100%)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        border: "1px dashed rgba(34,211,238,0.25)",
+      }}
+    >
+      <svg width="36" height="36" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <rect x="3" y="3" width="18" height="18" rx="3" stroke="rgba(34,211,238,0.4)" strokeWidth="1.5" />
+        <circle cx="8.5" cy="8.5" r="1.5" fill="rgba(34,211,238,0.4)" />
+        <path d="M3 15l5-5 4 4 3-3 6 6" stroke="rgba(34,211,238,0.4)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+    </div>
+  );
+}
 
-const circlePositionsMedium = [
-  { left: 80, top: 0 },
-  { left: 480, top: 180 },
-  { left: 440, top: 360 },
-  { left: 90, top: 530 },
-];
+function JourneyHorizontalScroll({ journeys, isRtl }: { journeys: Journey[], isRtl: boolean }) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const trackRef = useRef<HTMLDivElement>(null);
+  const [activeIndex, setActiveIndex] = useState(0);
+
+  useGSAP(() => {
+    if (!containerRef.current || !trackRef.current || journeys.length === 0) return;
+
+    const cards = gsap.utils.toArray<HTMLElement>('.journey-card');
+    const totalSections = cards.length;
+
+    // Prepare all cards for GPU compositing
+    gsap.set(cards, { force3D: true });
+
+    // Pre-hide text elements on ALL cards except the first
+    cards.forEach((card, i) => {
+      const year = card.querySelector<HTMLElement>('[data-journey="year"]');
+      const title = card.querySelector<HTMLElement>('[data-journey="title"]');
+      const desc = card.querySelector<HTMLElement>('[data-journey="desc"]');
+      const line = card.querySelector<HTMLElement>('[data-journey="line"]');
+      if (i !== 0) {
+        gsap.set([year, title, desc, line], { y: 60, opacity: 0 });
+      }
+    });
+
+    // Animate the first card's text in on mount
+    (() => {
+      const card = cards[0];
+      const year = card.querySelector<HTMLElement>('[data-journey="year"]');
+      const title = card.querySelector<HTMLElement>('[data-journey="title"]');
+      const desc = card.querySelector<HTMLElement>('[data-journey="desc"]');
+      const line = card.querySelector<HTMLElement>('[data-journey="line"]');
+      gsap.fromTo(
+        [line, year, title, desc],
+        { y: 60, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.9, ease: "power3.out", stagger: 0.18, delay: 0.3 }
+      );
+    })();
+
+    const tl = gsap.timeline({
+      scrollTrigger: {
+        trigger: containerRef.current,
+        pin: true,
+        scrub: 0.5,
+        end: () => "+=" + (window.innerHeight * totalSections),
+        onUpdate: (self) => {
+          const index = Math.min(totalSections - 1, Math.floor(self.progress * totalSections));
+          if (index !== activeIndex) {
+            setActiveIndex(index);
+          }
+        }
+      }
+    });
+
+    cards.forEach((card, i) => {
+      if (i === 0) {
+        gsap.set(card, { zIndex: 1 });
+        return;
+      }
+
+      const prevCard = cards[i - 1];
+      const newYear  = card.querySelector<HTMLElement>('[data-journey="year"]');
+      const newTitle = card.querySelector<HTMLElement>('[data-journey="title"]');
+      const newDesc  = card.querySelector<HTMLElement>('[data-journey="desc"]');
+      const newLine  = card.querySelector<HTMLElement>('[data-journey="line"]');
+
+      // Start new card offscreen
+      gsap.set(card, { xPercent: isRtl ? -100 : 100, zIndex: i + 1 });
+
+      // ── Phase 1: Slide cards (50% of budget)
+      tl.to(prevCard, { scale: 0.93, opacity: 0, ease: "power2.inOut", force3D: true }, ">")
+        .to(card,     { xPercent: 0,  ease: "power2.inOut", force3D: true }, "<");
+
+      // ── Phase 2: Stagger the text in after the card lands (50% of budget)
+      tl.to(newLine,  { y: 0, opacity: 1, ease: "power3.out", force3D: true }, ">");
+      tl.to(newYear,  { y: 0, opacity: 1, ease: "power3.out", force3D: true }, "-=0.6");
+      tl.to(newTitle, { y: 0, opacity: 1, ease: "power3.out", force3D: true }, "-=0.5");
+      tl.to(newDesc,  { y: 0, opacity: 1, ease: "power3.out", force3D: true }, "-=0.5");
+    });
+
+  }, { scope: containerRef, dependencies: [journeys, isRtl] });
+
+  return (
+    <div ref={containerRef} className="relative mt-12 bg-[#000918]">
+      <div className="h-screen w-full flex flex-col items-center justify-center">
+        {journeys.length === 0 ? (
+          <div className="flex flex-col items-center justify-center text-center p-8 bg-white/5 border border-white/10 rounded-2xl max-w-2xl w-[92vw]">
+            <svg className="w-16 h-16 text-[#22D3EE]/50 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+            </svg>
+            <h3 className="text-2xl font-bold text-white mb-2">Our Journey is Evolving</h3>
+            <p className="text-slate-400">There is no current data available. Check back soon for updates.</p>
+          </div>
+        ) : (
+          <>
+            {/* Track — overflow-hidden HERE clips the sliding cards */}
+          <div 
+            ref={trackRef}
+            className="relative w-[92vw] max-w-[1500px] h-[68vh] overflow-hidden rounded-[2rem]"
+          >
+          {journeys.map((item, index) => (
+            <div
+              key={item.id}
+              className="journey-card absolute inset-0 w-full h-full rounded-[2rem] overflow-hidden border border-white/10 bg-[#000918] shadow-[0_4px_24px_rgba(0,0,0,0.5)] flex flex-col"
+              style={{ willChange: "transform, opacity" }}
+            >
+              {/* Massive Image Background */}
+              <div className="absolute inset-0 w-full h-full overflow-hidden">
+                {item.imageUrl ? (
+                  <Image
+                    src={item.imageUrl}
+                    alt={item.title}
+                    fill
+                    className="object-cover"
+                    sizes="95vw"
+                  />
+                ) : (
+                  <ImagePlaceholder />
+                )}
+              {/* Heavy dark gradient — always visible */}
+                <div className="absolute inset-0 bg-gradient-to-t from-[#000918] via-[#000918]/70 to-transparent" />
+              </div>
+
+              {/* Content Overlay — clean vertical stack, always fits */}
+              <div className="relative z-10 flex-1 flex flex-col justify-end p-6 md:p-10 lg:p-12">
+                {/* Decorative top line */}
+                <div data-journey="line" className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-[#22D3EE]/50 to-transparent" />
+
+                {/* Year badge — small pill, never overflows */}
+                <div
+                  data-journey="year"
+                  className="mb-4 inline-flex items-center self-start gap-2 px-4 py-2 rounded-full border border-[#22D3EE]/30 bg-[#22D3EE]/10 backdrop-blur-sm"
+                >
+                  <span className="text-[#22D3EE] font-extrabold text-xl md:text-2xl tracking-widest select-none">
+                    {item.yearOrDate}
+                  </span>
+                </div>
+
+                {/* Title */}
+                <h3
+                  data-journey="title"
+                  className="text-white font-bold text-2xl md:text-4xl lg:text-5xl leading-tight mb-3"
+                >
+                  {item.title}
+                </h3>
+
+                {/* Description */}
+                <p
+                  data-journey="desc"
+                  className="text-slate-300 text-sm md:text-base lg:text-lg leading-relaxed max-w-3xl"
+                >
+                  {item.description}
+                </p>
+              </div>
+            </div>
+          ))}
+        </div>
+        
+        {/* Step Indicators */}
+        <div className="absolute bottom-6 md:bottom-10 left-1/2 -translate-x-1/2 flex items-center gap-3 z-20" aria-hidden="true">
+          {journeys.map((_, idx) => (
+            <div 
+              key={idx}
+              className={`w-2 h-2 md:w-2.5 md:h-2.5 rounded-full transition-all duration-300 ${idx === activeIndex ? "bg-[#22D3EE] scale-150 shadow-[0_0_12px_rgba(34,211,238,0.6)]" : "bg-white/20"}`}
+            />
+          ))}
+        </div>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
 
 export default function AboutSection(_props?: { locale?: string }) {
   const { language, direction } = useLanguage();
@@ -50,6 +238,7 @@ export default function AboutSection(_props?: { locale?: string }) {
   const [journeyLoading, setJourneyLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [journeyError, setJourneyError] = useState<string | null>(null);
+
 
   useEffect(() => {
     const fetchTeamMembers = async () => {
@@ -223,11 +412,13 @@ export default function AboutSection(_props?: { locale?: string }) {
 
         <section className="mt-24 sm:mt-32 border-t border-white/10 pt-16" aria-labelledby="journey-heading">
           <SectionTitle>{t("about_journey_heading")}</SectionTitle>
+
           {journeyError && (
             <div className="mt-6 rounded-lg bg-red-500/10 px-4 py-3 text-sm text-red-400 border border-red-500/20">
               {journeyError}
             </div>
           )}
+
           {journeyLoading ? (
             <div className="mt-12 flex justify-center py-12">
               <div className="text-center">
@@ -236,285 +427,7 @@ export default function AboutSection(_props?: { locale?: string }) {
               </div>
             </div>
           ) : journeys.length > 0 ? (
-            <>
-              {/* ── Large desktop timeline (lg+): absolute positioned C-curve ── */}
-              <div
-                className="relative ml-[-50px] mt-14 hidden lg:block"
-                style={{ height: "730px", maxWidth: "900px" }}
-              >
-                <svg
-                  className="pointer-events-none absolute inset-0"
-                  width="900"
-                  height="730"
-                  style={{ overflow: "visible", zIndex: 1 }}
-                  aria-hidden="true"
-                >
-                  {/* Static background arc */}
-                  <path
-                    d="M -64 30 A 499 199 0 0 1 -64 610"
-                    fill="none"
-                    stroke="rgba(255,255,255,0.12)"
-                    strokeWidth="3"
-                  />
-                  {/* Scroll draw reveal arc */}
-                  <motion.path
-                    d="M -64 30 A 499 199 0 0 1 -64 610"
-                    fill="none"
-                    stroke="rgba(34, 211, 238, 0.4)"
-                    strokeWidth="3"
-                    initial={{ pathLength: 0 }}
-                    whileInView={{ pathLength: 1 }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 1.5, ease: "easeInOut" }}
-                  />
-                  {/* Continuous flowing dash arc */}
-                  <motion.path
-                    d="M -64 30 A 499 199 0 0 1 -64 610"
-                    fill="none"
-                    stroke="rgba(34, 211, 238, 0.8)"
-                    strokeWidth="3"
-                    strokeDasharray="10 14"
-                    strokeLinecap="round"
-                    animate={{ strokeDashoffset: [0, -48] }}
-                    transition={{ repeat: Infinity, duration: 2, ease: "linear" }}
-                  />
-                </svg>
-
-                {journeys.slice(0, 4).map((item, index) => {
-                  const pos = circlePositions[index] || { left: 30, top: 40 };
-                  const cardLeft = pos.left + C_SIZE + 24;
-                  return (
-                    <motion.div
-                      key={item.id}
-                      style={{ position: "absolute", top: `${pos.top}px`, left: 0, right: 0 }}
-                      initial={{ opacity: 0, y: 30 }}
-                      whileInView={{ opacity: 1, y: 0 }}
-                      viewport={{ once: true }}
-                      transition={{ duration: 0.6, delay: index * 0.15 }}
-                    >
-                      {/* Outer continuous rotating ring ("always turned") */}
-                      <motion.div
-                        style={{
-                          position: "absolute",
-                          left: `${pos.left - 12}px`,
-                          top: "-12px",
-                          width: `${C_SIZE + 24}px`,
-                          height: `${C_SIZE + 24}px`,
-                          borderRadius: "9999px",
-                          border: "2px dashed rgba(34, 211, 238, 0.45)",
-                          zIndex: 1,
-                        }}
-                        animate={{ rotate: 360 }}
-                        transition={{ repeat: Infinity, duration: 12, ease: "linear" }}
-                      />
-
-                      {/* Teal circle with glow ring */}
-                      <div
-                        style={{
-                          position: "absolute",
-                          left: `${pos.left}px`,
-                          top: 0,
-                          width: `${C_SIZE}px`,
-                          height: `${C_SIZE}px`,
-                          borderRadius: "9999px",
-                          background: "linear-gradient(135deg, #3fc1d1 0%, #2a9fb0 100%)",
-                          boxShadow: "0 0 0 9px rgba(47,170,190,0.22), 0 0 0 16px rgba(47,170,190,0.08)",
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          fontSize: "24px",
-                          fontWeight: "800",
-                          color: "white",
-                          zIndex: 2,
-                        }}
-                      >
-                        {index + 1}
-                      </div>
-
-                      {/* White content card */}
-                      <motion.div
-                        style={{
-                          position: "absolute",
-                          left: `${cardLeft}px`,
-                          top: "4px",
-                          width: "220px",
-                          background: "white",
-                          borderRadius: "14px",
-                          padding: "16px 20px 18px",
-                          boxShadow: "0 4px 24px rgba(0,0,0,0.18)",
-                          zIndex: 2,
-                        }}
-                        whileHover={{ scale: 1.03, y: -2 }}
-                        transition={{ duration: 0.2 }}
-                      >
-                        <h3 className="text-lg font-extrabold leading-tight sm:text-xl" style={{ color: "#0a0e1a", margin: 0 }}>
-                          {item.title}
-                        </h3>
-                        <p className="mt-2 text-xs leading-relaxed sm:text-sm" style={{ color: "#64748b" }}>
-                          {item.description}
-                        </p>
-                      </motion.div>
-                    </motion.div>
-                  );
-                })}
-              </div>
-
-              {/* ── Medium screen timeline (sm to lg): explicit positions ── */}
-              <div
-                className="relative mr-auto mt-14 hidden sm:block lg:hidden"
-                style={{ height: "650px", maxWidth: "680px" }}
-              >
-                <svg
-                  className="pointer-events-none absolute inset-0"
-                  width="680"
-                  height="650"
-                  style={{ overflow: "visible", zIndex: 1 }}
-                  aria-hidden="true"
-                >
-                  {/* Static background arc */}
-                  <path
-                    d="M -40 20 A 350 180 0 0 1 -40 580"
-                    fill="none"
-                    stroke="rgba(255,255,255,0.12)"
-                    strokeWidth="2.5"
-                  />
-                  {/* Scroll draw reveal arc */}
-                  <motion.path
-                    d="M -40 20 A 350 180 0 0 1 -40 580"
-                    fill="none"
-                    stroke="rgba(34, 211, 238, 0.4)"
-                    strokeWidth="2.5"
-                    initial={{ pathLength: 0 }}
-                    whileInView={{ pathLength: 1 }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 1.5, ease: "easeInOut" }}
-                  />
-                  {/* Continuous flowing dash arc */}
-                  <motion.path
-                    d="M -40 20 A 350 180 0 0 1 -40 580"
-                    fill="none"
-                    stroke="rgba(34, 211, 238, 0.8)"
-                    strokeWidth="2.5"
-                    strokeDasharray="8 12"
-                    strokeLinecap="round"
-                    animate={{ strokeDashoffset: [0, -40] }}
-                    transition={{ repeat: Infinity, duration: 2, ease: "linear" }}
-                  />
-                </svg>
-
-                {journeys.slice(0, 4).map((item, index) => {
-                  const pos = circlePositionsMedium[index] || { left: 30, top: 40 };
-                  const mdCircle = 90; // circle diameter for medium screen
-                  const isFarRight = pos.left > 250;
-                  const cardLeft = isFarRight
-                    ? pos.left - 190 - 14
-                    : pos.left + mdCircle + 14;
-
-                  return (
-                    <motion.div
-                      key={item.id}
-                      style={{ position: "absolute", top: `${pos.top}px`, left: 0, right: 0 }}
-                      initial={{ opacity: 0, y: 30 }}
-                      whileInView={{ opacity: 1, y: 0 }}
-                      viewport={{ once: true }}
-                      transition={{ duration: 0.6, delay: index * 0.15 }}
-                    >
-                      {/* Outer continuous rotating ring ("always turned") */}
-                      <motion.div
-                        style={{
-                          position: "absolute",
-                          left: `${pos.left - 10}px`,
-                          top: "-10px",
-                          width: `${mdCircle + 20}px`,
-                          height: `${mdCircle + 20}px`,
-                          borderRadius: "9999px",
-                          border: "2px dashed rgba(34, 211, 238, 0.45)",
-                          zIndex: 1,
-                        }}
-                        animate={{ rotate: 360 }}
-                        transition={{ repeat: Infinity, duration: 12, ease: "linear" }}
-                      />
-
-                      <div
-                        style={{
-                          position: "absolute",
-                          left: `${pos.left}px`,
-                          top: 0,
-                          width: `${mdCircle}px`,
-                          height: `${mdCircle}px`,
-                          borderRadius: "9999px",
-                          background: "linear-gradient(135deg, #3fc1d1 0%, #2a9fb0 100%)",
-                          boxShadow: "0 0 0 7px rgba(47,170,190,0.22), 0 0 0 13px rgba(47,170,190,0.08)",
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          fontSize: "22px",
-                          fontWeight: "800",
-                          color: "white",
-                          zIndex: 2,
-                        }}
-                      >
-                        {index + 1}
-                      </div>
-
-                      <motion.div
-                        style={{
-                          position: "absolute",
-                          left: `${cardLeft}px`,
-                          top: `${mdCircle / 2}px`,
-                          marginTop: `-${mdCircle / 2}px`,
-                          width: "190px",
-                          background: "white",
-                          borderRadius: "12px",
-                          padding: "14px 16px 16px",
-                          boxShadow: "0 4px 20px rgba(0,0,0,0.16)",
-                          zIndex: 2,
-                        }}
-                        whileHover={{ y: -4, scale: 1.03 }}
-                        transition={{ duration: 0.2 }}
-                      >
-                        <h3 className="text-lg font-extrabold leading-tight sm:text-xl" style={{ color: "#0a0e1a", margin: 0 }}>
-                          {item.title}
-                        </h3>
-                        <p className="mt-1.5 text-xs leading-relaxed sm:text-sm" style={{ color: "#64748b" }}>
-                          {item.description}
-                        </p>
-                      </motion.div>
-                    </motion.div>
-                  );
-                })}
-              </div>
-
-              {/* ── Mobile timeline (below sm): straight vertical line ── */}
-              <div className="relative mx-auto mt-14 max-w-[520px] sm:hidden">
-                <div
-                  className="absolute left-[31px] top-6 bottom-6 w-px"
-                  style={{ background: "rgba(255,255,255,0.18)" }}
-                  aria-hidden="true"
-                />
-                <div className="flex flex-col gap-8">
-                  {journeys.map((item, index) => (
-                    <article key={item.id} className="flex items-start gap-4">
-                      <div
-                        className="shrink-0 flex items-center justify-center rounded-full text-xl font-bold text-white"
-                        style={{
-                          width: "62px",
-                          height: "62px",
-                          background: "linear-gradient(135deg, #3fc1d1 0%, #2a9fb0 100%)",
-                          boxShadow: "0 0 0 6px rgba(47,170,190,0.2)",
-                        }}
-                      >
-                        {index + 1}
-                      </div>
-                      <div className="flex-1 rounded-xl bg-white px-5 py-4 text-[#071a32] shadow-sm">
-                        <h3 className="text-lg font-bold leading-tight sm:text-xl">{item.title}</h3>
-                        <p className="mt-2 text-sm leading-relaxed text-slate-500">{item.description}</p>
-                      </div>
-                    </article>
-                  ))}
-                </div>
-              </div>
-            </>
+            <JourneyHorizontalScroll journeys={journeys} isRtl={direction === "rtl"} />
           ) : (
             <div className="mt-12 text-center text-slate-400">{t("about_journey_no_data")}</div>
           )}

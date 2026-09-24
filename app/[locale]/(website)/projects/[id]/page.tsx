@@ -13,9 +13,9 @@ export async function generateMetadata({ params }: ProjectDetailsPageProps) {
     const project = await projectService.getProjectById(id, locale);
     if (project) {
       return constructMetadata({
-        title: `${project.title} | Our Work | Tech Gear Solutions`,
+        title: `${project.title} | Our Projects | Tech Gear Solutions`,
         description: project.description || `Discover the ${project.title} project by Tech Gear Solutions.`,
-        path: `/${locale}/work/${id}`,
+        path: `/${locale}/projects/${id}`,
         keywords: [project.title, "Project", "Portfolio", "Tech Gear"],
       });
     }
@@ -26,7 +26,7 @@ export async function generateMetadata({ params }: ProjectDetailsPageProps) {
   return constructMetadata({
     title: "Project Details | Tech Gear Solutions",
     description: "Explore our project portfolio and case studies.",
-    path: `/${locale}/work/${id}`,
+    path: `/${locale}/projects/${id}`,
   });
 }
 
@@ -46,8 +46,8 @@ export default async function ProjectDetailsPage({ params }: ProjectDetailsPageP
 
   const breadcrumbSchema = generateBreadcrumbSchema([
     { name: "Home", item: `/${locale}` },
-    { name: "Work", item: `/${locale}/work` },
-    { name: title, item: `/${locale}/work/${id}` },
+    { name: "Projects", item: `/${locale}/projects` },
+    { name: title, item: `/${locale}/projects/${id}` },
   ]);
 
   return (

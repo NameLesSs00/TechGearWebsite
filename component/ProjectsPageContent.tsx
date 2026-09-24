@@ -1,18 +1,35 @@
 "use client";
 
-import { ArrowRight } from "lucide-react";
-import Image from "next/image";
+import { motion } from "framer-motion";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useLanguage } from "@/context/LanguageContext";
 import { useTranslation } from "@/translations";
-import { getProjectMainImage, projectService, type Project } from "@/services/projectService";
+import { projectService, type Project } from "@/services/projectService";
 import { useProjectCategories } from "@/hooks/useProjectCategories";
 import { ProjectCard } from "./ProjectCard";
 
 interface ProjectsPageContentProps {
   locale: string;
 }
+
+const ease = [0.16, 1, 0.3, 1] as const;
+
+const fadeUp = {
+  hidden: { opacity: 0, y: 28 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.7, ease },
+  },
+};
+
+const stagger = {
+  hidden: {},
+  visible: {
+    transition: { staggerChildren: 0.1 },
+  },
+};
 
 export default function ProjectsPageContent({ locale }: ProjectsPageContentProps) {
   const { language, direction } = useLanguage();
@@ -48,14 +65,25 @@ export default function ProjectsPageContent({ locale }: ProjectsPageContentProps
   return (
     <main dir={direction} className="min-h-screen overflow-hidden bg-[#000918] px-5 pb-24 pt-32 text-white sm:px-8 sm:pt-40 lg:px-12">
       <div className="mx-auto max-w-[1280px]">
-        <nav aria-label="Breadcrumb" className="mb-20 text-center text-sm text-white/90 sm:mb-24 sm:justify-start sm:text-base">
+        <motion.nav
+          variants={fadeUp}
+          initial="hidden"
+          animate="visible"
+          aria-label="Breadcrumb"
+          className="mb-20 text-center text-sm text-white/90 sm:mb-24 sm:justify-start sm:text-base"
+        >
           <Link href={`/${locale}`} className="transition-colors hover:text-[#22D3EE]">{t("nav_home")}</Link>
           <span className="mx-1.5 text-[#22D3EE]">{language === "ar" ? "<" : ">"}</span>
           <span className="text-[#22D3EE]">{t("work_breadcrumb")}</span>
-        </nav>
+        </motion.nav>
 
         {!isCategoriesLoading && categories.length > 0 && (
-          <div className="mb-14 flex flex-wrap justify-center gap-4 sm:justify-start">
+          <motion.div
+            variants={fadeUp}
+            initial="hidden"
+            animate="visible"
+            className="mb-14 flex flex-wrap justify-center gap-4 sm:justify-start"
+          >
             <button
               type="button"
               onClick={() => setActiveFilter(null)}
@@ -83,19 +111,26 @@ export default function ProjectsPageContent({ locale }: ProjectsPageContentProps
                 {category.name}
               </button>
             ))}
-          </div>
+          </motion.div>
         )}
 
-        <div className="space-y-14 sm:space-y-16">
+        <motion.div
+          variants={stagger}
+          initial="hidden"
+          animate="visible"
+          className="space-y-14 sm:space-y-16"
+        >
           {loading && <p className="rounded-2xl border border-white/10 p-12 text-center text-white/70">{t("work_loading")}</p>}
           {!loading && error && <p className="rounded-2xl border border-red-300/20 p-12 text-center text-white/70">{t("work_error")}</p>}
           {!loading && !error && projects.length === 0 && <p className="p-12 text-center text-white/70">{t("work_no_data")}</p>}
           {!loading &&
             !error &&
             projects.map((project) => (
-              <ProjectCard key={project.id} project={project} locale={locale} language={language} className="lg:min-h-[540px]" />
+              <motion.div key={project.id} variants={fadeUp}>
+                <ProjectCard project={project} locale={locale} language={language} className="lg:min-h-[540px]" />
+              </motion.div>
             ))}
-        </div>
+        </motion.div>
       </div>
     </main>
   );

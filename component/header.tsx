@@ -45,7 +45,7 @@ export default function Header({ locale }: HeaderProps) {
   const navItems = [
     { name: t("nav_home"), href: `/${currentLocale}` },
     { name: t("nav_service"), href: "#", hasDropdown: true },
-    { name: t("nav_work"), href: `/${currentLocale}/work` },
+    { name: t("nav_work"), href: `/${currentLocale}/projects` },
     { name: t("nav_products"), href: `/${currentLocale}/products` },
     { name: t("nav_about_us"), href: `/${currentLocale}/aboutus` },
     { name: t("nav_contact_us"), href: `/${currentLocale}/contactus` },

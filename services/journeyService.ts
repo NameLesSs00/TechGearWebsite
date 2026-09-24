@@ -26,52 +26,21 @@ export interface JourneysResponse {
   traceId: string | null;
 }
 
-const FALLBACK_JOURNEYS: Journey[] = [
-  {
-    id: "fallback-1",
-    yearOrDate: "2019",
-    imageUrl: null,
-    displayOrder: 1,
-    createdAt: new Date().toISOString(),
-    updatedAt: null,
-    title: "Company Founded",
-    description: "Tech Gear began with a clear mission: help businesses turn digital ideas into real growth.",
-    resolvedLanguage: "en",
-  },
-  {
-    id: "fallback-2",
-    yearOrDate: "2021",
-    imageUrl: null,
-    displayOrder: 2,
-    createdAt: new Date().toISOString(),
-    updatedAt: null,
-    title: "Expanded Design & Development",
-    description: "We deepened our focus on custom digital experiences, blending strategy, design, and engineering.",
-    resolvedLanguage: "en",
-  },
-  {
-    id: "fallback-3",
-    yearOrDate: "2023",
-    imageUrl: null,
-    displayOrder: 3,
-    createdAt: new Date().toISOString(),
-    updatedAt: null,
-    title: "Growth Across Industries",
-    description: "Our team scaled to support more brands with web, mobile, and business software solutions.",
-    resolvedLanguage: "en",
-  },
-  {
-    id: "fallback-4",
-    yearOrDate: "2025",
-    imageUrl: null,
-    displayOrder: 4,
-    createdAt: new Date().toISOString(),
-    updatedAt: null,
-    title: "Building the Future",
-    description: "We continue to create digital products that combine clarity, performance, and measurable impact.",
-    resolvedLanguage: "en",
-  },
-];
+export interface JourneyResponse {
+  success: boolean;
+  data: Journey | null;
+  message: string | null;
+  errors: string | null;
+  traceId: string | null;
+}
+
+export interface BaseResponse {
+  success: boolean;
+  data: string | null;
+  message: string | null;
+  errors: string | null;
+  traceId: string | null;
+}
 
 export const journeyService = {
   getJourneys: async (language: string = "en", page: number = 1, pageSize: number = 20): Promise<Journey[]> => {
@@ -84,13 +53,69 @@ export const journeyService = {
         },
       });
 
-      if (response.data?.success && response.data?.data?.items && response.data.data.items.length > 0) {
+      if (response.data?.success && response.data?.data?.items) {
         return response.data.data.items.sort((a, b) => a.displayOrder - b.displayOrder);
       }
-      return FALLBACK_JOURNEYS;
+      return [];
     } catch (error) {
-      console.warn("Error/timeout fetching journeys, using fallback data:", error);
-      return FALLBACK_JOURNEYS;
+      console.error("Error fetching journeys:", error);
+      return [];
+    }
+  },
+
+  getJourneyById: async (id: string, language: string = "en"): Promise<Journey | null> => {
+    try {
+      const response = await apiClient.get<JourneyResponse>(`/api/journeys/${id}`, {
+        params: { language },
+      });
+      if (response.data?.success) {
+        return response.data.data;
+      }
+      return null;
+    } catch (error) {
+      console.error(`Error fetching journey with id ${id}:`, error);
+      return null;
+    }
+  },
+
+  createJourney: async (formData: FormData): Promise<string | null> => {
+    try {
+      const response = await apiClient.post<BaseResponse>("/api/journeys", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+      if (response.data?.success) {
+        return response.data.data;
+      }
+      return null;
+    } catch (error) {
+      console.error("Error creating journey:", error);
+      return null;
+    }
+  },
+
+  updateJourney: async (id: string, formData: FormData): Promise<boolean> => {
+    try {
+      const response = await apiClient.put<BaseResponse>(`/api/journeys/${id}`, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+      return response.data?.success === true;
+    } catch (error) {
+      console.error(`Error updating journey with id ${id}:`, error);
+      return false;
+    }
+  },
+
+  deleteJourney: async (id: string): Promise<boolean> => {
+    try {
+      const response = await apiClient.delete<BaseResponse>(`/api/journeys/${id}`);
+      return response.data?.success === true;
+    } catch (error) {
+      console.error(`Error deleting journey with id ${id}:`, error);
+      return false;
     }
   },
 };

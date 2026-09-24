@@ -111,6 +111,32 @@ export const projectService = {
 
     return normalizeProject(response.data.data);
   },
+
+  createProject: async (formData: FormData): Promise<string> => {
+    const response = await apiClient.post<ApiResponse<string>>("/api/projects", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+    if (!response.data?.success) {
+      throw new Error(response.data?.message ?? "Failed to create project");
+    }
+    return response.data.data;
+  },
+
+  updateProject: async (id: string, formData: FormData): Promise<void> => {
+    const response = await apiClient.put<ApiResponse<string>>(`/api/projects/${id}`, formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+    if (!response.data?.success) {
+      throw new Error(response.data?.message ?? "Failed to update project");
+    }
+  },
+
+  deleteProject: async (id: string): Promise<void> => {
+    const response = await apiClient.delete<ApiResponse<string>>(`/api/projects/${id}`);
+    if (!response.data?.success) {
+      throw new Error(response.data?.message ?? "Failed to delete project");
+    }
+  },
 };
 
 export function getProjectMainImage(project: Project): string {

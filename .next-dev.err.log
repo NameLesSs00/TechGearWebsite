@@ -1,0 +1,109 @@
+[browser] API Error: {
+  data: [1mnull[22m,
+  errors: [1mnull[22m,
+  message: [32m'An internal server error occurred.'[39m,
+  success: [33mfalse[39m,
+  traceId: [32m'40000557-0004-7800-b63f-84710c7967bb'[39m
+} 
+    at <unknown> (lib/apiClient.ts:67:15)
+    at async Object.update (services/adminApi.ts:185:24)
+    at async handleSubmit (app/admin/(dashboard)/products/_components/ProductEditor.tsx:216:9)
+  65 |       console.warn("API unavailable:", error.code || error.message);
+  66 |     } else if (error.response?.status !== 404) {
+> 67 |       console.error("API Error:", error.response?.data || error.message);
+     |               ^
+  68 |     }
+  69 |     return Promise.reject(error);
+  70 |   } (lib/apiClient.ts:67:15)
+[browser] API Error: {
+  data: [1mnull[22m,
+  errors: [1mnull[22m,
+  message: [32m'An internal server error occurred.'[39m,
+  success: [33mfalse[39m,
+  traceId: [32m'40002be7-0006-9a00-b63f-84710c7967bb'[39m
+} 
+    at <unknown> (lib/apiClient.ts:67:15)
+    at async Object.update (services/adminApi.ts:185:24)
+    at async handleSubmit (app/admin/(dashboard)/products/_components/ProductEditor.tsx:216:9)
+  65 |       console.warn("API unavailable:", error.code || error.message);
+  66 |     } else if (error.response?.status !== 404) {
+> 67 |       console.error("API Error:", error.response?.data || error.message);
+     |               ^
+  68 |     }
+  69 |     return Promise.reject(error);
+  70 |   } (lib/apiClient.ts:67:15)
+[browser] API Error: {
+  data: [1mnull[22m,
+  errors: [1mnull[22m,
+  message: [32m'An internal server error occurred.'[39m,
+  success: [33mfalse[39m,
+  traceId: [32m'40001518-0000-2e00-b63f-84710c7967bb'[39m
+} 
+    at <unknown> (lib/apiClient.ts:67:15)
+    at async Object.update (services/adminApi.ts:185:24)
+    at async handleSubmit (app/admin/(dashboard)/products/_components/ProductEditor.tsx:216:9)
+  65 |       console.warn("API unavailable:", error.code || error.message);
+  66 |     } else if (error.response?.status !== 404) {
+> 67 |       console.error("API Error:", error.response?.data || error.message);
+     |               ^
+  68 |     }
+  69 |     return Promise.reject(error);
+  70 |   } (lib/apiClient.ts:67:15)
+[browser] API Error: {
+  data: [1mnull[22m,
+  errors: [1mnull[22m,
+  message: [32m'An internal server error occurred.'[39m,
+  success: [33mfalse[39m,
+  traceId: [32m'4000186e-0004-3500-b63f-84710c7967bb'[39m
+} 
+    at <unknown> (lib/apiClient.ts:67:15)
+    at async Object.update (services/adminApi.ts:185:24)
+    at async handleSubmit (app/admin/(dashboard)/products/_components/ProductEditor.tsx:216:9)
+  65 |       console.warn("API unavailable:", error.code || error.message);
+  66 |     } else if (error.response?.status !== 404) {
+> 67 |       console.error("API Error:", error.response?.data || error.message);
+     |               ^
+  68 |     }
+  69 |     return Promise.reject(error);
+  70 |   } (lib/apiClient.ts:67:15)
+[browser] API Error: {
+  data: [1mnull[22m,
+  errors: [1mnull[22m,
+  message: [32m'An internal server error occurred.'[39m,
+  success: [33mfalse[39m,
+  traceId: [32m'4000243f-0006-c700-b63f-84710c7967bb'[39m
+} 
+    at <unknown> (lib/apiClient.ts:67:15)
+    at async Object.update (services/adminApi.ts:185:24)
+    at async handleSubmit (app/admin/(dashboard)/products/_components/ProductEditor.tsx:216:9)
+  65 |       console.warn("API unavailable:", error.code || error.message);
+  66 |     } else if (error.response?.status !== 404) {
+> 67 |       console.error("API Error:", error.response?.data || error.message);
+     |               ^
+  68 |     }
+  69 |     return Promise.reject(error);
+  70 |   } (lib/apiClient.ts:67:15)
+[browser] Image with src "http://localhost:3000/logo.svg" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: "auto"' or 'height: "auto"' to maintain the aspect ratio.
+[browser] Image with src "http://localhost:3000/logo.svg" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: "auto"' or 'height: "auto"' to maintain the aspect ratio.
+[browser] Image with src "https://tech-gear-backend-site.premiumasp.net/uploads/projects/d3ab79d4eb954e4eaed2449f7976015e.png" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+[browser] Image with src "https://tech-gear-backend-site.premiumasp.net/uploads/projects/6c8bd784f514429898bc54ed829cfcf3.png" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+[browser] Image with src "https://tech-gear-backend-site.premiumasp.net/uploads/projects/8d0801a56ea44ca384b55b8ee798e8d6.png" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+[browser] Image with src "https://tech-gear-backend-site.premiumasp.net/uploads/products/15e6d1468d4d4a8fb2ad961eb8a85212.jpeg" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: "auto"' or 'height: "auto"' to maintain the aspect ratio.
+[browser] Image with src "https://tech-gear-backend-site.premiumasp.net/uploads/products/baa46f8af5924e5383e4a959bfb8b915.png" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: "auto"' or 'height: "auto"' to maintain the aspect ratio.
+[browser] Image with src "https://tech-gear-backend-site.premiumasp.net/uploads/products/5c2131feda7f4854b67a9895a0ae4ece.png" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: "auto"' or 'height: "auto"' to maintain the aspect ratio.
+[browser] Image with src "http://localhost:3000/logo.svg" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: "auto"' or 'height: "auto"' to maintain the aspect ratio.
+⚠ Fast Refresh had to perform a full reload when ./node_modules/next/dist/client/image-component.js changed. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+[browser] Image with src "http://localhost:3000/logo.svg" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: "auto"' or 'height: "auto"' to maintain the aspect ratio.
+[browser] Image with src "http://localhost:3000/logo.svg" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: "auto"' or 'height: "auto"' to maintain the aspect ratio.
+[browser] Image with src "http://localhost:3000/logo.svg" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: "auto"' or 'height: "auto"' to maintain the aspect ratio.
+[browser] Image with src "http://localhost:3000/logo.svg" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: "auto"' or 'height: "auto"' to maintain the aspect ratio.
+[browser] Image with src "https://tech-gear-backend-site.premiumasp.net/uploads/projects/8d0801a56ea44ca384b55b8ee798e8d6.png" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+[browser] Image with src "https://tech-gear-backend-site.premiumasp.net/uploads/projects/6c8bd784f514429898bc54ed829cfcf3.png" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+[browser] Image with src "https://tech-gear-backend-site.premiumasp.net/uploads/projects/d3ab79d4eb954e4eaed2449f7976015e.png" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+[browser] Image with src "http://localhost:3000/logo.svg" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: "auto"' or 'height: "auto"' to maintain the aspect ratio.
+[browser] Image with src "http://localhost:3000/logo.svg" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: "auto"' or 'height: "auto"' to maintain the aspect ratio.
+[browser] Image with src "http://localhost:3000/logo.svg" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: "auto"' or 'height: "auto"' to maintain the aspect ratio.
+[browser] Image with src "http://localhost:3000/logo.svg" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: "auto"' or 'height: "auto"' to maintain the aspect ratio.
+[browser] Image with src "http://localhost:3000/logo.svg" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: "auto"' or 'height: "auto"' to maintain the aspect ratio.
+[browser] Image with src "/logo.svg" was detected as the Largest Contentful Paint (LCP). Please add the `loading="eager"` property if this image is above the fold.
+Read more: https://nextjs.org/docs/app/api-reference/components/image#loading

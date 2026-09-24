@@ -115,7 +115,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.9,
     },
     {
-      url: `${baseUrl}/work`,
+      url: `${baseUrl}/projects`,
       changeFrequency: "weekly",
       priority: 0.9,
     },
@@ -141,7 +141,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     createDynamicRoute(baseUrl, `services/${service.id}`, service.updatedAt),
   );
   const projectRoutes = projects.map((project) =>
-    createDynamicRoute(baseUrl, `work/${project.id}`, project.updatedAt),
+    createDynamicRoute(baseUrl, `projects/${project.id}`, project.updatedAt),
   );
   const productRoutes = products.map((product) =>
     createDynamicRoute(baseUrl, `products/${product.id}`, product.updatedAt),
