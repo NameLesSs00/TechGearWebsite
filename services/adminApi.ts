@@ -59,8 +59,14 @@ export interface ProductFaq {
   display_order: number;
 }
 
+export interface ProductFeatureSummary {
+  id?: string | null;
+  text: string | null;
+  display_order: number;
+}
+
 export interface ProductDetail extends ProductListItem {
-  features_summary: string[] | null;
+  features_summary: ProductFeatureSummary[] | null;
   feature_blocks: ProductFeatureBlock[] | null;
   reviews: ProductReview[] | null;
   faqs: ProductFaq[] | null;
@@ -143,6 +149,11 @@ function normalizeProduct<T extends ProductListItem | ProductDetail>(product: T)
     ...product,
     hero_image: resolveImageUrl(product.hero_image),
     icon_image: resolveImageUrl(product.icon_image),
+    ...(Array.isArray((product as ProductDetail).features_summary)
+      ? {
+          features_summary: ((product as ProductDetail).features_summary ?? []),
+        }
+      : {}),
     ...(Array.isArray((product as ProductDetail).feature_blocks)
       ? {
           feature_blocks: ((product as ProductDetail).feature_blocks ?? []).map((item) => ({

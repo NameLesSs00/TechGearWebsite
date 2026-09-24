@@ -4,6 +4,7 @@ import { use, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AdminError, AdminPageHeader, AdminPanel, AdminToggle, DeleteButton } from "../../_components/AdminControls";
 import { ContactMessage, adminApi } from "@/services/adminApi";
+import { ConfirmModal } from "@/component/ConfirmModal";
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -16,6 +17,7 @@ export default function ContactMessageDetailPage({ params }: PageProps) {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
 
   useEffect(() => {
     adminApi.contactMessages.get(id)
@@ -37,8 +39,10 @@ export default function ContactMessageDetailPage({ params }: PageProps) {
     }
   };
 
-  const remove = async () => {
-    if (!confirm("Delete this contact message?")) return;
+  const handleRemoveClick = () => setIsConfirmOpen(true);
+
+  const confirmRemove = async () => {
+    setIsConfirmOpen(false);
     await adminApi.contactMessages.remove(id);
     router.push("/admin/contact-messages");
   };
@@ -49,7 +53,7 @@ export default function ContactMessageDetailPage({ params }: PageProps) {
   return (
     <div className="mx-auto max-w-4xl space-y-6">
       <AdminPageHeader backHref="/admin/contact-messages" title={message.subject ?? "Contact Message"} description={`From ${message.name ?? "Unknown"} on ${new Date(message.createdAt).toLocaleString()}`}>
-        <DeleteButton loading={saving} label="Delete Message" onClick={remove} />
+        <DeleteButton loading={saving} label="Delete Message" onClick={handleRemoveClick} />
       </AdminPageHeader>
       <AdminError message={error} />
       <AdminPanel title="Message Status">
@@ -66,6 +70,14 @@ export default function ContactMessageDetailPage({ params }: PageProps) {
       <AdminPanel title="Message">
         <p className="whitespace-pre-wrap leading-7 text-slate-200">{message.message ?? "-"}</p>
       </AdminPanel>
+
+      <ConfirmModal
+        isOpen={isConfirmOpen}
+        onClose={() => setIsConfirmOpen(false)}
+        onConfirm={confirmRemove}
+        title="Confirm Deletion"
+        message="Delete this contact message?"
+      />
     </div>
   );
 }

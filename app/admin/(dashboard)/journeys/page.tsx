@@ -6,11 +6,13 @@ import { useEffect, useState } from "react";
 import { Edit2, Milestone, Plus, Trash2 } from "lucide-react";
 import { AdminEmptyState, AdminError, AdminPageHeader, AdminTable } from "../_components/AdminControls";
 import { Journey, adminApi } from "@/services/adminApi";
+import { ConfirmModal } from "@/component/ConfirmModal";
 
 export default function AdminJourneysPage() {
   const [items, setItems] = useState<Journey[]>([]);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
+  const [itemToDelete, setItemToDelete] = useState<Journey | null>(null);
 
   useEffect(() => {
     adminApi.journeys.list("en", 1, 100)
@@ -19,10 +21,16 @@ export default function AdminJourneysPage() {
       .finally(() => setLoading(false));
   }, []);
 
-  const remove = async (item: Journey) => {
-    if (!confirm(`Delete "${item.title ?? item.yearOrDate ?? "this journey"}"?`)) return;
-    await adminApi.journeys.remove(item.id);
-    setItems((current) => current.filter((row) => row.id !== item.id));
+  const confirmRemove = async () => {
+    if (!itemToDelete) return;
+    const item = itemToDelete;
+    setItemToDelete(null);
+    try {
+      await adminApi.journeys.remove(item.id);
+      setItems((current) => current.filter((row) => row.id !== item.id));
+    } catch (err: any) {
+      setError(err?.message ?? "Failed to delete journey.");
+    }
   };
 
   return (
@@ -43,12 +51,19 @@ export default function AdminJourneysPage() {
                 <td className="px-6 py-4 font-medium text-white">{item.title ?? "-"}</td>
                 <td className="px-6 py-4 text-slate-400">{item.yearOrDate ?? "-"}</td>
                 <td className="px-6 py-4 text-slate-400">{item.displayOrder}</td>
-                <td className="px-6 py-4 text-right"><div className="flex justify-end gap-3"><Link className="inline-flex items-center gap-1 text-[#22D3EE] hover:text-white" href={`/admin/journeys/${item.id}`}><Edit2 className="h-4 w-4" />Edit</Link><button className="inline-flex items-center gap-1 text-red-400 hover:text-red-300" type="button" onClick={() => remove(item)}><Trash2 className="h-4 w-4" />Delete</button></div></td>
+                <td className="px-6 py-4 text-right"><div className="flex justify-end gap-3"><Link className="inline-flex items-center gap-1 text-[#22D3EE] hover:text-white" href={`/admin/journeys/${item.id}`}><Edit2 className="h-4 w-4" />Edit</Link><button className="inline-flex items-center gap-1 text-red-400 hover:text-red-300" type="button" onClick={() => setItemToDelete(item)}><Trash2 className="h-4 w-4" />Delete</button></div></td>
               </tr>
             ))}
           </tbody>
         </AdminTable>
       )}
+      <ConfirmModal
+        isOpen={!!itemToDelete}
+        onClose={() => setItemToDelete(null)}
+        onConfirm={confirmRemove}
+        title="Confirm Deletion"
+        message={`Delete "${itemToDelete?.title ?? itemToDelete?.yearOrDate ?? "this journey"}"?`}
+      />
     </div>
   );
 }

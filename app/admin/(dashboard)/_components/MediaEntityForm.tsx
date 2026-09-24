@@ -141,7 +141,7 @@ export default function MediaEntityForm({ id, kind }: { id?: string; kind: Entit
         <AdminPanel title="Media And Settings">
           <div className="grid gap-5 md:grid-cols-2">
             {kind !== "partner" ? <AdminInput label="Display Order" type="number" value={form.displayOrder} onChange={(value) => setForm({ ...form, displayOrder: Number(value) || 1 })} /> : null}
-            {kind === "journey" ? <AdminInput label="Year Or Date" value={form.yearOrDate} onChange={(value) => setForm({ ...form, yearOrDate: value })} /> : null}
+            {kind === "journey" ? <AdminInput label="Year Or Date" type="number" value={form.yearOrDate} onChange={(value) => setForm({ ...form, yearOrDate: value })} /> : null}
             {kind === "partner" ? <AdminInput label="Logo URL" value={form.logoUrl} onChange={(value) => setForm({ ...form, logoUrl: value })} /> : null}
             <div className={kind === "partner" ? "md:col-span-2" : ""}>
               <ImagePicker label="Image" currentUrl={imageUrl} file={imageFile} onChange={setImageFile} />

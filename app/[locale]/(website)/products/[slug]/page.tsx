@@ -2,9 +2,10 @@ import { notFound } from "next/navigation";
 import ProductDetails from "@/component/ProductDetails";
 import { constructMetadata, generateBreadcrumbSchema, generateFaqSchema } from "@/lib/seo";
 import { productService } from "@/services/productService";
+import { normalizeSlug } from "@/lib/apiClient";
 
 interface ProductDetailsPageProps {
-  params: Promise<{ locale: string; id: string }>;
+  params: Promise<{ locale: string; slug: string }>;
 }
 
 function generateProductSchema({
@@ -34,30 +35,41 @@ function generateProductSchema({
   };
 }
 
+/** Resolve a slug (or legacy GUID) to a full ProductDetail */
+async function resolveProduct(slug: string, locale: string) {
+  // Fetch all products and find the one whose normalized name matches the slug.
+  // We also fall back to matching by ID so that any old GUID links still work.
+  const all = await productService.getProducts(locale, 1, 100);
+  const match = all.find(
+    (p) => normalizeSlug(p.name) === slug || p.id === slug,
+  );
+  return match || null;
+}
+
 export async function generateMetadata({ params }: ProductDetailsPageProps) {
-  const { locale, id } = await params;
-  const product = await productService.getProductById(id, locale);
+  const { locale, slug } = await params;
+  const product = await resolveProduct(slug, locale);
 
   if (!product) {
     return constructMetadata({
       title: "Product Details | Tech Gear Solutions",
       description: "Explore Tech Gear digital products.",
-      path: `/${locale}/products/${id}`,
+      path: `/${locale}/products/${slug}`,
     });
   }
 
   return constructMetadata({
     title: `${product.name} | Products | Tech Gear Solutions`,
     description: product.description || `Explore ${product.name} by Tech Gear Solutions.`,
-    path: `/${locale}/products/${id}`,
+    path: `/${locale}/products/${slug}`,
     image: product.heroImageUrl || undefined,
     keywords: [product.name, "Product", "Digital Product", "Tech Gear"],
   });
 }
 
 export default async function ProductDetailsPage({ params }: ProductDetailsPageProps) {
-  const { locale, id } = await params;
-  const product = await productService.getProductById(id, locale);
+  const { locale, slug } = await params;
+  const product = await resolveProduct(slug, locale);
 
   if (!product) {
     notFound();
@@ -66,23 +78,24 @@ export default async function ProductDetailsPage({ params }: ProductDetailsPageP
   const breadcrumbSchema = generateBreadcrumbSchema([
     { name: "Home", item: `/${locale}` },
     { name: "Products", item: `/${locale}/products` },
-    { name: product.name, item: `/${locale}/products/${id}` },
+    { name: product.name, item: `/${locale}/products/${slug}` },
   ]);
 
   const productSchema = generateProductSchema({
     name: product.name,
     description: product.description || product.name,
-    url: `/${locale}/products/${id}`,
+    url: `/${locale}/products/${slug}`,
     image: product.heroImageUrl,
   });
 
-  const faqSchema = product.faqs.length > 0
-    ? generateFaqSchema(
-        product.faqs
-          .filter((faq) => faq.question && faq.answer)
-          .map((faq) => ({ question: faq.question!, answer: faq.answer! })),
-      )
-    : null;
+  const faqSchema =
+    product.faqs.length > 0
+      ? generateFaqSchema(
+          product.faqs
+            .filter((faq) => faq.question && faq.answer)
+            .map((faq) => ({ question: faq.question!, answer: faq.answer! })),
+        )
+      : null;
 
   return (
     <>
@@ -104,4 +117,3 @@ export default async function ProductDetailsPage({ params }: ProductDetailsPageP
     </>
   );
 }
-

@@ -6,11 +6,13 @@ import { useEffect, useState } from "react";
 import { Edit2, Package, Plus, Trash2 } from "lucide-react";
 import { AdminEmptyState, AdminError, AdminPageHeader, AdminTable } from "../_components/AdminControls";
 import { ProductListItem, adminApi } from "@/services/adminApi";
+import { ConfirmModal } from "@/component/ConfirmModal";
 
 export default function AdminProductsPage() {
   const [products, setProducts] = useState<ProductListItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [itemToDelete, setItemToDelete] = useState<ProductListItem | null>(null);
 
   const load = async () => {
     setLoading(true);
@@ -29,8 +31,10 @@ export default function AdminProductsPage() {
     load();
   }, []);
 
-  const handleDelete = async (product: ProductListItem) => {
-    if (!confirm(`Delete "${product.title ?? "this product"}"? This cannot be undone.`)) return;
+  const confirmDelete = async () => {
+    if (!itemToDelete) return;
+    const product = itemToDelete;
+    setItemToDelete(null);
     try {
       await adminApi.products.remove(product.id);
       setProducts((current) => current.filter((item) => item.id !== product.id));
@@ -78,7 +82,7 @@ export default function AdminProductsPage() {
                       <Edit2 className="h-4 w-4" />
                       Edit
                     </Link>
-                    <button className="inline-flex items-center gap-1 text-red-400 transition-colors hover:text-red-300" type="button" onClick={() => handleDelete(product)}>
+                    <button className="inline-flex items-center gap-1 text-red-400 transition-colors hover:text-red-300" type="button" onClick={() => setItemToDelete(product)}>
                       <Trash2 className="h-4 w-4" />
                       Delete
                     </button>
@@ -89,6 +93,13 @@ export default function AdminProductsPage() {
           </tbody>
         </AdminTable>
       )}
+      <ConfirmModal
+        isOpen={!!itemToDelete}
+        onClose={() => setItemToDelete(null)}
+        onConfirm={confirmDelete}
+        title="Confirm Deletion"
+        message={`Delete "${itemToDelete?.title ?? "this product"}"? This cannot be undone.`}
+      />
     </div>
   );
 }

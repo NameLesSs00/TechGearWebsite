@@ -7,6 +7,7 @@ import Image from "next/image";
 import { ArrowLeft, Loader2, Save, CheckCircle, Trash2, Upload, X, Plus } from "lucide-react";
 import { projectService, Project } from "@/services/projectService";
 import { projectCategoryService, ProjectCategory } from "@/services/projectCategoryService";
+import { ConfirmModal } from "@/component/ConfirmModal";
 
 interface PageProps { params: Promise<{ id: string }>; }
 
@@ -20,6 +21,7 @@ export default function EditProjectPage({ params }: PageProps) {
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState("");
   const [id, setId] = useState("");
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
 
   const [form, setForm] = useState({
     categoryId: "", projectLink: "",
@@ -86,8 +88,12 @@ export default function EditProjectPage({ params }: PageProps) {
     setSaving(false);
   };
 
-  const handleDelete = async () => {
-    if (!confirm("Permanently delete this project? This cannot be undone.")) return;
+  const handleDeleteClick = () => {
+    setIsConfirmOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    setIsConfirmOpen(false);
     try {
       await projectService.deleteProject(id);
       router.push("/admin/projects");
@@ -123,7 +129,7 @@ export default function EditProjectPage({ params }: PageProps) {
             <p className="text-slate-400 text-sm">{project.title}</p>
           </div>
         </div>
-        <button onClick={handleDelete} className="flex items-center gap-2 py-2 px-4 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 text-sm transition-colors">
+        <button onClick={handleDeleteClick} className="flex items-center gap-2 py-2 px-4 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 text-sm transition-colors">
           <Trash2 className="w-4 h-4" /> Delete
         </button>
       </div>
@@ -231,6 +237,13 @@ export default function EditProjectPage({ params }: PageProps) {
           </button>
         </div>
       </form>
+      <ConfirmModal
+        isOpen={isConfirmOpen}
+        onClose={() => setIsConfirmOpen(false)}
+        onConfirm={confirmDelete}
+        title="Confirm Deletion"
+        message="Permanently delete this project? This cannot be undone."
+      />
     </div>
   );
 }

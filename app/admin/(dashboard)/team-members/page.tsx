@@ -6,11 +6,13 @@ import { useEffect, useState } from "react";
 import { Edit2, Plus, Trash2, Users } from "lucide-react";
 import { AdminEmptyState, AdminError, AdminPageHeader, AdminTable } from "../_components/AdminControls";
 import { TeamMember, adminApi } from "@/services/adminApi";
+import { ConfirmModal } from "@/component/ConfirmModal";
 
 export default function AdminTeamMembersPage() {
   const [items, setItems] = useState<TeamMember[]>([]);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
+  const [itemToDelete, setItemToDelete] = useState<TeamMember | null>(null);
 
   useEffect(() => {
     adminApi.teamMembers.list("en", 1, 100)
@@ -19,10 +21,16 @@ export default function AdminTeamMembersPage() {
       .finally(() => setLoading(false));
   }, []);
 
-  const remove = async (item: TeamMember) => {
-    if (!confirm(`Delete "${item.name ?? "this team member"}"?`)) return;
-    await adminApi.teamMembers.remove(item.id);
-    setItems((current) => current.filter((row) => row.id !== item.id));
+  const confirmRemove = async () => {
+    if (!itemToDelete) return;
+    const item = itemToDelete;
+    setItemToDelete(null);
+    try {
+      await adminApi.teamMembers.remove(item.id);
+      setItems((current) => current.filter((row) => row.id !== item.id));
+    } catch (err: any) {
+      setError(err?.message ?? "Failed to delete team member.");
+    }
   };
 
   return (
@@ -43,12 +51,19 @@ export default function AdminTeamMembersPage() {
                 <td className="px-6 py-4 font-medium text-white">{item.name ?? "-"}</td>
                 <td className="px-6 py-4 text-slate-400">{item.jobTitle ?? "-"}</td>
                 <td className="px-6 py-4 text-slate-400">{item.displayOrder}</td>
-                <td className="px-6 py-4 text-right"><div className="flex justify-end gap-3"><Link className="inline-flex items-center gap-1 text-[#22D3EE] hover:text-white" href={`/admin/team-members/${item.id}`}><Edit2 className="h-4 w-4" />Edit</Link><button className="inline-flex items-center gap-1 text-red-400 hover:text-red-300" type="button" onClick={() => remove(item)}><Trash2 className="h-4 w-4" />Delete</button></div></td>
+                <td className="px-6 py-4 text-right"><div className="flex justify-end gap-3"><Link className="inline-flex items-center gap-1 text-[#22D3EE] hover:text-white" href={`/admin/team-members/${item.id}`}><Edit2 className="h-4 w-4" />Edit</Link><button className="inline-flex items-center gap-1 text-red-400 hover:text-red-300" type="button" onClick={() => setItemToDelete(item)}><Trash2 className="h-4 w-4" />Delete</button></div></td>
               </tr>
             ))}
           </tbody>
         </AdminTable>
       )}
+      <ConfirmModal
+        isOpen={!!itemToDelete}
+        onClose={() => setItemToDelete(null)}
+        onConfirm={confirmRemove}
+        title="Confirm Deletion"
+        message={`Delete "${itemToDelete?.name ?? "this team member"}"?`}
+      />
     </div>
   );
 }

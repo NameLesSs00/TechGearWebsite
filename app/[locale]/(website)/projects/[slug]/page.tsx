@@ -1,21 +1,39 @@
+import { notFound } from "next/navigation";
 import ProjectDetails from "@/component/ProjectDetails";
 import { projectService } from "@/services/projectService";
 import { constructMetadata, generateBreadcrumbSchema } from "@/lib/seo";
+import { normalizeSlug } from "@/lib/apiClient";
 
 interface ProjectDetailsPageProps {
-  params: Promise<{ locale: string; id: string }>;
+  params: Promise<{ locale: string; slug: string }>;
+}
+
+/** Resolve a slug (or legacy GUID) to a Project */
+async function resolveProject(slug: string, locale: string) {
+  const all = await projectService.getProjects(locale, null, 1, 100);
+  const match = all.items.find(
+    (p) => normalizeSlug(p.title) === slug || p.id === slug,
+  );
+  if (!match) return null;
+  try {
+    return await projectService.getProjectById(match.id, locale);
+  } catch {
+    return null;
+  }
 }
 
 export async function generateMetadata({ params }: ProjectDetailsPageProps) {
-  const { locale, id } = await params;
+  const { locale, slug } = await params;
 
   try {
-    const project = await projectService.getProjectById(id, locale);
+    const project = await resolveProject(slug, locale);
     if (project) {
       return constructMetadata({
         title: `${project.title} | Our Projects | Tech Gear Solutions`,
-        description: project.description || `Discover the ${project.title} project by Tech Gear Solutions.`,
-        path: `/${locale}/projects/${id}`,
+        description:
+          project.description ||
+          `Discover the ${project.title} project by Tech Gear Solutions.`,
+        path: `/${locale}/projects/${slug}`,
         keywords: [project.title, "Project", "Portfolio", "Tech Gear"],
       });
     }
@@ -26,28 +44,23 @@ export async function generateMetadata({ params }: ProjectDetailsPageProps) {
   return constructMetadata({
     title: "Project Details | Tech Gear Solutions",
     description: "Explore our project portfolio and case studies.",
-    path: `/${locale}/projects/${id}`,
+    path: `/${locale}/projects/${slug}`,
   });
 }
 
 export default async function ProjectDetailsPage({ params }: ProjectDetailsPageProps) {
-  const { locale, id } = await params;
+  const { locale, slug } = await params;
 
-  let title = "Project";
+  const project = await resolveProject(slug, locale);
 
-  try {
-    const project = await projectService.getProjectById(id, locale);
-    if (project) {
-      title = project.title;
-    }
-  } catch (error) {
-    console.error("Error fetching project for schema:", error);
+  if (!project) {
+    notFound();
   }
 
   const breadcrumbSchema = generateBreadcrumbSchema([
     { name: "Home", item: `/${locale}` },
     { name: "Projects", item: `/${locale}/projects` },
-    { name: title, item: `/${locale}/projects/${id}` },
+    { name: project.title, item: `/${locale}/projects/${slug}` },
   ]);
 
   return (
@@ -56,7 +69,7 @@ export default async function ProjectDetailsPage({ params }: ProjectDetailsPageP
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
       />
-      <ProjectDetails locale={locale} projectId={id} />
+      <ProjectDetails locale={locale} projectId={project.id} />
     </>
   );
 }

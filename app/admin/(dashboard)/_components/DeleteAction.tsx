@@ -13,16 +13,24 @@ interface DeleteActionProps {
   title?: string;
 }
 
+import { ConfirmModal } from "@/component/ConfirmModal";
+
 export default function DeleteAction({ id, type, title }: DeleteActionProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+  const [errorMsg, setErrorMsg] = useState("");
 
-  const handleDelete = async () => {
-    const itemName = title ? `"${title}"` : "this item";
-    if (!window.confirm(`Are you sure you want to delete ${itemName}? This cannot be undone.`)) {
-      return;
-    }
+  const itemName = title ? `"${title}"` : "this item";
 
+  const handleDeleteClick = () => {
+    setIsConfirmOpen(true);
+  };
+
+  const listPath = type === "project" ? "/admin/projects" : type === "review" ? "/admin/reviews" : "/admin/services";
+
+  const handleConfirmDelete = async () => {
+    setIsConfirmOpen(false);
     setLoading(true);
     try {
       if (type === "project") {
@@ -32,21 +40,41 @@ export default function DeleteAction({ id, type, title }: DeleteActionProps) {
       } else if (type === "service") {
         await serviceService.deleteService(id);
       }
+      router.push(listPath);
       router.refresh();
     } catch (err: any) {
-      alert(err.message || "Failed to delete.");
+      setErrorMsg(err.message || "Failed to delete.");
       setLoading(false);
     }
   };
 
   return (
-    <button
-      onClick={handleDelete}
-      disabled={loading}
-      className="inline-flex items-center gap-1 text-red-400 hover:text-red-300 transition-colors text-sm disabled:opacity-50"
-    >
-      {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
-      Delete
-    </button>
+    <>
+      <button
+        onClick={handleDeleteClick}
+        disabled={loading}
+        className="inline-flex items-center gap-1 text-red-400 hover:text-red-300 transition-colors text-sm disabled:opacity-50"
+      >
+        {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
+        Delete
+      </button>
+
+      <ConfirmModal
+        isOpen={isConfirmOpen}
+        onClose={() => setIsConfirmOpen(false)}
+        onConfirm={handleConfirmDelete}
+        title="Confirm Deletion"
+        message={`Are you sure you want to delete ${itemName}? This cannot be undone.`}
+      />
+
+      <ConfirmModal
+        isOpen={!!errorMsg}
+        onClose={() => setErrorMsg("")}
+        onConfirm={() => {}}
+        title="Error"
+        message={errorMsg}
+        isAlertOnly={true}
+      />
+    </>
   );
 }

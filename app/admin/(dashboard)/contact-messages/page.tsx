@@ -5,11 +5,13 @@ import { useEffect, useState } from "react";
 import { Eye, Mail, Trash2 } from "lucide-react";
 import { AdminEmptyState, AdminError, AdminPageHeader, AdminTable } from "../_components/AdminControls";
 import { ContactMessage, adminApi } from "@/services/adminApi";
+import { ConfirmModal } from "@/component/ConfirmModal";
 
 export default function ContactMessagesPage() {
   const [messages, setMessages] = useState<ContactMessage[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [itemToDelete, setItemToDelete] = useState<ContactMessage | null>(null);
 
   useEffect(() => {
     adminApi.contactMessages.list(1, 100)
@@ -18,10 +20,16 @@ export default function ContactMessagesPage() {
       .finally(() => setLoading(false));
   }, []);
 
-  const remove = async (message: ContactMessage) => {
-    if (!confirm(`Delete message from ${message.name ?? message.email ?? "this contact"}?`)) return;
-    await adminApi.contactMessages.remove(message.id);
-    setMessages((items) => items.filter((item) => item.id !== message.id));
+  const confirmRemove = async () => {
+    if (!itemToDelete) return;
+    const message = itemToDelete;
+    setItemToDelete(null);
+    try {
+      await adminApi.contactMessages.remove(message.id);
+      setMessages((items) => items.filter((item) => item.id !== message.id));
+    } catch (err: any) {
+      setError(err?.message ?? "Failed to delete contact message.");
+    }
   };
 
   return (
@@ -58,7 +66,7 @@ export default function ContactMessagesPage() {
                 <td className="px-6 py-4 text-right">
                   <div className="flex justify-end gap-3">
                     <Link className="inline-flex items-center gap-1 text-[#22D3EE] hover:text-white" href={`/admin/contact-messages/${message.id}`}><Eye className="h-4 w-4" />Open</Link>
-                    <button className="inline-flex items-center gap-1 text-red-400 hover:text-red-300" type="button" onClick={() => remove(message)}><Trash2 className="h-4 w-4" />Delete</button>
+                    <button className="inline-flex items-center gap-1 text-red-400 hover:text-red-300" type="button" onClick={() => setItemToDelete(message)}><Trash2 className="h-4 w-4" />Delete</button>
                   </div>
                 </td>
               </tr>
@@ -66,6 +74,13 @@ export default function ContactMessagesPage() {
           </tbody>
         </AdminTable>
       )}
+      <ConfirmModal
+        isOpen={!!itemToDelete}
+        onClose={() => setItemToDelete(null)}
+        onConfirm={confirmRemove}
+        title="Confirm Deletion"
+        message={`Delete message from ${itemToDelete?.name ?? itemToDelete?.email ?? "this contact"}?`}
+      />
     </div>
   );
 }

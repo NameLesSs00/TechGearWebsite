@@ -8,6 +8,7 @@ import { ArrowUpRight, CheckCircle2 } from "lucide-react";
 import { productService, type ProductApiItem } from "@/services/productService";
 import { useLanguage } from "@/context/LanguageContext";
 import { useTranslation } from "@/translations";
+import { normalizeSlug } from "@/lib/apiClient";
 
 interface ProductsPageContentProps {
   locale: string;
@@ -132,10 +133,10 @@ export default function ProductsPageContent({ locale }: ProductsPageContentProps
                       <div className="flex flex-wrap gap-2">
                         {product.featuresSummary.map((feature, index) => (
                           <span
-                            key={`${feature}-${index}`}
+                            key={`${feature.id || index}`}
                             className="rounded-full bg-slate-300/75 px-3 py-1.5 text-xs font-medium text-[#011022]"
                           >
-                            {feature}
+                            {feature.text}
                           </span>
                         ))}
                       </div>
@@ -143,7 +144,7 @@ export default function ProductsPageContent({ locale }: ProductsPageContentProps
                   ) : null}
 
                   <Link
-                    href={`/${locale}/products/${product.id}`}
+                    href={`/${locale}/products/${normalizeSlug(product.name)}`}
                     className="mt-7 inline-flex w-full max-w-md items-center justify-center gap-2 rounded-full bg-[#22D3EE] px-7 py-3 text-sm font-extrabold !text-[#011022] transition-colors hover:bg-[#1bb8d0]"
                   >
                     View Product
@@ -151,7 +152,7 @@ export default function ProductsPageContent({ locale }: ProductsPageContentProps
                   </Link>
                 </div>
 
-                <div className="relative min-h-[280px] bg-[#0f1b29] lg:min-h-[376px]">
+                <div className="relative order-first min-h-[280px] bg-[#0f1b29] lg:order-last lg:min-h-[376px]">
                   {product.heroImageUrl ? (
                     <Image
                       src={product.heroImageUrl}

@@ -5,11 +5,13 @@ import { useEffect, useState } from "react";
 import { Edit2, HelpCircle, Plus, Trash2 } from "lucide-react";
 import { AdminEmptyState, AdminError, AdminPageHeader, AdminTable } from "../_components/AdminControls";
 import { FaqItem, adminApi } from "@/services/adminApi";
+import { ConfirmModal } from "@/component/ConfirmModal";
 
 export default function AdminFaqsPage() {
   const [faqs, setFaqs] = useState<FaqItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [itemToDelete, setItemToDelete] = useState<FaqItem | null>(null);
 
   useEffect(() => {
     adminApi.faqs.list("en", 1, 100)
@@ -18,10 +20,16 @@ export default function AdminFaqsPage() {
       .finally(() => setLoading(false));
   }, []);
 
-  const remove = async (faq: FaqItem) => {
-    if (!confirm(`Delete "${faq.question ?? "this FAQ"}"?`)) return;
-    await adminApi.faqs.remove(faq.id);
-    setFaqs((items) => items.filter((item) => item.id !== faq.id));
+  const confirmRemove = async () => {
+    if (!itemToDelete) return;
+    const faq = itemToDelete;
+    setItemToDelete(null);
+    try {
+      await adminApi.faqs.remove(faq.id);
+      setFaqs((items) => items.filter((item) => item.id !== faq.id));
+    } catch (err: any) {
+      setError(err?.message ?? "Failed to delete FAQ.");
+    }
   };
 
   return (
@@ -55,7 +63,7 @@ export default function AdminFaqsPage() {
                 <td className="px-6 py-4 text-right">
                   <div className="flex justify-end gap-3">
                     <Link className="inline-flex items-center gap-1 text-[#22D3EE] hover:text-white" href={`/admin/faqs/${faq.id}`}><Edit2 className="h-4 w-4" />Edit</Link>
-                    <button className="inline-flex items-center gap-1 text-red-400 hover:text-red-300" type="button" onClick={() => remove(faq)}><Trash2 className="h-4 w-4" />Delete</button>
+                    <button className="inline-flex items-center gap-1 text-red-400 hover:text-red-300" type="button" onClick={() => setItemToDelete(faq)}><Trash2 className="h-4 w-4" />Delete</button>
                   </div>
                 </td>
               </tr>
@@ -63,6 +71,13 @@ export default function AdminFaqsPage() {
           </tbody>
         </AdminTable>
       )}
+      <ConfirmModal
+        isOpen={!!itemToDelete}
+        onClose={() => setItemToDelete(null)}
+        onConfirm={confirmRemove}
+        title="Confirm Deletion"
+        message={`Delete "${itemToDelete?.question ?? "this FAQ"}"?`}
+      />
     </div>
   );
 }

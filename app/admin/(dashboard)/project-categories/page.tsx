@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { AlertCircle, CheckCircle, Edit2, FolderKanban, Loader2, Plus, Save, Trash2, X } from "lucide-react";
 import { AdminEmptyState, AdminError, AdminPageHeader, AdminTable } from "../_components/AdminControls";
 import { projectCategoryService, ProjectCategory } from "@/services/projectCategoryService";
+import { ConfirmModal } from "@/component/ConfirmModal";
 
 function EditRow({
   cat,
@@ -134,6 +135,8 @@ export default function AdminProjectCategoriesPage() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [statusMap, setStatusMap] = useState<Record<string, "success" | "error">>({});
   const [globalError, setGlobalError] = useState("");
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
+  const [deleteConfirmName, setDeleteConfirmName] = useState("");
 
   const flash = (id: string, status: "success" | "error") => {
     setStatusMap((current) => ({ ...current, [id]: status }));
@@ -189,13 +192,20 @@ export default function AdminProjectCategoriesPage() {
     }
   };
 
-  const handleDelete = async (cat: ProjectCategory) => {
-    if (!confirm(`Delete "${cat.name}"? This may affect projects assigned to this category.`)) return;
+  const handleDeleteClick = (cat: ProjectCategory) => {
+    setDeleteConfirmId(cat.id);
+    setDeleteConfirmName(cat.name);
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteConfirmId) return;
+    const catId = deleteConfirmId;
+    setDeleteConfirmId(null);
     try {
-      await projectCategoryService.deleteCategory(cat.id);
-      setCategories((current) => current.filter((item) => item.id !== cat.id));
+      await projectCategoryService.deleteCategory(catId);
+      setCategories((current) => current.filter((item) => item.id !== catId));
     } catch {
-      flash(cat.id, "error");
+      flash(catId, "error");
     }
   };
 
@@ -274,7 +284,7 @@ export default function AdminProjectCategoriesPage() {
                         </button>
                         <button
                           type="button"
-                          onClick={() => handleDelete(cat)}
+                          onClick={() => handleDeleteClick(cat)}
                           className="flex items-center gap-1 text-sm text-red-400 transition-colors hover:text-red-300"
                         >
                           <Trash2 className="h-4 w-4" />
@@ -289,6 +299,13 @@ export default function AdminProjectCategoriesPage() {
           </tbody>
         </AdminTable>
       )}
+      <ConfirmModal
+        isOpen={!!deleteConfirmId}
+        onClose={() => setDeleteConfirmId(null)}
+        onConfirm={confirmDelete}
+        title="Confirm Deletion"
+        message={`Delete "${deleteConfirmName}"? This may affect projects assigned to this category.`}
+      />
     </div>
   );
 }

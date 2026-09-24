@@ -10,7 +10,7 @@ export interface ProductApiItem {
   name: string;
   description?: string | null;
   ctaText?: string | null;
-  featuresSummary?: string[];
+  featuresSummary?: { id?: string | null; text: string | null; displayOrder: number }[];
   resolvedLanguage: string | null;
 }
 
@@ -86,7 +86,7 @@ interface RawProductApiItem {
   title?: string | null;
   description?: string | null;
   cta_text?: string | null;
-  features_summary?: string[] | null;
+  features_summary?: { id?: string | null; text: string | null; display_order?: number | null }[] | null;
   feature_blocks?: RawProductFeatureBlock[] | null;
   reviews?: RawProductReview[] | null;
   faqs?: RawProductFaq[] | null;
@@ -128,7 +128,11 @@ function normalizeProduct(product: RawProductApiItem): ProductApiItem {
     name: product.name ?? product.title ?? "",
     description: product.description ?? null,
     ctaText: product.ctaText ?? product.cta_text ?? null,
-    featuresSummary: product.features_summary ?? [],
+    featuresSummary: (product.features_summary ?? []).map(f => ({
+      id: f.id ?? null,
+      text: f.text ?? null,
+      displayOrder: f.display_order ?? 0
+    })).sort((a, b) => a.displayOrder - b.displayOrder),
     resolvedLanguage: product.resolvedLanguage ?? product.resolved_language ?? null,
   };
 }
@@ -168,7 +172,7 @@ function normalizeProductDetail(product: RawProductApiItem): ProductDetail {
 }
 
 export const productService = {
-  getProducts: async (language: string = "en", page: number = 1, pageSize: number = 20): Promise<ProductApiItem[]> => {
+  getProducts: async (language: string = "en", page: number = 1, pageSize: number = 20): Promise<ProductDetail[]> => {
     try {
       const response = await apiClient.get<ProductsResponse>("/api/products", {
         params: {
@@ -181,7 +185,7 @@ export const productService = {
       });
 
       if (response.data?.success && Array.isArray(response.data?.data?.items)) {
-        return response.data.data.items.map((product) => normalizeProduct(product as RawProductApiItem));
+        return response.data.data.items.map((product) => normalizeProductDetail(product as RawProductApiItem));
       }
 
       return [];

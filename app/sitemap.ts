@@ -3,6 +3,7 @@ import { getFullUrl } from "@/lib/seo";
 import { serviceService, type ServiceApiItem } from "@/services/serviceService";
 import { projectService, type Project } from "@/services/projectService";
 import { productService, type ProductApiItem } from "@/services/productService";
+import { normalizeSlug } from "@/lib/apiClient";
 
 const SITEMAP_PAGE_SIZE = 100;
 
@@ -138,13 +139,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   ]);
 
   const serviceRoutes = services.map((service) =>
-    createDynamicRoute(baseUrl, `services/${service.id}`, service.updatedAt),
+    createDynamicRoute(baseUrl, `services/${normalizeSlug(service.title)}`, service.updatedAt),
   );
   const projectRoutes = projects.map((project) =>
-    createDynamicRoute(baseUrl, `projects/${project.id}`, project.updatedAt),
+    createDynamicRoute(baseUrl, `projects/${normalizeSlug(project.title)}`, project.updatedAt),
   );
   const productRoutes = products.map((product) =>
-    createDynamicRoute(baseUrl, `products/${product.id}`, product.updatedAt),
+    createDynamicRoute(baseUrl, `products/${normalizeSlug(product.name)}`, product.updatedAt),
   );
 
   return deduplicateRoutes([

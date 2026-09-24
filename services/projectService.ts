@@ -133,8 +133,8 @@ export const projectService = {
 
   deleteProject: async (id: string): Promise<void> => {
     const response = await apiClient.delete<ApiResponse<string>>(`/api/projects/${id}`);
-    if (!response.data?.success) {
-      throw new Error(response.data?.message ?? "Failed to delete project");
+    if (response.data && response.data.success === false) {
+      throw new Error(response.data.message ?? "Failed to delete project");
     }
   },
 };

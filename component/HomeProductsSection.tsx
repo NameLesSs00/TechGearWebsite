@@ -6,6 +6,7 @@ import Link from "next/link";
 import { ArrowUpRight, CheckCircle2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { productService, type ProductApiItem } from "@/services/productService";
+import { normalizeSlug } from "@/lib/apiClient";
 
 interface HomeProductsSectionProps {
   locale: string;
@@ -118,8 +119,8 @@ export default function HomeProductsSection({ locale }: HomeProductsSectionProps
                       </div>
                       <div className="flex flex-wrap gap-2">
                         {product.featuresSummary.slice(0, 4).map((feature, index) => (
-                          <span key={`${feature}-${index}`} className="rounded-full bg-slate-300/75 px-3 py-1.5 text-xs font-medium text-[#011022]">
-                            {feature}
+                          <span key={`${feature.id || index}`} className="rounded-full bg-slate-300/75 px-3 py-1.5 text-xs font-medium text-[#011022]">
+                            {feature.text}
                           </span>
                         ))}
                       </div>
@@ -127,7 +128,7 @@ export default function HomeProductsSection({ locale }: HomeProductsSectionProps
                   ) : null}
 
                   <Link
-                    href={`/${locale}/products/${product.id}`}
+                    href={`/${locale}/products/${normalizeSlug(product.name)}`}
                     className="mt-7 inline-flex w-full max-w-xs items-center justify-center gap-2 rounded-full bg-[#22D3EE] px-6 py-3 text-sm font-extrabold !text-[#011022] transition-colors hover:bg-[#1bb8d0]"
                   >
                     View Product
@@ -135,7 +136,7 @@ export default function HomeProductsSection({ locale }: HomeProductsSectionProps
                   </Link>
                 </div>
 
-                <div className="relative min-h-[250px] bg-[#0f1b29]">
+                <div className="relative order-first min-h-[250px] bg-[#0f1b29] lg:order-last">
                   {product.heroImageUrl ? (
                     <Image
                       src={product.heroImageUrl}

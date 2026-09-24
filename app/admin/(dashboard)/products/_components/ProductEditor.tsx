@@ -15,6 +15,7 @@ import {
   SubmitButton,
 } from "../../_components/AdminControls";
 import { ProductDetail, adminApi } from "@/services/adminApi";
+import { ConfirmModal } from "@/component/ConfirmModal";
 
 type SummaryItem = { id?: string | null; enText: string; arText: string; displayOrder: number };
 type FeatureBlockItem = { id?: string | null; enTitle: string; arTitle: string; enDescription: string; arDescription: string; imageUrl?: string | null; imageFile?: File | null; displayOrder: number };
@@ -62,6 +63,7 @@ export default function ProductEditor({ productId }: { productId?: string }) {
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState("");
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
 
   const [heroFile, setHeroFile] = useState<File | null>(null);
   const [iconFile, setIconFile] = useState<File | null>(null);
@@ -105,8 +107,16 @@ export default function ProductEditor({ productId }: { productId?: string }) {
           arCtaText: ar?.cta_text ?? "",
         });
 
-        const arSummaries = ar?.features_summary ?? [];
-        setSummaries((en.features_summary ?? []).map((text, index) => ({ enText: text, arText: arSummaries[index] ?? "", displayOrder: index + 1 })));
+        const arSummaries = byOrder(ar?.features_summary);
+        setSummaries(byOrder(en.features_summary).map((item, index) => {
+          const arItem = arSummaries.find((candidate) => candidate.id === item.id) ?? arSummaries[index];
+          return {
+            id: item.id,
+            enText: item.text ?? "",
+            arText: arItem?.text ?? "",
+            displayOrder: item.display_order ?? index + 1,
+          };
+        }));
 
         const arBlocks = byOrder(ar?.feature_blocks);
         setBlocks(byOrder(en.feature_blocks).map((item, index) => {
@@ -213,24 +223,32 @@ export default function ProductEditor({ productId }: { productId?: string }) {
 
   const buildUpdatePayload = (id: string) => ({
     ...basePayload(id),
-    featureBlocks: blocks.filter((item) => item.id).map((item) => ({
-      id: item.id,
+    featuresSummary: summaries.map((item) => ({
+      id: item.id ?? null,
+      displayOrder: item.displayOrder,
+      translations: [
+        { languageCode: "en", text: item.enText },
+        { languageCode: "ar", text: item.arText },
+      ],
+    })),
+    featureBlocks: blocks.map((item) => ({
+      id: item.id ?? null,
       displayOrder: item.displayOrder,
       translations: [
         { languageCode: "en", title: item.enTitle, description: item.enDescription },
         { languageCode: "ar", title: item.arTitle, description: item.arDescription },
       ],
     })),
-    reviews: reviews.filter((item) => item.id).map((item) => ({
-      id: item.id,
+    reviews: reviews.map((item) => ({
+      id: item.id ?? null,
       displayOrder: item.displayOrder,
       translations: [
         { languageCode: "en", authorName: item.enAuthorName, authorRole: item.enAuthorRole, company: item.enCompany, quote: item.enQuote },
         { languageCode: "ar", authorName: item.arAuthorName, authorRole: item.arAuthorRole, company: item.arCompany, quote: item.arQuote },
       ],
     })),
-    faqs: faqs.filter((item) => item.id).map((item) => ({
-      id: item.id,
+    faqs: faqs.map((item) => ({
+      id: item.id ?? null,
       displayOrder: item.displayOrder,
       translations: [
         { languageCode: "en", question: item.enQuestion, answer: item.enAnswer },
@@ -239,11 +257,30 @@ export default function ProductEditor({ productId }: { productId?: string }) {
     })),
   });
 
-  const saveChildImages = async (id: string) => {
-    await Promise.all([
-      ...blocks.filter((item) => item.id && item.imageFile).map((item) => adminApi.products.updateFeatureBlockImage(id, item.id!, item.imageFile!)),
-      ...reviews.filter((item) => item.id && item.avatarFile).map((item) => adminApi.products.updateReviewAvatar(id, item.id!, item.avatarFile!)),
-    ]);
+  const saveChildImages = async (id: string, updatedProduct: ProductDetail | null) => {
+    if (!updatedProduct) return;
+
+    const blockUploads = blocks
+      .filter((item) => item.imageFile)
+      .map((item) => {
+        const matched = updatedProduct.feature_blocks?.find((fb) => fb.display_order === item.displayOrder);
+        if (matched && matched.id) {
+          return adminApi.products.updateFeatureBlockImage(id, matched.id, item.imageFile!);
+        }
+        return null;
+      });
+
+    const reviewUploads = reviews
+      .filter((item) => item.avatarFile)
+      .map((item) => {
+        const matched = updatedProduct.reviews?.find((r) => r.display_order === item.displayOrder);
+        if (matched && matched.id) {
+          return adminApi.products.updateReviewAvatar(id, matched.id, item.avatarFile!);
+        }
+        return null;
+      });
+
+    await Promise.all([...blockUploads, ...reviewUploads].filter(Boolean));
   };
 
   const handleSubmit = async (event: FormEvent) => {
@@ -256,12 +293,15 @@ export default function ProductEditor({ productId }: { productId?: string }) {
       if (productId) {
         await adminApi.products.update(productId, buildUpdatePayload(productId));
         await adminApi.products.updateImages(productId, heroFile, iconFile);
-        await saveChildImages(productId);
+        const updatedProduct = await adminApi.products.get(productId, "en");
+        await saveChildImages(productId, updatedProduct);
         setSaved(true);
         setTimeout(() => setSaved(false), 2500);
       } else {
         const newId = await adminApi.products.create(buildCreatePayload());
         await adminApi.products.updateImages(newId, heroFile, iconFile);
+        const newProduct = await adminApi.products.get(newId, "en");
+        await saveChildImages(newId, newProduct);
         router.push(`/admin/products/${newId}`);
       }
     } catch (err: any) {
@@ -271,8 +311,14 @@ export default function ProductEditor({ productId }: { productId?: string }) {
     }
   };
 
-  const handleDelete = async () => {
-    if (!productId || !confirm("Permanently delete this product? This cannot be undone.")) return;
+  const handleDeleteClick = () => {
+    if (!productId) return;
+    setIsConfirmOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!productId) return;
+    setIsConfirmOpen(false);
     setSaving(true);
     try {
       await adminApi.products.remove(productId);
@@ -294,7 +340,7 @@ export default function ProductEditor({ productId }: { productId?: string }) {
         title={productId ? "Edit Product" : "Create Product"}
         description={productId ? form.enTitle || "Manage product content and assets." : "Create the product, then continue editing any generated nested assets."}
       >
-        {productId ? <DeleteButton loading={saving} label="Delete Product" onClick={handleDelete} /> : null}
+        {productId ? <DeleteButton loading={saving} label="Delete Product" onClick={handleDeleteClick} /> : null}
       </AdminPageHeader>
 
       <AdminError message={error} />
@@ -331,8 +377,7 @@ export default function ProductEditor({ productId }: { productId?: string }) {
 
         <SectionList
           title="Feature Summary"
-          note={productId ? "The backend returns feature summaries without IDs, so they are only sent when creating a product." : undefined}
-          onAdd={!productId ? () => setSummaries([...summaries, { enText: "", arText: "", displayOrder: nextOrder(summaries) }]) : undefined}
+          onAdd={() => setSummaries([...summaries, { enText: "", arText: "", displayOrder: nextOrder(summaries) }])}
         >
           {summaries.map((item, index) => (
             <div key={index} className="rounded-xl border border-white/10 bg-white/[0.03] p-4">
@@ -352,8 +397,7 @@ export default function ProductEditor({ productId }: { productId?: string }) {
 
         <SectionList
           title="Feature Blocks"
-          note={productId ? "New feature blocks must be created with the product. Existing blocks with backend IDs can be edited here." : undefined}
-          onAdd={!productId ? () => setBlocks([...blocks, { enTitle: "", arTitle: "", enDescription: "", arDescription: "", displayOrder: nextOrder(blocks) }]) : undefined}
+          onAdd={() => setBlocks([...blocks, { enTitle: "", arTitle: "", enDescription: "", arDescription: "", displayOrder: nextOrder(blocks) }])}
         >
           {blocks.map((item, index) => (
             <div key={index} className="rounded-xl border border-white/10 bg-white/[0.03] p-4">
@@ -368,7 +412,7 @@ export default function ProductEditor({ productId }: { productId?: string }) {
                 <AdminInput dir="rtl" label="Arabic Title" value={item.arTitle} onChange={(value) => setBlocks(blocks.map((row, i) => i === index ? { ...row, arTitle: value } : row))} />
                 <AdminTextarea label="English Description" value={item.enDescription} onChange={(value) => setBlocks(blocks.map((row, i) => i === index ? { ...row, enDescription: value } : row))} />
                 <AdminTextarea dir="rtl" label="Arabic Description" value={item.arDescription} onChange={(value) => setBlocks(blocks.map((row, i) => i === index ? { ...row, arDescription: value } : row))} />
-                {item.id ? <ImagePicker label="Block Image" currentUrl={item.imageUrl} file={item.imageFile ?? null} onChange={(file) => setBlocks(blocks.map((row, i) => i === index ? { ...row, imageFile: file } : row))} compact /> : null}
+                <ImagePicker label="Block Image" currentUrl={item.imageUrl} file={item.imageFile ?? null} onChange={(file) => setBlocks(blocks.map((row, i) => i === index ? { ...row, imageFile: file } : row))} compact />
               </div>
             </div>
           ))}
@@ -376,8 +420,7 @@ export default function ProductEditor({ productId }: { productId?: string }) {
 
         <SectionList
           title="Product Reviews"
-          note={productId ? "New product reviews must be created with the product. Existing reviews with backend IDs can be edited here." : undefined}
-          onAdd={!productId ? () => setReviews([...reviews, { enAuthorName: "", arAuthorName: "", enAuthorRole: "", arAuthorRole: "", enCompany: "", arCompany: "", enQuote: "", arQuote: "", displayOrder: nextOrder(reviews) }]) : undefined}
+          onAdd={() => setReviews([...reviews, { enAuthorName: "", arAuthorName: "", enAuthorRole: "", arAuthorRole: "", enCompany: "", arCompany: "", enQuote: "", arQuote: "", displayOrder: nextOrder(reviews) }])}
         >
           {reviews.map((item, index) => (
             <div key={index} className="rounded-xl border border-white/10 bg-white/[0.03] p-4">
@@ -396,7 +439,7 @@ export default function ProductEditor({ productId }: { productId?: string }) {
                 <AdminInput dir="rtl" label="Arabic Company" value={item.arCompany} onChange={(value) => setReviews(reviews.map((row, i) => i === index ? { ...row, arCompany: value } : row))} />
                 <AdminTextarea label="English Quote" value={item.enQuote} onChange={(value) => setReviews(reviews.map((row, i) => i === index ? { ...row, enQuote: value } : row))} />
                 <AdminTextarea dir="rtl" label="Arabic Quote" value={item.arQuote} onChange={(value) => setReviews(reviews.map((row, i) => i === index ? { ...row, arQuote: value } : row))} />
-                {item.id ? <ImagePicker label="Author Avatar" currentUrl={item.avatarUrl} file={item.avatarFile ?? null} onChange={(file) => setReviews(reviews.map((row, i) => i === index ? { ...row, avatarFile: file } : row))} compact /> : null}
+                <ImagePicker label="Author Avatar" currentUrl={item.avatarUrl} file={item.avatarFile ?? null} onChange={(file) => setReviews(reviews.map((row, i) => i === index ? { ...row, avatarFile: file } : row))} compact />
               </div>
             </div>
           ))}
@@ -404,8 +447,7 @@ export default function ProductEditor({ productId }: { productId?: string }) {
 
         <SectionList
           title="Product FAQs"
-          note={productId ? "New product FAQs must be created with the product. Existing FAQs with backend IDs can be edited here." : undefined}
-          onAdd={!productId ? () => setFaqs([...faqs, { enQuestion: "", arQuestion: "", enAnswer: "", arAnswer: "", displayOrder: nextOrder(faqs) }]) : undefined}
+          onAdd={() => setFaqs([...faqs, { enQuestion: "", arQuestion: "", enAnswer: "", arAnswer: "", displayOrder: nextOrder(faqs) }])}
         >
           {faqs.map((item, index) => (
             <div key={index} className="rounded-xl border border-white/10 bg-white/[0.03] p-4">
@@ -429,6 +471,14 @@ export default function ProductEditor({ productId }: { productId?: string }) {
           <SubmitButton label={productId ? "Save Product" : "Create Product"} loading={saving} saved={saved} />
         </div>
       </form>
+
+      <ConfirmModal
+        isOpen={isConfirmOpen}
+        onClose={() => setIsConfirmOpen(false)}
+        onConfirm={confirmDelete}
+        title="Confirm Deletion"
+        message="Permanently delete this product? This cannot be undone."
+      />
     </div>
   );
 }

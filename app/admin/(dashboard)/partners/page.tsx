@@ -6,11 +6,13 @@ import { useEffect, useState } from "react";
 import { Edit2, Handshake, Plus, Trash2 } from "lucide-react";
 import { AdminEmptyState, AdminError, AdminPageHeader, AdminTable } from "../_components/AdminControls";
 import { Partner, adminApi } from "@/services/adminApi";
+import { ConfirmModal } from "@/component/ConfirmModal";
 
 export default function AdminPartnersPage() {
   const [items, setItems] = useState<Partner[]>([]);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
+  const [itemToDelete, setItemToDelete] = useState<Partner | null>(null);
 
   useEffect(() => {
     adminApi.partners.list("en", 1, 100)
@@ -19,10 +21,16 @@ export default function AdminPartnersPage() {
       .finally(() => setLoading(false));
   }, []);
 
-  const remove = async (item: Partner) => {
-    if (!confirm(`Delete "${item.name ?? "this partner"}"?`)) return;
-    await adminApi.partners.remove(item.id);
-    setItems((current) => current.filter((row) => row.id !== item.id));
+  const confirmRemove = async () => {
+    if (!itemToDelete) return;
+    const item = itemToDelete;
+    setItemToDelete(null);
+    try {
+      await adminApi.partners.remove(item.id);
+      setItems((current) => current.filter((row) => row.id !== item.id));
+    } catch (err: any) {
+      setError(err?.message ?? "Failed to delete partner.");
+    }
   };
 
   return (
@@ -42,12 +50,19 @@ export default function AdminPartnersPage() {
                 <td className="px-6 py-4"><div className="relative h-12 w-16 rounded-lg bg-white/5">{item.imageUrl || item.logoUrl ? <Image src={item.imageUrl || item.logoUrl || ""} alt={item.name ?? ""} fill className="rounded-lg object-contain" unoptimized /> : null}</div></td>
                 <td className="px-6 py-4 font-medium text-white">{item.name ?? "-"}</td>
                 <td className="max-w-[360px] truncate px-6 py-4 text-slate-400">{item.logoUrl ?? "-"}</td>
-                <td className="px-6 py-4 text-right"><div className="flex justify-end gap-3"><Link className="inline-flex items-center gap-1 text-[#22D3EE] hover:text-white" href={`/admin/partners/${item.id}`}><Edit2 className="h-4 w-4" />Edit</Link><button className="inline-flex items-center gap-1 text-red-400 hover:text-red-300" type="button" onClick={() => remove(item)}><Trash2 className="h-4 w-4" />Delete</button></div></td>
+                <td className="px-6 py-4 text-right"><div className="flex justify-end gap-3"><Link className="inline-flex items-center gap-1 text-[#22D3EE] hover:text-white" href={`/admin/partners/${item.id}`}><Edit2 className="h-4 w-4" />Edit</Link><button className="inline-flex items-center gap-1 text-red-400 hover:text-red-300" type="button" onClick={() => setItemToDelete(item)}><Trash2 className="h-4 w-4" />Delete</button></div></td>
               </tr>
             ))}
           </tbody>
         </AdminTable>
       )}
+      <ConfirmModal
+        isOpen={!!itemToDelete}
+        onClose={() => setItemToDelete(null)}
+        onConfirm={confirmRemove}
+        title="Confirm Deletion"
+        message={`Delete "${itemToDelete?.name ?? "this partner"}"?`}
+      />
     </div>
   );
 }
