@@ -1,4 +1,4 @@
-import apiClient from "@/lib/apiClient";
+import apiClient, { filterRequestedLanguage, languageRequestConfig } from "@/lib/apiClient";
 
 export interface ProjectCategoryTranslation {
   languageCode: string;
@@ -46,19 +46,15 @@ export interface UpdateProjectCategoryDto {
 
 export const projectCategoryService = {
   getAllCategories: async (language: string = "ar", page: number = 1, pageSize: number = 100): Promise<ProjectCategory[]> => {
-    const response = await apiClient.get<ProjectCategoryResponse>("/api/project-categories", {
-      params: { language, page, pageSize },
-    });
+    const response = await apiClient.get<ProjectCategoryResponse>("/api/project-categories", languageRequestConfig(language, { page, pageSize }));
     if (response.data.success && response.data.data?.items) {
-      return response.data.data.items;
+      return filterRequestedLanguage(response.data.data.items, language);
     }
     throw new Error(response.data.message || "Failed to fetch project categories");
   },
 
   getCategoryById: async (id: string, language: string = "ar"): Promise<ProjectCategory> => {
-    const response = await apiClient.get<SingleProjectCategoryResponse>(`/api/project-categories/${id}`, {
-      params: { language },
-    });
+    const response = await apiClient.get<SingleProjectCategoryResponse>(`/api/project-categories/${id}`, languageRequestConfig(language));
     if (response.data.success && response.data.data) {
       return response.data.data;
     }

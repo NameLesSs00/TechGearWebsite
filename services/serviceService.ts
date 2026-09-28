@@ -1,4 +1,4 @@
-import apiClient, { resolveImageUrl, isValidGuid } from "@/lib/apiClient";
+import apiClient, { resolveImageUrl, isValidGuid, filterRequestedLanguage, hasRequestedLanguage, languageRequestConfig } from "@/lib/apiClient";
 
 export interface ServiceFeature {
   id: string;
@@ -63,13 +63,10 @@ export const serviceService = {
   // Queries
   getServices: async (language: string = "en", page: number = 1, pageSize: number = 20): Promise<ServiceApiItem[]> => {
     try {
-      const response = await apiClient.get<ServiceApiResponse>("/api/services", {
-        params: { page, pageSize },
-        headers: { "Accept-Language": language },
-      });
+      const response = await apiClient.get<ServiceApiResponse>("/api/services", languageRequestConfig(language, { page, pageSize }));
 
       if (response.data?.success && Array.isArray(response.data?.data?.items)) {
-        return response.data.data.items.map((service) => ({
+        return filterRequestedLanguage(response.data.data.items, language).map((service) => ({
           ...service,
           iconImageUrl: resolveImageUrl(service.iconImageUrl),
           serviceImageUrl: resolveImageUrl(service.serviceImageUrl),
@@ -93,11 +90,12 @@ export const serviceService = {
 
     try {
       const response = await apiClient.get<ServiceByIdResponse>(`/api/services/${trimmedId}`, {
-        headers: { "Accept-Language": language },
+        ...languageRequestConfig(language),
       });
 
       if (response.data?.success && response.data?.data) {
         const service = response.data.data;
+        if (!hasRequestedLanguage(service, language)) return null;
         return {
           ...service,
           iconImageUrl: resolveImageUrl(service.iconImageUrl),

@@ -17,28 +17,7 @@ interface Testimonial {
   iconImageUrl: string;   // icon_image — small brand/company icon
 }
 
-const fallbackTestimonials: Testimonial[] = [
-  {
-    id: "fallback-1",
-    name: "Sameer Rai",
-    quote: "Tech Gear understood what we needed and turned our vision into a digital experience that feels clear, professional, and easy to use.",
-    rating: 4.8,
-    videoUrl: "https://www.youtube.com/watch?v=ysz5S6PUM-U",
-    heroImageUrl: "",
-    clientImageUrl: "",
-    iconImageUrl: "",
-  },
-  {
-    id: "fallback-2",
-    name: "Mariam Hassan",
-    quote: "The team brought structure to a complex project and delivered a thoughtful product that our customers enjoy using every day.",
-    rating: 5.0,
-    videoUrl: "https://www.youtube.com/watch?v=ysz5S6PUM-U",
-    heroImageUrl: "",
-    clientImageUrl: "",
-    iconImageUrl: "",
-  },
-];
+// Fallback data removed - section will not render if empty
 
 const toEmbedUrl = (videoUrl: string) => {
   if (!videoUrl) return "";
@@ -67,25 +46,23 @@ export default function TestimonialsSection(_props?: { locale?: string }) {
     const loadTestimonials = async () => {
       try {
         const reviews = await reviewService.getReviews(language, 1, 20);
-        const mapped: Testimonial[] = reviews.length > 0
-          ? reviews.map((review) => ({
-              id: review.id,
-              name: review.clientName || "Client",
-              quote: review.reviewContent || "We are proud to help businesses move forward with confidence.",
-              rating: review.stars || 5,
-              videoUrl: review.videoUrl || "",
-              heroImageUrl: review.hero_image || "",
-              clientImageUrl: review.client_image || "",
-              iconImageUrl: review.icon_image || "",
-            }))
-          : fallbackTestimonials;
+        const mapped: Testimonial[] = reviews.map((review) => ({
+          id: review.id,
+          name: review.clientName || "Client",
+          quote: review.reviewContent || "We are proud to help businesses move forward with confidence.",
+          rating: review.stars || 5,
+          videoUrl: review.videoUrl || "",
+          heroImageUrl: review.hero_image || "",
+          clientImageUrl: review.client_image || "",
+          iconImageUrl: review.icon_image || "",
+        }));
 
         if (isMounted) {
           setTestimonials(mapped);
           setActiveIndex(0);
         }
       } catch {
-        if (isMounted) setTestimonials(fallbackTestimonials);
+        if (isMounted) setTestimonials([]);
       } finally {
         if (isMounted) setLoading(false);
       }
@@ -94,7 +71,7 @@ export default function TestimonialsSection(_props?: { locale?: string }) {
     return () => { isMounted = false; };
   }, [language]);
 
-  const testimonial = testimonials[activeIndex] ?? fallbackTestimonials[0];
+  const testimonial = testimonials[activeIndex];
   const activeVideoUrl = useMemo(() => toEmbedUrl(testimonial?.videoUrl || ""), [testimonial?.videoUrl]);
 
   const move = (dir: number) => {
@@ -131,6 +108,11 @@ export default function TestimonialsSection(_props?: { locale?: string }) {
         {loading ? (
           <div className="flex justify-center py-24">
             <div className="h-8 w-8 animate-spin rounded-full border-4 border-[#22D3EE]/20 border-t-[#22D3EE]" />
+          </div>
+        ) : testimonials.length === 0 ? (
+          <div className="rounded-2xl border border-white/10 bg-[#000c24] px-6 py-14 text-center">
+            <Quote className="mx-auto mb-4 h-12 w-12 text-[#22D3EE]/60" />
+            <p className="text-lg font-semibold text-white">{t("testimonials_no_data")}</p>
           </div>
         ) : (
           <div className="relative">
@@ -250,17 +232,17 @@ export default function TestimonialsSection(_props?: { locale?: string }) {
                   type="button"
                   onClick={() => move(-1)}
                   aria-label="Previous testimonial"
-                  className="absolute -left-5 top-1/2 -translate-y-1/2 hidden sm:flex w-11 h-11 items-center justify-center rounded-full bg-white/5 border border-white/10 text-white hover:bg-[#22D3EE]/20 hover:border-[#22D3EE]/40 transition-all"
+                  className="absolute -left-6 sm:-left-8 top-1/2 -translate-y-1/2 flex w-12 h-12 sm:w-16 sm:h-16 items-center justify-center rounded-full bg-[#1d3140] border border-white/20 text-[#22D3EE] shadow-lg shadow-black/40 hover:bg-[#22D3EE] hover:text-[#011022] hover:scale-105 transition-all z-20"
                 >
-                  <ChevronLeft size={22} />
+                  <ChevronLeft size={28} />
                 </button>
                 <button
                   type="button"
                   onClick={() => move(1)}
                   aria-label="Next testimonial"
-                  className="absolute -right-5 top-1/2 -translate-y-1/2 hidden sm:flex w-11 h-11 items-center justify-center rounded-full bg-white/5 border border-white/10 text-white hover:bg-[#22D3EE]/20 hover:border-[#22D3EE]/40 transition-all"
+                  className="absolute -right-6 sm:-right-8 top-1/2 -translate-y-1/2 flex w-12 h-12 sm:w-16 sm:h-16 items-center justify-center rounded-full bg-[#1d3140] border border-white/20 text-[#22D3EE] shadow-lg shadow-black/40 hover:bg-[#22D3EE] hover:text-[#011022] hover:scale-105 transition-all z-20"
                 >
-                  <ChevronRight size={22} />
+                  <ChevronRight size={28} />
                 </button>
               </>
             )}

@@ -4,6 +4,7 @@ import { FormEvent, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AdminError, AdminInput, AdminPageHeader, AdminPanel, AdminTextarea, ImagePicker, LanguageTabs, SubmitButton } from "./AdminControls";
 import { adminApi } from "@/services/adminApi";
+import { withAdminNotice } from "@/lib/adminFeedback";
 
 type EntityKind = "journey" | "partner" | "teamMember";
 
@@ -97,7 +98,7 @@ export default function MediaEntityForm({ id, kind }: { id?: string; kind: Entit
             { languageCode: "ar", title: form.arTitle, description: form.arDescription },
           ],
         });
-        router.push(id ? meta.listPath : `${meta.listPath}/${newId}`);
+        router.push(withAdminNotice(id ? meta.listPath : `${meta.listPath}/${newId}`, `${meta.singular} ${id ? "updated" : "created"} successfully.`));
       } else if (kind === "partner") {
         const endpoint = id ? `/api/partners/${id}` : "/api/partners";
         const newId = await adminApi.partners.saveForm(endpoint, id ? "put" : "post", {
@@ -109,7 +110,7 @@ export default function MediaEntityForm({ id, kind }: { id?: string; kind: Entit
             { languageCode: "ar", name: form.arName },
           ],
         });
-        router.push(id ? meta.listPath : `${meta.listPath}/${newId}`);
+        router.push(withAdminNotice(id ? meta.listPath : `${meta.listPath}/${newId}`, `${meta.singular} ${id ? "updated" : "created"} successfully.`));
       } else {
         const endpoint = id ? `/api/team-members/${id}` : "/api/team-members";
         const newId = await adminApi.teamMembers.saveForm(endpoint, id ? "put" : "post", {
@@ -121,7 +122,7 @@ export default function MediaEntityForm({ id, kind }: { id?: string; kind: Entit
             { languageCode: "ar", name: form.arName, jobTitle: form.arJobTitle },
           ],
         });
-        router.push(id ? meta.listPath : `${meta.listPath}/${newId}`);
+        router.push(withAdminNotice(id ? meta.listPath : `${meta.listPath}/${newId}`, `${meta.singular} ${id ? "updated" : "created"} successfully.`));
       }
     } catch (err: any) {
       setError(err?.response?.data?.message ?? err?.message ?? `Failed to save ${meta.singular.toLowerCase()}.`);

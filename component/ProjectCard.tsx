@@ -2,7 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { getProjectMainImage, type Project } from "@/services/projectService";
 import { forwardRef } from "react";
-import { normalizeSlug } from "@/lib/apiClient";
+import { buildEntitySlug } from "@/lib/apiClient";
 
 interface ProjectCardProps extends React.HTMLAttributes<HTMLElement> {
   project: Project;
@@ -24,13 +24,22 @@ export const ProjectCard = forwardRef<HTMLElement, ProjectCardProps>(
           {categoryLabel && <span className="inline-flex items-center justify-center rounded-full bg-[#6ba2ad] px-6 py-2 text-sm font-medium text-white">{categoryLabel}</span>}
           <h3 className="mt-6 text-4xl font-bold tracking-tight sm:text-5xl lg:text-6xl">{project.title}</h3>
           <p className="mt-6 max-w-xl text-base leading-relaxed text-white/90 sm:text-lg lg:text-xl">{project.description}</p>
-          <Link href={`/${locale}/projects/${normalizeSlug(project.title)}`} className="mt-8 inline-flex items-center justify-center gap-2 rounded-full bg-[#22D3EE] px-8 py-3 text-sm font-bold text-[#011022] transition-transform hover:scale-105">
+          <Link href={`/${locale}/projects/${buildEntitySlug(project.id, project.title)}`} className="mt-8 inline-flex items-center justify-center gap-2 rounded-full bg-[#22D3EE] px-8 py-3 text-sm font-bold text-[#011022] transition-transform hover:scale-105">
             {language === "ar" ? "اقرأ المزيد" : "Read More"}
           </Link>
         </div>
-        <div className="order-1 relative min-h-[300px] flex items-center justify-center overflow-hidden bg-[#101820] lg:order-none lg:min-h-[500px]">
-          {getProjectMainImage(project) && <Image src={getProjectMainImage(project)} alt={`${project.title} project preview`} fill sizes="(max-width: 1024px) 100vw, 50vw" className="object-contain object-center" />}
-        </div>
+        <Link href={`/${locale}/projects/${buildEntitySlug(project.id, project.title)}`} className="order-1 relative min-h-[300px] flex items-center justify-center overflow-hidden bg-[#101820] lg:order-none lg:min-h-[500px] group cursor-pointer">
+          {getProjectMainImage(project) && (
+            <Image 
+              src={getProjectMainImage(project)} 
+              alt={`${project.title} project preview`} 
+              fill 
+              sizes="(max-width: 1024px) 100vw, 50vw" 
+              className="object-cover object-top group-hover:object-bottom" 
+              style={{ transition: "object-position 8s ease-in-out" }}
+            />
+          )}
+        </Link>
       </article>
     );
   }

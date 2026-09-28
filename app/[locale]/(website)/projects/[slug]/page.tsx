@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import ProjectDetails from "@/component/ProjectDetails";
 import { projectService } from "@/services/projectService";
 import { constructMetadata, generateBreadcrumbSchema } from "@/lib/seo";
-import { normalizeSlug } from "@/lib/apiClient";
+import { matchesEntitySlug } from "@/lib/apiClient";
 
 interface ProjectDetailsPageProps {
   params: Promise<{ locale: string; slug: string }>;
@@ -12,7 +12,7 @@ interface ProjectDetailsPageProps {
 async function resolveProject(slug: string, locale: string) {
   const all = await projectService.getProjects(locale, null, 1, 100);
   const match = all.items.find(
-    (p) => normalizeSlug(p.title) === slug || p.id === slug,
+    (p) => matchesEntitySlug(slug, p, p.title),
   );
   if (!match) return null;
   try {

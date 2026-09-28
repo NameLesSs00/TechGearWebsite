@@ -1,7 +1,7 @@
 import { serviceService } from "@/services/serviceService";
 import { productService } from "@/services/productService";
 import { projectService } from "@/services/projectService";
-import { normalizeSlug } from "@/lib/apiClient";
+import { buildEntitySlug, matchesEntitySlug } from "@/lib/apiClient";
 
 /**
  * Extract locale from pathname
@@ -78,30 +78,24 @@ export async function switchLocaleInPathname(
     
     if (resource === "services") {
       const allServices = await serviceService.getServices(currentLocale, 1, 100);
-      const service = allServices.find((s) => normalizeSlug(s.title) === slug || s.id === slug);
+      const service = allServices.find((s) => matchesEntitySlug(slug, s, s.title));
       if (service) {
         const translatedService = await serviceService.getServiceById(service.id, newLocale);
-        if (translatedService?.title) {
-          translatedSlug = normalizeSlug(translatedService.title);
-        }
+        translatedSlug = buildEntitySlug(service.id, translatedService?.title ?? service.title);
       }
     } else if (resource === "products") {
       const allProducts = await productService.getProducts(currentLocale, 1, 100);
-      const product = allProducts.find((p) => normalizeSlug(p.name) === slug || p.id === slug);
+      const product = allProducts.find((p) => matchesEntitySlug(slug, p, p.name));
       if (product) {
         const translatedProduct = await productService.getProductById(product.id, newLocale);
-        if (translatedProduct?.name) {
-          translatedSlug = normalizeSlug(translatedProduct.name);
-        }
+        translatedSlug = buildEntitySlug(product.id, translatedProduct?.name ?? product.name);
       }
     } else if (resource === "projects") {
       const allProjects = await projectService.getProjects(currentLocale, null, 1, 100);
-      const project = allProjects.items.find((p) => normalizeSlug(p.title) === slug || p.id === slug);
+      const project = allProjects.items.find((p) => matchesEntitySlug(slug, p, p.title));
       if (project) {
-        const translatedProject = await projectService.getProjectById(project.id, newLocale);
-        if (translatedProject?.title) {
-          translatedSlug = normalizeSlug(translatedProject.title);
-        }
+        const translatedProject = await projectService.getProjectById(project.id, newLocale).catch(() => null);
+        translatedSlug = buildEntitySlug(project.id, translatedProject?.title ?? project.title);
       }
     }
     

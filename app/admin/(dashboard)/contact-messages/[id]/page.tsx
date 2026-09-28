@@ -2,9 +2,10 @@
 
 import { use, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { AdminError, AdminPageHeader, AdminPanel, AdminToggle, DeleteButton } from "../../_components/AdminControls";
+import { AdminError, AdminNotice, AdminPageHeader, AdminPanel, AdminToggle, DeleteButton } from "../../_components/AdminControls";
 import { ContactMessage, adminApi } from "@/services/adminApi";
 import { ConfirmModal } from "@/component/ConfirmModal";
+import { withAdminNotice } from "@/lib/adminFeedback";
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -17,6 +18,7 @@ export default function ContactMessageDetailPage({ params }: PageProps) {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
 
   useEffect(() => {
@@ -32,7 +34,10 @@ export default function ContactMessageDetailPage({ params }: PageProps) {
     try {
       await adminApi.contactMessages.updateRead(id, checked);
       setMessage({ ...message, isRead: checked });
+      setError("");
+      setSuccess(checked ? "Message marked as read." : "Message marked as unread.");
     } catch (err: any) {
+      setSuccess("");
       setError(err?.message ?? "Failed to update message.");
     } finally {
       setSaving(false);
@@ -43,8 +48,13 @@ export default function ContactMessageDetailPage({ params }: PageProps) {
 
   const confirmRemove = async () => {
     setIsConfirmOpen(false);
-    await adminApi.contactMessages.remove(id);
-    router.push("/admin/contact-messages");
+    try {
+      await adminApi.contactMessages.remove(id);
+      router.push(withAdminNotice("/admin/contact-messages", "Contact message deleted successfully."));
+    } catch (err: any) {
+      setSuccess("");
+      setError(err?.message ?? "Failed to delete contact message.");
+    }
   };
 
   if (loading) return <div className="py-16 text-center text-slate-400">Loading message...</div>;
@@ -56,6 +66,7 @@ export default function ContactMessageDetailPage({ params }: PageProps) {
         <DeleteButton loading={saving} label="Delete Message" onClick={handleRemoveClick} />
       </AdminPageHeader>
       <AdminError message={error} />
+      <AdminNotice message={success} onClose={() => setSuccess("")} />
       <AdminPanel title="Message Status">
         <AdminToggle label="Mark as read" checked={message.isRead} onChange={updateRead} />
       </AdminPanel>

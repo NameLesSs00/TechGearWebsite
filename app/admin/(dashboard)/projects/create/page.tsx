@@ -7,6 +7,7 @@ import Image from "next/image";
 import { ArrowLeft, Loader2, Upload, X } from "lucide-react";
 import { projectService } from "@/services/projectService";
 import { projectCategoryService, ProjectCategory } from "@/services/projectCategoryService";
+import { withAdminNotice } from "@/lib/adminFeedback";
 
 export default function CreateProjectPage() {
   const router = useRouter();
@@ -65,7 +66,7 @@ export default function CreateProjectPage() {
       fd.append("Translations", arTrans);
 
       const newId = await projectService.createProject(fd);
-      router.push(`/admin/projects/${newId}`);
+      router.push(withAdminNotice(`/admin/projects/${newId}`, "Project created successfully."));
     } catch (err: any) {
       setError(err?.message || "Failed to create project.");
     } finally {

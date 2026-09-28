@@ -56,84 +56,95 @@ function ImagePlaceholder() {
 function JourneyHorizontalScroll({ journeys, isRtl }: { journeys: Journey[], isRtl: boolean }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const trackRef = useRef<HTMLDivElement>(null);
+  const activeIndexRef = useRef(0);
   const [activeIndex, setActiveIndex] = useState(0);
 
   useGSAP(() => {
     if (!containerRef.current || !trackRef.current || journeys.length === 0) return;
 
-    const cards = gsap.utils.toArray<HTMLElement>('.journey-card');
-    const totalSections = cards.length;
-
-    // Prepare all cards for GPU compositing
-    gsap.set(cards, { force3D: true });
-
-    // Pre-hide text elements on ALL cards except the first
-    cards.forEach((card, i) => {
-      const year = card.querySelector<HTMLElement>('[data-journey="year"]');
-      const title = card.querySelector<HTMLElement>('[data-journey="title"]');
-      const desc = card.querySelector<HTMLElement>('[data-journey="desc"]');
-      const line = card.querySelector<HTMLElement>('[data-journey="line"]');
-      if (i !== 0) {
-        gsap.set([year, title, desc, line], { y: 60, opacity: 0 });
+    ScrollTrigger.getAll().forEach((trigger) => {
+      if (trigger.trigger === containerRef.current) {
+        trigger.kill(true);
       }
     });
 
-    // Animate the first card's text in on mount
-    (() => {
-      const card = cards[0];
-      const year = card.querySelector<HTMLElement>('[data-journey="year"]');
-      const title = card.querySelector<HTMLElement>('[data-journey="title"]');
-      const desc = card.querySelector<HTMLElement>('[data-journey="desc"]');
-      const line = card.querySelector<HTMLElement>('[data-journey="line"]');
-      gsap.fromTo(
-        [line, year, title, desc],
-        { y: 60, opacity: 0 },
-        { y: 0, opacity: 1, duration: 0.9, ease: "power3.out", stagger: 0.18, delay: 0.3 }
-      );
-    })();
+    activeIndexRef.current = 0;
+    setActiveIndex(0);
+
+    const selector = gsap.utils.selector(containerRef);
+    const cards = selector(".journey-card") as HTMLElement[];
+    const totalSections = cards.length;
+    const travelDirection = isRtl ? -100 : 100;
+    const getTextElements = (card: HTMLElement) => [
+      card.querySelector<HTMLElement>('[data-journey="line"]'),
+      card.querySelector<HTMLElement>('[data-journey="year"]'),
+      card.querySelector<HTMLElement>('[data-journey="title"]'),
+      card.querySelector<HTMLElement>('[data-journey="desc"]'),
+    ].filter(Boolean) as HTMLElement[];
+
+    cards.forEach((card, index) => {
+      gsap.set(card, {
+        autoAlpha: 1,
+        force3D: true,
+        scale: 1,
+        xPercent: index === 0 ? 0 : travelDirection,
+        zIndex: index + 1,
+      });
+
+      gsap.set(getTextElements(card), {
+        autoAlpha: index === 0 ? 1 : 0,
+        y: index === 0 ? 0 : 42,
+      });
+    });
+
+    gsap.fromTo(
+      getTextElements(cards[0]),
+      { y: 42, autoAlpha: 0 },
+      { y: 0, autoAlpha: 1, duration: 0.7, ease: "power3.out", stagger: 0.1, delay: 0.15 },
+    );
 
     const tl = gsap.timeline({
       scrollTrigger: {
         trigger: containerRef.current,
         pin: true,
+        anticipatePin: 1,
         scrub: 0.5,
-        end: () => "+=" + (window.innerHeight * totalSections),
+        invalidateOnRefresh: true,
+        end: () => `+=${window.innerHeight * Math.max(totalSections - 1, 1)}`,
         onUpdate: (self) => {
-          const index = Math.min(totalSections - 1, Math.floor(self.progress * totalSections));
-          if (index !== activeIndex) {
+          const index = Math.min(totalSections - 1, Math.round(self.progress * (totalSections - 1)));
+          if (index !== activeIndexRef.current) {
+            activeIndexRef.current = index;
             setActiveIndex(index);
           }
         }
       }
     });
 
-    cards.forEach((card, i) => {
-      if (i === 0) {
-        gsap.set(card, { zIndex: 1 });
-        return;
-      }
-
-      const prevCard = cards[i - 1];
+    cards.slice(1).forEach((card, index) => {
+      const previousCard = cards[index];
       const newYear  = card.querySelector<HTMLElement>('[data-journey="year"]');
       const newTitle = card.querySelector<HTMLElement>('[data-journey="title"]');
       const newDesc  = card.querySelector<HTMLElement>('[data-journey="desc"]');
       const newLine  = card.querySelector<HTMLElement>('[data-journey="line"]');
 
       // Start new card offscreen
-      gsap.set(card, { xPercent: isRtl ? -100 : 100, zIndex: i + 1 });
+      gsap.set(card, { xPercent: travelDirection, zIndex: index + 2 });
 
       // ── Phase 1: Slide cards (50% of budget)
-      tl.to(prevCard, { scale: 0.93, opacity: 0, ease: "power2.inOut", force3D: true }, ">")
+      tl.to(previousCard, { scale: 0.93, opacity: 0, ease: "power2.inOut", force3D: true }, ">")
         .to(card,     { xPercent: 0,  ease: "power2.inOut", force3D: true }, "<");
 
       // ── Phase 2: Stagger the text in after the card lands (50% of budget)
-      tl.to(newLine,  { y: 0, opacity: 1, ease: "power3.out", force3D: true }, ">");
-      tl.to(newYear,  { y: 0, opacity: 1, ease: "power3.out", force3D: true }, "-=0.6");
-      tl.to(newTitle, { y: 0, opacity: 1, ease: "power3.out", force3D: true }, "-=0.5");
-      tl.to(newDesc,  { y: 0, opacity: 1, ease: "power3.out", force3D: true }, "-=0.5");
+      tl.to(newLine,  { y: 0, autoAlpha: 1, ease: "power3.out", force3D: true }, ">");
+      tl.to(newYear,  { y: 0, autoAlpha: 1, ease: "power3.out", force3D: true }, "-=0.6");
+      tl.to(newTitle, { y: 0, autoAlpha: 1, ease: "power3.out", force3D: true }, "-=0.5");
+      tl.to(newDesc,  { y: 0, autoAlpha: 1, ease: "power3.out", force3D: true }, "-=0.5");
     });
 
-  }, { scope: containerRef, dependencies: [journeys, isRtl] });
+    requestAnimationFrame(() => ScrollTrigger.refresh());
+
+  }, { scope: containerRef, dependencies: [journeys, isRtl], revertOnUpdate: true });
 
   return (
     <div ref={containerRef} className="relative mt-12 bg-[#000918]">
@@ -168,6 +179,7 @@ function JourneyHorizontalScroll({ journeys, isRtl }: { journeys: Journey[], isR
                     fill
                     className="object-cover"
                     sizes="95vw"
+                    unoptimized
                   />
                 ) : (
                   <ImagePlaceholder />
@@ -227,9 +239,10 @@ function JourneyHorizontalScroll({ journeys, isRtl }: { journeys: Journey[], isR
   );
 }
 
-export default function AboutSection(_props?: { locale?: string }) {
+export default function AboutSection(props?: { locale?: string }) {
   const { language, direction } = useLanguage();
   const { t } = useTranslation(language);
+  const locale = props?.locale || language;
   
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
   const [journeys, setJourneys] = useState<Journey[]>([]);
@@ -288,7 +301,7 @@ export default function AboutSection(_props?: { locale?: string }) {
           animate={{ opacity: 1, y: 0 }}
           className="mb-16 text-center text-sm font-medium sm:text-base"
         >
-          <Link href="/" className="text-white hover:text-[#22D3EE] transition-colors">{t("nav_home")}</Link>
+          <Link href={`/${locale}`} className="text-white hover:text-[#22D3EE] transition-colors">{t("nav_home")}</Link>
           <span className="mx-2 text-white">{language === "ar" ? "<" : ">"}</span>
           <span className="text-[#22D3EE]">{t("about_breadcrumb")}</span>
         </motion.nav>
@@ -375,30 +388,26 @@ export default function AboutSection(_props?: { locale?: string }) {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ duration: 0.5, delay: index * 0.1 }}
-                  className="group relative flex flex-col overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-b from-[#0e1a2b] to-[#08111e] p-4 transition-all duration-500 hover:border-[#22D3EE]/40 hover:shadow-[0_12px_40px_rgba(34,211,238,0.12)]"
+                  className="flex flex-col overflow-hidden rounded-3xl bg-white/[0.03] border border-white/10 backdrop-blur-md transition-colors duration-300 hover:bg-white/[0.06] hover:border-white/20"
                 >
-                  {/* Ambient top border glow on hover */}
-                  <div className="pointer-events-none  absolute -inset-px rounded-2xl bg-gradient-to-b from-[#22D3EE]/20 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
-
                   {/* Image Container */}
-                  <div className="relative cursor-pointer aspect-[4/5] w-full overflow-hidden rounded-xl bg-slate-900">
+                  <div className="relative aspect-square w-full overflow-hidden bg-slate-900/50">
                     <Image
                       src={member.imageUrl}
                       alt={member.name}
                       fill
-                      className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+                      className="object-cover"
                       sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                      unoptimized
                     />
-                    {/* Soft vignette overlay */}
-                    <div className="absolute cursor-pointer inset-0 bg-gradient-to-t from-[#08111e]/80 via-transparent to-transparent opacity-60 transition-opacity group-hover:opacity-30" />
                   </div>
 
                   {/* Member Details */}
-                  <div className="relative cursor-pointer z-10 flex flex-col pt-5 px-1 pb-2">
-                    <h3 className="text-xl font-bold tracking-tight text-white transition-colors duration-300 group-hover:text-[#22D3EE]">
+                  <div className="flex flex-col items-center text-center p-6 md:p-8">
+                    <h3 className="text-2xl font-bold tracking-tight text-white">
                       {member.name}
                     </h3>
-                    <p className="mt-1.5 text-xs font-semibold uppercase tracking-widest text-[#22D3EE]/90">
+                    <p className="mt-2 text-sm font-semibold uppercase tracking-widest text-[#22D3EE]">
                       {member.jobTitle}
                     </p>
                   </div>
@@ -435,7 +444,7 @@ export default function AboutSection(_props?: { locale?: string }) {
 
         <section className="mt-24 rounded-2xl border border-white/10 bg-white/[0.04] p-7 sm:mt-32 sm:p-10 lg:flex lg:items-center lg:justify-between lg:px-14" aria-label="Contact call to action">
           <h2 className="max-w-xl text-center text-3xl font-bold leading-tight sm:text-4xl">{t("about_cta_heading")}</h2>
-          <Link href="/contactus" className="mt-6 inline-flex items-center justify-center gap-2 rounded-full bg-[#22D3EE] px-8 py-3.5 text-sm font-bold !text-[#011022] transition-transform hover:scale-105 lg:mt-0">{t("footer_contact_us")} <ArrowUpRight size={17} className="!text-[#011022]" /></Link>
+          <Link href={`/${locale}/contactus`} className="mt-6 inline-flex items-center justify-center gap-2 rounded-full bg-[#22D3EE] px-8 py-3.5 text-sm font-bold !text-[#011022] transition-transform hover:scale-105 lg:mt-0">{t("footer_contact_us")} <ArrowUpRight size={17} className="!text-[#011022]" /></Link>
         </section>
       </div>
     </main>

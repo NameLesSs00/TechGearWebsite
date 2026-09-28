@@ -8,7 +8,7 @@ import { ArrowUpRight, CheckCircle2 } from "lucide-react";
 import { productService, type ProductApiItem } from "@/services/productService";
 import { useLanguage } from "@/context/LanguageContext";
 import { useTranslation } from "@/translations";
-import { normalizeSlug } from "@/lib/apiClient";
+import { buildEntitySlug } from "@/lib/apiClient";
 
 interface ProductsPageContentProps {
   locale: string;
@@ -74,9 +74,9 @@ export default function ProductsPageContent({ locale }: ProductsPageContentProps
           animate="visible"
           className="mb-12 text-center"
         >
-          <p className="mb-3 text-sm font-semibold uppercase tracking-[0.45em] text-[#22D3EE]">Our Products</p>
+          <p className="mb-3 text-sm font-semibold uppercase tracking-[0.45em] text-[#22D3EE]">{t("products_label")}</p>
           <h1 className="text-3xl font-extrabold tracking-tight text-white sm:text-4xl">
-            Digital products built for real world impact.
+            {t("products_page_heading")}
           </h1>
           <div className="mx-auto mt-4 h-1 w-20 rounded-full bg-[#22D3EE]" />
         </motion.header>
@@ -86,7 +86,7 @@ export default function ProductsPageContent({ locale }: ProductsPageContentProps
             <div className="h-8 w-8 animate-spin rounded-full border-4 border-[#22D3EE]/20 border-t-[#22D3EE]" />
           </div>
         ) : products.length === 0 ? (
-          <div className="rounded-2xl border border-white/10 bg-[#0a1627] p-8 text-center text-white/70">No products available.</div>
+          <div className="rounded-2xl border border-white/10 bg-[#0a1627] p-8 text-center text-white/70">{t("products_no_data")}</div>
         ) : (
           <motion.div
             variants={stagger}
@@ -128,7 +128,7 @@ export default function ProductsPageContent({ locale }: ProductsPageContentProps
                     <div className="mt-5">
                       <div className="mb-3 flex items-center gap-2 text-sm font-bold text-white">
                         <CheckCircle2 className="h-4 w-4 text-emerald-300" />
-                        Key Features
+                        {t("product_key_features")}
                       </div>
                       <div className="flex flex-wrap gap-2">
                         {product.featuresSummary.map((feature, index) => (
@@ -144,30 +144,30 @@ export default function ProductsPageContent({ locale }: ProductsPageContentProps
                   ) : null}
 
                   <Link
-                    href={`/${locale}/products/${normalizeSlug(product.name)}`}
+                    href={`/${locale}/products/${buildEntitySlug(product.id, product.name)}`}
                     className="mt-7 inline-flex w-full max-w-md items-center justify-center gap-2 rounded-full bg-[#22D3EE] px-7 py-3 text-sm font-extrabold !text-[#011022] transition-colors hover:bg-[#1bb8d0]"
                   >
-                    View Product
+                    {t("product_view_product")}
                     <ArrowUpRight className="h-4 w-4" />
                   </Link>
                 </div>
 
-                <div className="relative order-first min-h-[280px] bg-[#0f1b29] lg:order-last lg:min-h-[376px]">
+                <Link href={`/${locale}/products/${buildEntitySlug(product.id, product.name)}`} className="relative order-first min-h-[280px] bg-[#0f1b29] lg:order-last lg:min-h-[376px] cursor-pointer group block">
                   {product.heroImageUrl ? (
                     <Image
                       src={product.heroImageUrl}
                       alt={product.name || "Product"}
                       fill
                       sizes="(max-width: 1024px) 100vw, 560px"
-                      className="object-cover object-center"
+                      className="object-cover object-center transition-transform duration-700 group-hover:scale-105"
                       unoptimized
                     />
                   ) : (
-                    <div className="flex h-full w-full items-center justify-center bg-[#101d2a] text-lg font-bold text-slate-500">
+                    <div className="flex h-full w-full items-center justify-center bg-[#101d2a] text-lg font-bold text-slate-500 transition-colors group-hover:bg-[#162738]">
                       {product.name}
                     </div>
                   )}
-                </div>
+                </Link>
               </motion.article>
             ))}
           </motion.div>

@@ -15,6 +15,7 @@ import {
 } from "../../_components/AdminControls";
 import { reviewService } from "@/services/reviewService";
 import { ConfirmModal } from "@/component/ConfirmModal";
+import { withAdminNotice } from "@/lib/adminFeedback";
 
 export default function ReviewEditor({ reviewId }: { reviewId?: string }) {
   const router = useRouter();
@@ -100,7 +101,7 @@ export default function ReviewEditor({ reviewId }: { reviewId?: string }) {
           await reviewService.uploadIconImage(reviewId, fd);
         }
         
-        router.push("/admin/reviews");
+        router.push(withAdminNotice("/admin/reviews", "Review updated successfully."));
       } else {
         const newId = await reviewService.createReview(payload);
         if (newId) {
@@ -116,7 +117,7 @@ export default function ReviewEditor({ reviewId }: { reviewId?: string }) {
             const fd = new FormData(); fd.append("Image", iconImageFile);
             await reviewService.uploadIconImage(newId, fd);
           }
-          router.push("/admin/reviews");
+          router.push(withAdminNotice("/admin/reviews", "Review created successfully."));
         } else {
           throw new Error("Failed to create review. No ID returned.");
         }
@@ -133,7 +134,7 @@ export default function ReviewEditor({ reviewId }: { reviewId?: string }) {
     setIsConfirmOpen(false);
     try {
       await reviewService.deleteReview(reviewId);
-      router.push("/admin/reviews");
+      router.push(withAdminNotice("/admin/reviews", "Review deleted successfully."));
     } catch (err) {
       setError("Failed to delete review.");
     }

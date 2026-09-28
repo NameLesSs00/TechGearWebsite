@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { AlertCircle, CheckCircle, Edit2, FolderKanban, Loader2, Plus, Save, Trash2, X } from "lucide-react";
-import { AdminEmptyState, AdminError, AdminPageHeader, AdminTable } from "../_components/AdminControls";
+import { AdminEmptyState, AdminError, AdminNotice, AdminPageHeader, AdminTable } from "../_components/AdminControls";
 import { projectCategoryService, ProjectCategory } from "@/services/projectCategoryService";
 import { ConfirmModal } from "@/component/ConfirmModal";
 
@@ -135,6 +135,7 @@ export default function AdminProjectCategoriesPage() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [statusMap, setStatusMap] = useState<Record<string, "success" | "error">>({});
   const [globalError, setGlobalError] = useState("");
+  const [globalSuccess, setGlobalSuccess] = useState("");
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
   const [deleteConfirmName, setDeleteConfirmName] = useState("");
 
@@ -170,7 +171,10 @@ export default function AdminProjectCategoriesPage() {
         { id: newId, name: enName, resolvedLanguage: "en", createdAt: new Date().toISOString(), updatedAt: null },
       ]);
       setAdding(false);
+      setGlobalError("");
+      setGlobalSuccess("Project category created successfully.");
     } catch {
+      setGlobalSuccess("");
       setGlobalError("Failed to create category.");
     }
   };
@@ -187,8 +191,12 @@ export default function AdminProjectCategoriesPage() {
       setCategories((current) => current.map((item) => (item.id === cat.id ? { ...item, name: enName } : item)));
       setEditingId(null);
       flash(cat.id, "success");
+      setGlobalError("");
+      setGlobalSuccess("Project category updated successfully.");
     } catch {
       flash(cat.id, "error");
+      setGlobalSuccess("");
+      setGlobalError("Failed to update category.");
     }
   };
 
@@ -204,8 +212,12 @@ export default function AdminProjectCategoriesPage() {
     try {
       await projectCategoryService.deleteCategory(catId);
       setCategories((current) => current.filter((item) => item.id !== catId));
+      setGlobalError("");
+      setGlobalSuccess("Project category deleted successfully.");
     } catch {
       flash(catId, "error");
+      setGlobalSuccess("");
+      setGlobalError("Failed to delete category.");
     }
   };
 
@@ -225,6 +237,7 @@ export default function AdminProjectCategoriesPage() {
       </AdminPageHeader>
 
       <AdminError message={globalError} />
+      <AdminNotice message={globalSuccess} onClose={() => setGlobalSuccess("")} />
 
       {loading ? (
         <div className="flex items-center justify-center rounded-2xl border border-white/10 bg-[#000c24] py-16">

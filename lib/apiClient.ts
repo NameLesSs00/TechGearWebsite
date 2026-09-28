@@ -107,17 +107,82 @@ export function isValidGuid(value?: string | null): boolean {
 }
 
 /**
- * Utility function to normalize slugs
+ * Utility function to normalize slugs. Supports Arabic and other non-Latin
+ * letters so translated entity names can safely be used in URLs.
  */
 export function normalizeSlug(value?: string | null): string {
+  return createSlug(value);
+}
+
+export function createSlug(value?: string | null): string {
   if (!value) {
     return "";
   }
 
   return value
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
     .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
+    .trim()
+    .replace(/[^\p{Letter}\p{Number}]+/gu, "-")
     .replace(/(^-|-$)/g, "");
+}
+
+export function buildEntitySlug(id?: string | null, title?: string | null): string {
+  const cleanId = id?.trim();
+  const slug = createSlug(title);
+
+  if (!cleanId) {
+    return slug;
+  }
+
+  return slug ? `${cleanId}-${slug}` : cleanId;
+}
+
+export function extractEntityId(value?: string | null): string | null {
+  if (!value) {
+    return null;
+  }
+
+  const trimmed = value.trim();
+  const guidPattern = "[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}";
+  const match = trimmed.match(new RegExp(`^(${guidPattern})(?:-|$)`, "i"));
+  return match?.[1] ?? null;
+}
+
+export function matchesEntitySlug(
+  value: string,
+  entity: { id?: string | null },
+  title?: string | null,
+): boolean {
+  const id = entity.id?.trim();
+  if (id && (value === id || extractEntityId(value) === id)) {
+    return true;
+  }
+
+  return createSlug(title) === value;
+}
+
+export function hasRequestedLanguage(
+  item: { resolvedLanguage?: string | null; resolved_language?: string | null },
+  language: string,
+): boolean {
+  const resolved = item.resolvedLanguage ?? item.resolved_language;
+  return !resolved || resolved.toLowerCase() === language.toLowerCase();
+}
+
+export function filterRequestedLanguage<T extends { resolvedLanguage?: string | null; resolved_language?: string | null }>(
+  items: T[],
+  language: string,
+): T[] {
+  return items.filter((item) => hasRequestedLanguage(item, language));
+}
+
+export function languageRequestConfig(language: string, params: Record<string, string | number | null | undefined> = {}) {
+  return {
+    params: { ...params, language },
+    headers: { "Accept-Language": language },
+  };
 }
 
 export default apiClient;

@@ -1,4 +1,4 @@
-import apiClient, { resolveImageUrl } from "@/lib/apiClient";
+import apiClient, { filterRequestedLanguage, hasRequestedLanguage, languageRequestConfig, resolveImageUrl } from "@/lib/apiClient";
 
 export interface ProductApiItem {
   id: string;
@@ -174,18 +174,10 @@ function normalizeProductDetail(product: RawProductApiItem): ProductDetail {
 export const productService = {
   getProducts: async (language: string = "en", page: number = 1, pageSize: number = 20): Promise<ProductDetail[]> => {
     try {
-      const response = await apiClient.get<ProductsResponse>("/api/products", {
-        params: {
-          page,
-          pageSize,
-        },
-        headers: {
-          "Accept-Language": language,
-        },
-      });
+      const response = await apiClient.get<ProductsResponse>("/api/products", languageRequestConfig(language, { page, pageSize }));
 
       if (response.data?.success && Array.isArray(response.data?.data?.items)) {
-        return response.data.data.items.map((product) => normalizeProductDetail(product as RawProductApiItem));
+        return filterRequestedLanguage(response.data.data.items, language).map((product) => normalizeProductDetail(product as RawProductApiItem));
       }
 
       return [];
@@ -203,13 +195,10 @@ export const productService = {
     }
 
     try {
-      const response = await apiClient.get<ProductByIdResponse>(`/api/products/${trimmedId}`, {
-        headers: {
-          "Accept-Language": language,
-        },
-      });
+      const response = await apiClient.get<ProductByIdResponse>(`/api/products/${trimmedId}`, languageRequestConfig(language));
 
       if (response.data?.success && response.data?.data) {
+        if (!hasRequestedLanguage(response.data.data, language)) return null;
         return normalizeProductDetail(response.data.data);
       }
 

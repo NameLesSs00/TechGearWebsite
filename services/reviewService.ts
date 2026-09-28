@@ -1,4 +1,4 @@
-import apiClient, { resolveMediaUrl } from "@/lib/apiClient";
+import apiClient, { filterRequestedLanguage, hasRequestedLanguage, languageRequestConfig, resolveMediaUrl } from "@/lib/apiClient";
 
 export interface ReviewApiItem {
   id: string;
@@ -47,16 +47,10 @@ export interface BaseResponse {
 export const reviewService = {
   getReviews: async (language: string = "en", page: number = 1, pageSize: number = 20): Promise<ReviewApiItem[]> => {
     try {
-      const response = await apiClient.get<ReviewsResponse>("/api/reviews", {
-        params: {
-          language,
-          page,
-          pageSize,
-        },
-      });
+      const response = await apiClient.get<ReviewsResponse>("/api/reviews", languageRequestConfig(language, { page, pageSize }));
 
       if (response.data?.success && Array.isArray(response.data?.data?.items)) {
-        return response.data.data.items.map((review) => ({
+        return filterRequestedLanguage(response.data.data.items, language).map((review) => ({
           ...review,
           client_image: resolveMediaUrl(review.client_image),
           hero_image: resolveMediaUrl(review.hero_image),
@@ -74,11 +68,10 @@ export const reviewService = {
 
   getReviewById: async (id: string, language: string = "en"): Promise<ReviewApiItem | null> => {
     try {
-      const response = await apiClient.get<ReviewResponse>(`/api/reviews/${id}`, {
-        params: { language },
-      });
+      const response = await apiClient.get<ReviewResponse>(`/api/reviews/${id}`, languageRequestConfig(language));
       if (response.data?.success && response.data.data) {
         const review = response.data.data;
+        if (!hasRequestedLanguage(review, language)) return null;
         return {
           ...review,
           client_image: resolveMediaUrl(review.client_image),

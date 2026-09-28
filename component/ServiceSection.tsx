@@ -9,6 +9,7 @@ import { useMemo } from "react";
 import { useServices } from "@/hooks/useServices";
 import { useLanguage } from "@/context/LanguageContext";
 import { useTranslation } from "@/translations";
+import { buildEntitySlug, createSlug } from "@/lib/apiClient";
 
 interface ServiceItem {
   id: string;
@@ -83,17 +84,14 @@ export default function ServiceSection({ locale }: ServiceSectionProps) {
   const services = useMemo(() => {
     return fetchedServices.map((service) => {
       // Use normalized title as slug so ServiceDetails can match it
-      const slug = service.title
-        .toLowerCase()
-        .replace(/[^a-z0-9\u0600-\u06FF]+/g, "-")
-        .replace(/(^-|-$)/g, "") || service.id;
+      const slug = createSlug(service.title) || service.id;
       const iconKey = slug.includes("mobile") ? "mobile" : slug.includes("web") || slug.includes("website") ? "web" : slug.includes("software") ? "software" : slug.includes("market") ? "marketing" : slug.includes("design") ? "design" : slug.includes("seo") ? "seo" : "web";
 
       return {
         id: service.id,
         title: service.title,
         subtitle: service.subtitle || undefined,
-        href: `/${currentLocale}/services/${slug}`,
+        href: `/${currentLocale}/services/${buildEntitySlug(service.id, service.title)}`,
         icon: defaultIcons[iconKey] ?? Monitor,
         iconImageUrl: service.iconImageUrl,
       };

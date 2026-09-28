@@ -4,6 +4,7 @@ import { FormEvent, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AdminError, AdminInput, AdminPageHeader, AdminPanel, AdminTextarea, AdminToggle, LanguageTabs, SubmitButton } from "../_components/AdminControls";
 import { adminApi } from "@/services/adminApi";
+import { withAdminNotice } from "@/lib/adminFeedback";
 
 export default function FaqForm({ id }: { id?: string }) {
   const router = useRouter();
@@ -44,10 +45,10 @@ export default function FaqForm({ id }: { id?: string }) {
     try {
       if (id) {
         await adminApi.faqs.update(id, payload);
-        router.push("/admin/faqs");
+        router.push(withAdminNotice("/admin/faqs", "FAQ updated successfully."));
       } else {
         const newId = await adminApi.faqs.create(payload);
-        router.push(`/admin/faqs/${newId}`);
+        router.push(withAdminNotice(`/admin/faqs/${newId}`, "FAQ created successfully."));
       }
     } catch (err: any) {
       setError(err?.response?.data?.message ?? err?.message ?? "Failed to save FAQ.");

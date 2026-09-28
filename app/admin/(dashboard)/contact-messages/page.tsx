@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Eye, Mail, Trash2 } from "lucide-react";
-import { AdminEmptyState, AdminError, AdminPageHeader, AdminTable } from "../_components/AdminControls";
+import { AdminEmptyState, AdminError, AdminNotice, AdminPageHeader, AdminTable } from "../_components/AdminControls";
 import { ContactMessage, adminApi } from "@/services/adminApi";
 import { ConfirmModal } from "@/component/ConfirmModal";
 
@@ -11,6 +11,7 @@ export default function ContactMessagesPage() {
   const [messages, setMessages] = useState<ContactMessage[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
   const [itemToDelete, setItemToDelete] = useState<ContactMessage | null>(null);
 
   useEffect(() => {
@@ -27,7 +28,10 @@ export default function ContactMessagesPage() {
     try {
       await adminApi.contactMessages.remove(message.id);
       setMessages((items) => items.filter((item) => item.id !== message.id));
+      setError("");
+      setSuccess("Contact message deleted successfully.");
     } catch (err: any) {
+      setSuccess("");
       setError(err?.message ?? "Failed to delete contact message.");
     }
   };
@@ -36,6 +40,7 @@ export default function ContactMessagesPage() {
     <div className="space-y-6">
       <AdminPageHeader title="Contact Messages" description="Review contact form submissions and mark messages as read." />
       <AdminError message={error} />
+      <AdminNotice message={success} onClose={() => setSuccess("")} />
       {loading ? <div className="py-16 text-center text-slate-400">Loading messages...</div> : messages.length === 0 ? (
         <div className="rounded-2xl border border-white/10 bg-[#000c24]"><AdminEmptyState icon={<Mail className="h-12 w-12" />} title="No messages yet" /></div>
       ) : (

@@ -8,6 +8,8 @@ import { ArrowLeft, Loader2, Save, CheckCircle, Trash2, Upload, X, Plus } from "
 import { projectService, Project } from "@/services/projectService";
 import { projectCategoryService, ProjectCategory } from "@/services/projectCategoryService";
 import { ConfirmModal } from "@/component/ConfirmModal";
+import { AdminNotice } from "../../_components/AdminControls";
+import { withAdminNotice } from "@/lib/adminFeedback";
 
 interface PageProps { params: Promise<{ id: string }>; }
 
@@ -20,6 +22,7 @@ export default function EditProjectPage({ params }: PageProps) {
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
   const [id, setId] = useState("");
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
 
@@ -67,7 +70,7 @@ export default function EditProjectPage({ params }: PageProps) {
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(""); setSaving(true); setSaved(false);
+    setError(""); setSuccess(""); setSaving(true); setSaved(false);
     try {
       const fd = new FormData();
       fd.append("Id", id);
@@ -80,6 +83,7 @@ export default function EditProjectPage({ params }: PageProps) {
       fd.append("Translations", JSON.stringify({ languageCode: "ar", title: form.arTitle, description: form.arDescription, industry: form.arIndustry, projectType: form.arProjectType, services: form.arServices, platform: form.arPlatform }));
       await projectService.updateProject(id, fd);
       setSaved(true);
+      setSuccess("Project updated successfully.");
       setNewIconFile(null); setNewHeroFile(null); setNewGalleryFiles([]);
       setTimeout(() => setSaved(false), 3000);
     } catch (err: any) {
@@ -96,7 +100,7 @@ export default function EditProjectPage({ params }: PageProps) {
     setIsConfirmOpen(false);
     try {
       await projectService.deleteProject(id);
-      router.push("/admin/projects");
+      router.push(withAdminNotice("/admin/projects", "Project deleted successfully."));
     } catch { setError("Failed to delete project."); }
   };
 
@@ -135,6 +139,7 @@ export default function EditProjectPage({ params }: PageProps) {
       </div>
 
       {error && <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-sm text-red-200">{error}</div>}
+      <AdminNotice message={success} onClose={() => setSuccess("")} />
 
       <form onSubmit={handleSave} className="space-y-6">
         {/* Basic Info */}

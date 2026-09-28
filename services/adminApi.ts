@@ -219,6 +219,9 @@ export const adminApi = {
         headers: { "Content-Type": "multipart/form-data" },
       });
     },
+    deleteFeatureBlockImage: async (productId: string, featureBlockId: string) => {
+      await apiClient.delete(`/api/products/${productId}/feature-blocks/${featureBlockId}/image`);
+    },
     updateReviewAvatar: async (productId: string, reviewId: string, avatar: File) => {
       const formData = new FormData();
       formData.append("Avatar", avatar);
@@ -288,7 +291,7 @@ export const adminApi = {
       formData.append("YearOrDate", data.yearOrDate);
       formData.append("DisplayOrder", String(data.displayOrder));
       if (data.image) formData.append("Image", data.image);
-      if (data.imageUrl) formData.append("ImageUrl", data.imageUrl);
+      formData.append("ImageUrl", data.imageUrl || "string");
       appendJsonArray(formData, "Translations", data.translations);
       const response = await apiClient[method]<ApiResponse<string | null>>(endpoint, formData, { headers: { "Content-Type": "multipart/form-data" } });
       if (!response.data.success) throw new Error(response.data.message ?? "Failed to save journey");

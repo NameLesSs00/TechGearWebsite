@@ -1,62 +1,19 @@
 import ServiceDetails from "@/component/ServiceDetails";
 import { serviceService } from "@/services/serviceService";
 import { constructMetadata, generateBreadcrumbSchema, generateServiceSchema } from "@/lib/seo";
-import { normalizeSlug } from "@/lib/apiClient";
+import { matchesEntitySlug } from "@/lib/apiClient";
 
 interface ServiceDetailsPageProps {
   params: Promise<{ locale: string; slug: string }>;
 }
 
-const serviceTitles: Record<string, { title: string; description: string }> = {
-  "web-development": {
-    title: "Web Development Services | Tech Gear Solutions",
-    description:
-      "Modern, responsive, high-performance websites and web applications designed and developed to move your business forward.",
-  },
-  "mobile-development": {
-    title: "Mobile App Development | Tech Gear Solutions",
-    description:
-      "Fast, intuitive iOS & Android mobile applications built for seamless performance and outstanding user experiences.",
-  },
-  "software-development": {
-    title: "Custom Software Development | Tech Gear Solutions",
-    description:
-      "Reliable custom software architecture, dashboards, and integrations built around your specific business workflows.",
-  },
-  marketing: {
-    title: "Digital Marketing & Growth | Tech Gear Solutions",
-    description:
-      "Strategic digital marketing campaigns, content strategy, and search optimization to reach and convert your target audience.",
-  },
-  "graphic-design": {
-    title: "Graphic Design & Branding | Tech Gear Solutions",
-    description:
-      "Memorable visual brand identity, UI visual systems, and marketing materials that set your company apart.",
-  },
-  seo: {
-    title: "Search Engine Optimization (SEO) | Tech Gear Solutions",
-    description:
-      "Technical SEO, on-page optimization, and content strategy to rank higher on search engines and drive organic traffic.",
-  },
-};
-
 export async function generateMetadata({ params }: ServiceDetailsPageProps) {
   const { locale, slug } = await params;
-  const knownService = serviceTitles[slug];
-
-  if (knownService) {
-    return constructMetadata({
-      title: knownService.title,
-      description: knownService.description,
-      path: `/${locale}/services/${slug}`,
-      keywords: [slug.replace(/-/g, " "), "Services", "Tech Gear"],
-    });
-  }
 
   // Fallback to API lookup
   try {
     const services = await serviceService.getServices(locale, 1, 100);
-    const apiService = services.find((s) => normalizeSlug(s.title) === slug || s.id === slug);
+    const apiService = services.find((s) => matchesEntitySlug(slug, s, s.title));
     if (apiService) {
       return constructMetadata({
         title: `${apiService.title} | Services | Tech Gear Solutions`,
@@ -64,7 +21,7 @@ export async function generateMetadata({ params }: ServiceDetailsPageProps) {
           apiService.description ||
           `Professional ${apiService.title} services provided by Tech Gear Solutions.`,
         path: `/${locale}/services/${slug}`,
-        keywords: [apiService.title, "Software Services"],
+        keywords: [apiService.title, "Software Services", "Tech Gear"],
       });
     }
   } catch (error) {
@@ -80,22 +37,19 @@ export async function generateMetadata({ params }: ServiceDetailsPageProps) {
 
 export default async function ServiceDetailsPage({ params }: ServiceDetailsPageProps) {
   const { locale, slug } = await params;
-  const knownService = serviceTitles[slug];
 
-  let title = knownService ? knownService.title.split(" | ")[0] : "Service";
-  let description = knownService ? knownService.description : "Software development service.";
+  let title = "Service";
+  let description = "Software development service.";
 
-  if (!knownService) {
-    try {
-      const services = await serviceService.getServices(locale, 1, 100);
-      const apiService = services.find((s) => normalizeSlug(s.title) === slug || s.id === slug);
-      if (apiService) {
-        title = apiService.title;
-        description = apiService.description || description;
-      }
-    } catch (error) {
-      console.error("Error fetching service for schema:", error);
+  try {
+    const services = await serviceService.getServices(locale, 1, 100);
+    const apiService = services.find((s) => matchesEntitySlug(slug, s, s.title));
+    if (apiService) {
+      title = apiService.title;
+      description = apiService.description || description;
     }
+  } catch (error) {
+    console.error("Error fetching service for schema:", error);
   }
 
   const breadcrumbSchema = generateBreadcrumbSchema([

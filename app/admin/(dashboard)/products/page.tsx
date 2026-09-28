@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Edit2, Package, Plus, Trash2 } from "lucide-react";
-import { AdminEmptyState, AdminError, AdminPageHeader, AdminTable } from "../_components/AdminControls";
+import { AdminEmptyState, AdminError, AdminNotice, AdminPageHeader, AdminTable } from "../_components/AdminControls";
 import { ProductListItem, adminApi } from "@/services/adminApi";
 import { ConfirmModal } from "@/component/ConfirmModal";
 
@@ -12,11 +12,13 @@ export default function AdminProductsPage() {
   const [products, setProducts] = useState<ProductListItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
   const [itemToDelete, setItemToDelete] = useState<ProductListItem | null>(null);
 
   const load = async () => {
     setLoading(true);
     setError("");
+    setSuccess("");
     try {
       const data = await adminApi.products.list("en", 1, 100);
       setProducts(data.items);
@@ -38,7 +40,10 @@ export default function AdminProductsPage() {
     try {
       await adminApi.products.remove(product.id);
       setProducts((current) => current.filter((item) => item.id !== product.id));
+      setError("");
+      setSuccess("Product deleted successfully.");
     } catch (err: any) {
+      setSuccess("");
       setError(err?.message ?? "Failed to delete product.");
     }
   };
@@ -47,6 +52,7 @@ export default function AdminProductsPage() {
     <div className="space-y-6">
       <AdminPageHeader actionHref="/admin/products/create" actionIcon={<Plus className="h-4 w-4" />} actionLabel="Create Product" title="Products" description="Manage product cards, detail content, media, reviews, and product FAQs." />
       <AdminError message={error} />
+      <AdminNotice message={success} onClose={() => setSuccess("")} />
 
       {loading ? (
         <div className="py-16 text-center text-slate-400">Loading products...</div>

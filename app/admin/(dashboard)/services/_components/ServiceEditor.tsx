@@ -10,8 +10,9 @@ import { serviceService, ServiceApiItem, ServiceFeature } from "@/services/servi
 import { ConfirmModal } from "@/component/ConfirmModal";
 import {
   AdminError, AdminInput, AdminPageHeader, AdminPanel, AdminTextarea,
-  DeleteButton, ImagePicker, LanguageTabs, SubmitButton,
+  AdminNotice, DeleteButton, ImagePicker, LanguageTabs, SubmitButton,
 } from "../../_components/AdminControls";
+import { withAdminNotice } from "@/lib/adminFeedback";
 
 interface DeliverItem { id: string; enText: string; arText: string; displayOrder: number; }
 
@@ -23,6 +24,8 @@ function WhatWeDeliverSection({ serviceId, initialItems }: { serviceId: string; 
   const [saving, setSaving] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<DeliverItem | null>(null);
   const [statusMap, setStatusMap] = useState<Record<string, "success" | "error">>({});
+  const [notice, setNotice] = useState("");
+  const [error, setError] = useState("");
 
   const flash = (id: string, s: "success" | "error") => {
     setStatusMap(m => ({ ...m, [id]: s }));
@@ -40,8 +43,10 @@ function WhatWeDeliverSection({ serviceId, initialItems }: { serviceId: string; 
       if (res?.success && res?.data) {
         setItems(prev => [...prev, { id: res.data!, enText: newEn, arText: newAr, displayOrder: prev.length + 1 }]);
         setNewEn(""); setNewAr(""); setAdding(false);
+        setError("");
+        setNotice("Deliverable added successfully.");
       }
-    } catch { }
+    } catch { setNotice(""); setError("Failed to add deliverable."); }
     setSaving(false);
   };
 
@@ -51,9 +56,16 @@ function WhatWeDeliverSection({ serviceId, initialItems }: { serviceId: string; 
     setItemToDelete(null);
     try {
       const res = await serviceService.deleteWhatWeDeliver(serviceId, item.id);
-      if (res?.success) setItems(prev => prev.filter(i => i.id !== item.id));
-      else flash(item.id, "error");
-    } catch { flash(item.id, "error"); }
+      if (res?.success) {
+        setItems(prev => prev.filter(i => i.id !== item.id));
+        setError("");
+        setNotice("Deliverable deleted successfully.");
+      } else {
+        flash(item.id, "error");
+        setNotice("");
+        setError("Failed to delete deliverable.");
+      }
+    } catch { flash(item.id, "error"); setNotice(""); setError("Failed to delete deliverable."); }
   };
 
   return (
@@ -63,6 +75,10 @@ function WhatWeDeliverSection({ serviceId, initialItems }: { serviceId: string; 
         <button onClick={() => setAdding(true)} className="flex items-center gap-1.5 text-sm text-[#22D3EE] hover:text-white transition-colors">
           <Plus className="w-4 h-4" /> Add Item
         </button>
+      </div>
+      <div className="mb-4 space-y-3">
+        <AdminNotice message={notice} onClose={() => setNotice("")} />
+        <AdminError message={error} />
       </div>
 
       <div className="space-y-2">
@@ -119,6 +135,8 @@ function FeaturesSection({ serviceId, initialFeatures }: { serviceId: string; in
   const [newFilePreview, setNewFilePreview] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [featureToDelete, setFeatureToDelete] = useState<string | null>(null);
+  const [notice, setNotice] = useState("");
+  const [error, setError] = useState("");
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -139,8 +157,10 @@ function FeaturesSection({ serviceId, initialFeatures }: { serviceId: string; in
           name: newEnName, displayOrder: prev.length + 1
         }]);
         setNewEnName(""); setNewArName(""); setNewFile(null); setNewFilePreview(null); setAdding(false);
+        setError("");
+        setNotice("Feature added successfully.");
       }
-    } catch { }
+    } catch { setNotice(""); setError("Failed to add feature."); }
     setSaving(false);
   };
 
@@ -150,14 +170,26 @@ function FeaturesSection({ serviceId, initialFeatures }: { serviceId: string; in
     setFeatureToDelete(null);
     try {
       const res = await serviceService.deleteFeature(serviceId, featureId);
-      if (res?.success) setFeatures(prev => prev.filter(f => f.id !== featureId));
-    } catch { }
+      if (res?.success) {
+        setFeatures(prev => prev.filter(f => f.id !== featureId));
+        setError("");
+        setNotice("Feature deleted successfully.");
+      } else {
+        setNotice("");
+        setError("Failed to delete feature.");
+      }
+    } catch { setNotice(""); setError("Failed to delete feature."); }
   };
 
   const handleImageUpdate = async (featureId: string, file: File) => {
     const res = await serviceService.updateFeatureImage(serviceId, featureId, file);
     if (res?.success) {
       setFeatures(prev => prev.map(f => f.id === featureId ? { ...f, imageUrl: URL.createObjectURL(file) } : f));
+      setError("");
+      setNotice("Feature image updated successfully.");
+    } else {
+      setNotice("");
+      setError("Failed to update feature image.");
     }
     return res?.success === true;
   };
@@ -169,6 +201,10 @@ function FeaturesSection({ serviceId, initialFeatures }: { serviceId: string; in
         <button type="button" onClick={() => setAdding(true)} className="flex items-center gap-1.5 text-sm text-[#22D3EE] hover:text-white transition-colors">
           <Plus className="w-4 h-4" /> Add Feature
         </button>
+      </div>
+      <div className="mb-4 space-y-3">
+        <AdminNotice message={notice} onClose={() => setNotice("")} />
+        <AdminError message={error} />
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
@@ -300,14 +336,14 @@ export default function ServiceEditor({ serviceId }: { serviceId?: string }) {
         await serviceService.updateService(serviceId, payload);
         if (iconFile) await serviceService.updateServiceIcon(serviceId, iconFile);
         if (serviceImageFile) await serviceService.updateServiceImage(serviceId, serviceImageFile);
-        router.push("/admin/services");
+        router.push(withAdminNotice("/admin/services", "Service updated successfully."));
       } else {
         const res = await serviceService.createService(payload);
         if (res?.success && res?.data) {
           const newId = res.data;
           if (iconFile) await serviceService.updateServiceIcon(newId, iconFile);
           if (serviceImageFile) await serviceService.updateServiceImage(newId, serviceImageFile);
-          router.push(`/admin/services/${newId}`); // Redirect to edit mode so they can add features
+          router.push(withAdminNotice(`/admin/services/${newId}`, "Service created successfully. You can now add features."));
         } else {
           setError(res?.message || "Failed to create service.");
         }
@@ -324,7 +360,7 @@ export default function ServiceEditor({ serviceId }: { serviceId?: string }) {
     setIsConfirmOpen(false);
     try {
       await serviceService.deleteService(serviceId);
-      router.push("/admin/services");
+      router.push(withAdminNotice("/admin/services", "Service deleted successfully."));
     } catch (err) {
       setError("Failed to delete service.");
     }

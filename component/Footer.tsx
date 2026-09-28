@@ -11,7 +11,7 @@ import { useTranslation } from "@/translations";
 import { FacebookIcon, InstagramIcon, TikTokIcon, LinkedInIcon } from "./SocialIcons";
 import { motion, Variants, AnimatePresence } from "framer-motion";
 import { useServices } from "@/hooks/useServices";
-import { normalizeSlug } from "@/lib/apiClient";
+import { buildEntitySlug } from "@/lib/apiClient";
 
 interface FooterProps {
   locale: string;
@@ -175,9 +175,7 @@ C150 155 70 110 0 50        Z
                         >
                           <div className="flex flex-col gap-2 border-s border-white/10 ps-3">
                             {services.map(service => {
-                              const slug = service.title
-                                ? normalizeSlug(service.title)
-                                : service.id;
+                              const slug = buildEntitySlug(service.id, service.title);
                               return (
                                 <Link 
                                   key={service.id} 

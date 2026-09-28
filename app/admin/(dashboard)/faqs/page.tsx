@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Edit2, HelpCircle, Plus, Trash2 } from "lucide-react";
-import { AdminEmptyState, AdminError, AdminPageHeader, AdminTable } from "../_components/AdminControls";
+import { AdminEmptyState, AdminError, AdminNotice, AdminPageHeader, AdminTable } from "../_components/AdminControls";
 import { FaqItem, adminApi } from "@/services/adminApi";
 import { ConfirmModal } from "@/component/ConfirmModal";
 
@@ -11,6 +11,7 @@ export default function AdminFaqsPage() {
   const [faqs, setFaqs] = useState<FaqItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
   const [itemToDelete, setItemToDelete] = useState<FaqItem | null>(null);
 
   useEffect(() => {
@@ -27,7 +28,10 @@ export default function AdminFaqsPage() {
     try {
       await adminApi.faqs.remove(faq.id);
       setFaqs((items) => items.filter((item) => item.id !== faq.id));
+      setError("");
+      setSuccess("FAQ deleted successfully.");
     } catch (err: any) {
+      setSuccess("");
       setError(err?.message ?? "Failed to delete FAQ.");
     }
   };
@@ -36,6 +40,7 @@ export default function AdminFaqsPage() {
     <div className="space-y-6">
       <AdminPageHeader actionHref="/admin/faqs/create" actionIcon={<Plus className="h-4 w-4" />} actionLabel="Create FAQ" title="FAQs" description="Manage global website frequently asked questions." />
       <AdminError message={error} />
+      <AdminNotice message={success} onClose={() => setSuccess("")} />
       {loading ? <div className="py-16 text-center text-slate-400">Loading FAQs...</div> : faqs.length === 0 ? (
         <div className="rounded-2xl border border-white/10 bg-[#000c24]">
           <AdminEmptyState icon={<HelpCircle className="h-12 w-12" />} title="No FAQs yet" />

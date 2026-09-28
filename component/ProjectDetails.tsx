@@ -41,6 +41,7 @@ export default function ProjectDetails({ locale, projectId }: { locale: string; 
   const [project, setProject] = useState<Project | null>(null);
   const [activeImage, setActiveImage] = useState(0);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
+  const [isZoomed, setIsZoomed] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
 
@@ -109,10 +110,19 @@ export default function ProjectDetails({ locale, projectId }: { locale: string; 
                 className="relative aspect-[4/3] w-full overflow-hidden rounded-[32px] bg-[#101820] cursor-pointer group"
                 onClick={() => setIsLightboxOpen(true)}
               >
-                {selectedImage && <Image src={selectedImage} alt={project.title} fill sizes="(max-width: 1024px) 100vw, 60vw" className="object-cover object-top transition-transform duration-500 group-hover:scale-105" />}
+                {selectedImage && (
+                  <Image 
+                    src={selectedImage} 
+                    alt={project.title} 
+                    fill 
+                    sizes="(max-width: 1024px) 100vw, 60vw" 
+                    className="object-cover object-top group-hover:object-bottom" 
+                    style={{ transition: "object-position 8s ease-in-out" }}
+                  />
+                )}
               </div>
 
-              {galleryImages.length > 0 && <div className="cursor-pointer flex items-center gap-4">
+              {galleryImages.length > 1 && <div className="cursor-pointer flex items-center gap-4">
                 <button type="button" aria-label={labels.previous} onClick={() => setActiveImage((current) => (current - 1 + galleryImages.length) % galleryImages.length)} className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-white shadow-sm text-[#011022] transition-colors hover:bg-gray-100">
                   <ChevronLeft size={24} className={`text-[#011022] ${direction === "rtl" ? "rotate-180" : ""}`} />
                 </button>
@@ -133,7 +143,7 @@ export default function ProjectDetails({ locale, projectId }: { locale: string; 
 
             <motion.div initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.6, delay: 0.3 }} className="rounded-[32px] bg-white p-8 text-[#011022] sm:p-10">
               {project.iconImageUrl && (
-                <div className="mb-8 relative h-16 w-32">
+                <div className="mb-8 relative h-24 w-48 sm:h-28 sm:w-64">
                   <Image src={project.iconImageUrl} alt={`${project.title} logo`} fill className="object-contain object-left" />
                 </div>
               )}
@@ -172,21 +182,47 @@ export default function ProjectDetails({ locale, projectId }: { locale: string; 
               className="fixed inset-0 z-[100] flex items-center justify-center bg-black/95 p-4 backdrop-blur-sm"
             >
               <button 
-                onClick={() => setIsLightboxOpen(false)} 
+                onClick={() => {
+                  setIsLightboxOpen(false);
+                  setIsZoomed(false);
+                }} 
                 className="absolute right-6 top-6 z-[110] rounded-full bg-white/10 p-3 text-white transition-colors hover:bg-white/20"
               >
                 <X size={28} />
               </button>
               
-              <div className="relative h-[80vh] w-full max-w-6xl">
-                <Image src={selectedImage} alt={project.title} fill className="object-contain" />
+              <div 
+                className={`relative rounded-lg bg-[#011022] p-2 flex justify-center transition-all ${
+                  isZoomed 
+                    ? "w-[95vw] h-[95vh] overflow-auto items-start" 
+                    : "max-h-[85vh] w-full max-w-[90vw] md:max-w-5xl overflow-hidden items-center"
+                }`}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIsZoomed(!isZoomed);
+                }}
+                style={{ cursor: isZoomed ? 'zoom-out' : 'zoom-in' }}
+              >
+                <img 
+                  src={selectedImage} 
+                  alt={project.title} 
+                  className={`block rounded transition-all duration-300 ${
+                    isZoomed 
+                      ? "w-full min-w-[800px] max-w-none h-auto object-cover" 
+                      : "max-w-full max-h-[80vh] w-auto h-auto object-contain"
+                  }`} 
+                />
+              </div>
+              
+              <div className="absolute bottom-6 left-1/2 -translate-x-1/2 rounded-full bg-black/60 px-4 py-1.5 text-sm font-semibold text-white backdrop-blur-md z-[110]">
+                {activeImage + 1} / {galleryImages.length}
               </div>
 
-              <div className="absolute top-1/2 flex w-full -translate-y-1/2 justify-between px-6 pointer-events-none">
-                <button type="button" aria-label={labels.previous} onClick={(e) => { e.stopPropagation(); setActiveImage((current) => (current - 1 + galleryImages.length) % galleryImages.length); }} className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-white/10 shadow-sm text-white transition-colors hover:bg-white/30 pointer-events-auto">
+              <div className="absolute top-1/2 flex w-full -translate-y-1/2 justify-between px-6 pointer-events-none z-[110]">
+                <button type="button" aria-label={labels.previous} onClick={(e) => { e.stopPropagation(); setIsZoomed(false); setActiveImage((current) => (current - 1 + galleryImages.length) % galleryImages.length); }} className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-white/10 shadow-sm text-white transition-colors hover:bg-white/30 pointer-events-auto">
                   <ChevronLeft size={32} className={direction === "rtl" ? "rotate-180" : ""} />
                 </button>
-                <button type="button" aria-label={labels.next} onClick={(e) => { e.stopPropagation(); setActiveImage((current) => (current + 1) % galleryImages.length); }} className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-[#22D3EE] text-[#011022] transition-colors hover:bg-[#1bbccf] pointer-events-auto">
+                <button type="button" aria-label={labels.next} onClick={(e) => { e.stopPropagation(); setIsZoomed(false); setActiveImage((current) => (current + 1) % galleryImages.length); }} className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-[#22D3EE] text-[#011022] transition-colors hover:bg-[#1bbccf] pointer-events-auto">
                   <ChevronRight size={32} className={direction === "rtl" ? "rotate-180" : ""} />
                 </button>
               </div>

@@ -4,13 +4,14 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Edit2, Milestone, Plus, Trash2 } from "lucide-react";
-import { AdminEmptyState, AdminError, AdminPageHeader, AdminTable } from "../_components/AdminControls";
+import { AdminEmptyState, AdminError, AdminNotice, AdminPageHeader, AdminTable } from "../_components/AdminControls";
 import { Journey, adminApi } from "@/services/adminApi";
 import { ConfirmModal } from "@/component/ConfirmModal";
 
 export default function AdminJourneysPage() {
   const [items, setItems] = useState<Journey[]>([]);
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(true);
   const [itemToDelete, setItemToDelete] = useState<Journey | null>(null);
 
@@ -28,7 +29,10 @@ export default function AdminJourneysPage() {
     try {
       await adminApi.journeys.remove(item.id);
       setItems((current) => current.filter((row) => row.id !== item.id));
+      setError("");
+      setSuccess("Journey deleted successfully.");
     } catch (err: any) {
+      setSuccess("");
       setError(err?.message ?? "Failed to delete journey.");
     }
   };
@@ -37,6 +41,7 @@ export default function AdminJourneysPage() {
     <div className="space-y-6">
       <AdminPageHeader actionHref="/admin/journeys/create" actionIcon={<Plus className="h-4 w-4" />} actionLabel="Create Journey" title="Journeys" description="Manage company timeline milestones." />
       <AdminError message={error} />
+      <AdminNotice message={success} onClose={() => setSuccess("")} />
       {loading ? <div className="py-16 text-center text-slate-400">Loading journeys...</div> : items.length === 0 ? (
         <div className="rounded-2xl border border-white/10 bg-[#000c24]"><AdminEmptyState icon={<Milestone className="h-12 w-12" />} title="No journeys yet" /></div>
       ) : (

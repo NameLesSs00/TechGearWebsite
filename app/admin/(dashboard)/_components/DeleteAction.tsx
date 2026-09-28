@@ -6,6 +6,7 @@ import { Trash2, Loader2 } from "lucide-react";
 import { projectService } from "@/services/projectService";
 import { reviewService } from "@/services/reviewService";
 import { serviceService } from "@/services/serviceService";
+import { withAdminNotice } from "@/lib/adminFeedback";
 
 interface DeleteActionProps {
   id: string;
@@ -40,7 +41,8 @@ export default function DeleteAction({ id, type, title }: DeleteActionProps) {
       } else if (type === "service") {
         await serviceService.deleteService(id);
       }
-      router.push(listPath);
+      const itemLabel = type.charAt(0).toUpperCase() + type.slice(1);
+      router.push(withAdminNotice(listPath, `${itemLabel} deleted successfully.`));
       router.refresh();
     } catch (err: any) {
       setErrorMsg(err.message || "Failed to delete.");

@@ -1,4 +1,4 @@
-import apiClient, { resolveImageUrl } from "@/lib/apiClient";
+import apiClient, { filterRequestedLanguage, languageRequestConfig, resolveImageUrl } from "@/lib/apiClient";
 
 export interface TeamMember {
   id: string;
@@ -28,16 +28,10 @@ export interface TeamMembersResponse {
 export const teamMemberService = {
   getTeamMembers: async (language: string = "en", page: number = 1, pageSize: number = 20): Promise<TeamMember[]> => {
     try {
-      const response = await apiClient.get<TeamMembersResponse>("/api/team-members", {
-        params: {
-          language,
-          page,
-          pageSize,
-        },
-      });
+      const response = await apiClient.get<TeamMembersResponse>("/api/team-members", languageRequestConfig(language, { page, pageSize }));
 
       if (response.data?.success && response.data?.data?.items) {
-        return response.data.data.items.map((member) => ({
+        return filterRequestedLanguage(response.data.data.items, language).map((member) => ({
           ...member,
           imageUrl: resolveImageUrl(member.imageUrl),
         }));

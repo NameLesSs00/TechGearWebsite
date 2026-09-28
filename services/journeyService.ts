@@ -1,4 +1,4 @@
-import apiClient from "@/lib/apiClient";
+import apiClient, { filterRequestedLanguage, hasRequestedLanguage, languageRequestConfig, resolveImageUrl } from "@/lib/apiClient";
 
 export interface Journey {
   id: string;
@@ -45,16 +45,12 @@ export interface BaseResponse {
 export const journeyService = {
   getJourneys: async (language: string = "en", page: number = 1, pageSize: number = 20): Promise<Journey[]> => {
     try {
-      const response = await apiClient.get<JourneysResponse>("/api/journeys", {
-        params: {
-          language,
-          page,
-          pageSize,
-        },
-      });
+      const response = await apiClient.get<JourneysResponse>("/api/journeys", languageRequestConfig(language, { page, pageSize }));
 
       if (response.data?.success && response.data?.data?.items) {
-        return response.data.data.items.sort((a, b) => a.displayOrder - b.displayOrder);
+        return filterRequestedLanguage(response.data.data.items, language)
+          .map((journey) => ({ ...journey, imageUrl: resolveImageUrl(journey.imageUrl) }))
+          .sort((a, b) => a.displayOrder - b.displayOrder);
       }
       return [];
     } catch (error) {
@@ -65,11 +61,10 @@ export const journeyService = {
 
   getJourneyById: async (id: string, language: string = "en"): Promise<Journey | null> => {
     try {
-      const response = await apiClient.get<JourneyResponse>(`/api/journeys/${id}`, {
-        params: { language },
-      });
-      if (response.data?.success) {
-        return response.data.data;
+      const response = await apiClient.get<JourneyResponse>(`/api/journeys/${id}`, languageRequestConfig(language));
+      if (response.data?.success && response.data.data) {
+        if (!hasRequestedLanguage(response.data.data, language)) return null;
+        return { ...response.data.data, imageUrl: resolveImageUrl(response.data.data.imageUrl) };
       }
       return null;
     } catch (error) {

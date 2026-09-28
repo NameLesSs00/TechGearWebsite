@@ -6,6 +6,7 @@ import { Plus, Trash2 } from "lucide-react";
 import {
   AdminError,
   AdminInput,
+  AdminNotice,
   AdminPageHeader,
   AdminPanel,
   AdminTextarea,
@@ -16,9 +17,10 @@ import {
 } from "../../_components/AdminControls";
 import { ProductDetail, adminApi } from "@/services/adminApi";
 import { ConfirmModal } from "@/component/ConfirmModal";
+import { withAdminNotice } from "@/lib/adminFeedback";
 
 type SummaryItem = { id?: string | null; enText: string; arText: string; displayOrder: number };
-type FeatureBlockItem = { id?: string | null; enTitle: string; arTitle: string; enDescription: string; arDescription: string; imageUrl?: string | null; imageFile?: File | null; displayOrder: number };
+type FeatureBlockItem = { id?: string | null; enTitle: string; arTitle: string; enDescription: string; arDescription: string; imageUrl?: string | null; imageFile?: File | null; removeImage?: boolean; displayOrder: number };
 type ProductReviewItem = { id?: string | null; enAuthorName: string; arAuthorName: string; enAuthorRole: string; arAuthorRole: string; enCompany: string; arCompany: string; enQuote: string; arQuote: string; avatarUrl?: string | null; avatarFile?: File | null; displayOrder: number };
 type ProductFaqItem = { id?: string | null; enQuestion: string; arQuestion: string; enAnswer: string; arAnswer: string; displayOrder: number };
 
@@ -62,6 +64,7 @@ export default function ProductEditor({ productId }: { productId?: string }) {
   const [loading, setLoading] = useState(Boolean(productId));
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [success, setSuccess] = useState("");
   const [error, setError] = useState("");
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
 
@@ -260,12 +263,15 @@ export default function ProductEditor({ productId }: { productId?: string }) {
   const saveChildImages = async (id: string, updatedProduct: ProductDetail | null) => {
     if (!updatedProduct) return;
 
-    const blockUploads = blocks
-      .filter((item) => item.imageFile)
+    const blockImageChanges = blocks
+      .filter((item) => item.imageFile || item.removeImage)
       .map((item) => {
         const matched = updatedProduct.feature_blocks?.find((fb) => fb.display_order === item.displayOrder);
         if (matched && matched.id) {
-          return adminApi.products.updateFeatureBlockImage(id, matched.id, item.imageFile!);
+          if (item.imageFile) {
+            return adminApi.products.updateFeatureBlockImage(id, matched.id, item.imageFile);
+          }
+          return adminApi.products.deleteFeatureBlockImage(id, matched.id);
         }
         return null;
       });
@@ -280,12 +286,35 @@ export default function ProductEditor({ productId }: { productId?: string }) {
         return null;
       });
 
-    await Promise.all([...blockUploads, ...reviewUploads].filter(Boolean));
+    await Promise.all([...blockImageChanges, ...reviewUploads].filter(Boolean));
+  };
+
+  const updateBlockImage = (index: number, file: File | null) => {
+    setBlocks((current) =>
+      current.map((row, rowIndex) => {
+        if (rowIndex !== index) return row;
+
+        if (file) {
+          return { ...row, imageFile: file, removeImage: false };
+        }
+
+        if (row.imageFile) {
+          return { ...row, imageFile: null, removeImage: false };
+        }
+
+        if (row.imageUrl) {
+          return { ...row, imageFile: null, imageUrl: null, removeImage: true };
+        }
+
+        return { ...row, imageFile: null, removeImage: false };
+      }),
+    );
   };
 
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
     setError("");
+    setSuccess("");
     setSaved(false);
     setSaving(true);
 
@@ -296,13 +325,14 @@ export default function ProductEditor({ productId }: { productId?: string }) {
         const updatedProduct = await adminApi.products.get(productId, "en");
         await saveChildImages(productId, updatedProduct);
         setSaved(true);
+        setSuccess("Product updated successfully.");
         setTimeout(() => setSaved(false), 2500);
       } else {
         const newId = await adminApi.products.create(buildCreatePayload());
         await adminApi.products.updateImages(newId, heroFile, iconFile);
         const newProduct = await adminApi.products.get(newId, "en");
         await saveChildImages(newId, newProduct);
-        router.push(`/admin/products/${newId}`);
+        router.push(withAdminNotice(`/admin/products/${newId}`, "Product created successfully."));
       }
     } catch (err: any) {
       setError(err?.response?.data?.message ?? err?.message ?? "Failed to save product.");
@@ -322,7 +352,7 @@ export default function ProductEditor({ productId }: { productId?: string }) {
     setSaving(true);
     try {
       await adminApi.products.remove(productId);
-      router.push("/admin/products");
+      router.push(withAdminNotice("/admin/products", "Product deleted successfully."));
     } catch (err: any) {
       setError(err?.message ?? "Failed to delete product.");
       setSaving(false);
@@ -344,6 +374,7 @@ export default function ProductEditor({ productId }: { productId?: string }) {
       </AdminPageHeader>
 
       <AdminError message={error} />
+      <AdminNotice message={success} onClose={() => setSuccess("")} />
 
       <form className="space-y-6" onSubmit={handleSubmit}>
         <AdminPanel title="General">
@@ -412,7 +443,8 @@ export default function ProductEditor({ productId }: { productId?: string }) {
                 <AdminInput dir="rtl" label="Arabic Title" value={item.arTitle} onChange={(value) => setBlocks(blocks.map((row, i) => i === index ? { ...row, arTitle: value } : row))} />
                 <AdminTextarea label="English Description" value={item.enDescription} onChange={(value) => setBlocks(blocks.map((row, i) => i === index ? { ...row, enDescription: value } : row))} />
                 <AdminTextarea dir="rtl" label="Arabic Description" value={item.arDescription} onChange={(value) => setBlocks(blocks.map((row, i) => i === index ? { ...row, arDescription: value } : row))} />
-                <ImagePicker label="Block Image" currentUrl={item.imageUrl} file={item.imageFile ?? null} onChange={(file) => setBlocks(blocks.map((row, i) => i === index ? { ...row, imageFile: file } : row))} compact />
+                <ImagePicker label="Block Image" currentUrl={item.imageUrl} file={item.imageFile ?? null} onChange={(file) => updateBlockImage(index, file)} compact removeLabel="Remove saved image" />
+                {item.removeImage ? <p className="text-xs text-yellow-200">Image will be removed after saving.</p> : null}
               </div>
             </div>
           ))}

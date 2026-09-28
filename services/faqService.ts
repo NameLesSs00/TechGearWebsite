@@ -1,4 +1,4 @@
-import apiClient from "@/lib/apiClient";
+import apiClient, { filterRequestedLanguage, languageRequestConfig } from "@/lib/apiClient";
 
 export interface FaqItem {
   id: string;
@@ -28,16 +28,10 @@ export interface FaqResponse {
 export const faqService = {
   getFaqs: async (language: string = "ar", page: number = 1, pageSize: number = 20): Promise<FaqItem[]> => {
     try {
-      const response = await apiClient.get<FaqResponse>("/api/faqs", {
-        params: {
-          language,
-          page,
-          pageSize,
-        },
-      });
+      const response = await apiClient.get<FaqResponse>("/api/faqs", languageRequestConfig(language, { page, pageSize }));
 
       if (response.data.success && response.data.data.items) {
-        return response.data.data.items;
+        return filterRequestedLanguage(response.data.data.items, language);
       }
 
       throw new Error(response.data.message || "Failed to fetch FAQs");

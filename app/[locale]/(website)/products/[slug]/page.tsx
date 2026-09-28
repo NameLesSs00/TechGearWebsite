@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import ProductDetails from "@/component/ProductDetails";
 import { constructMetadata, generateBreadcrumbSchema, generateFaqSchema } from "@/lib/seo";
 import { productService } from "@/services/productService";
-import { normalizeSlug } from "@/lib/apiClient";
+import { matchesEntitySlug } from "@/lib/apiClient";
 
 interface ProductDetailsPageProps {
   params: Promise<{ locale: string; slug: string }>;
@@ -41,7 +41,7 @@ async function resolveProduct(slug: string, locale: string) {
   // We also fall back to matching by ID so that any old GUID links still work.
   const all = await productService.getProducts(locale, 1, 100);
   const match = all.find(
-    (p) => normalizeSlug(p.name) === slug || p.id === slug,
+    (p) => matchesEntitySlug(slug, p, p.name),
   );
   return match || null;
 }

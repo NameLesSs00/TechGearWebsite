@@ -1,8 +1,10 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import Link from "next/link";
+import { Suspense } from "react";
 import { HelpCircle, Home, Mail, MessageSquare, Milestone, Package, Users, Wrench, FolderKanban, Handshake, Layers } from "lucide-react";
 import LogoutButton from "@/component/LogoutButton";
+import AdminFeedback from "./_components/AdminFeedback";
 
 const navItems = [
   { href: "/admin", label: "Dashboard", icon: Home },
@@ -67,7 +69,10 @@ export default async function DashboardLayout({
           <h1 className="text-xl font-semibold">Tech Gear Admin</h1>
         </header>
         
-        <div className="p-8 flex-1 overflow-y-auto">
+        <div className="p-8 flex-1 overflow-y-auto space-y-6">
+          <Suspense fallback={null}>
+            <AdminFeedback />
+          </Suspense>
           {children}
         </div>
       </main>

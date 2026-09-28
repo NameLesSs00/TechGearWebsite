@@ -69,7 +69,7 @@ export default function FaqSection({ limit }: FaqSectionProps = {}) {
     };
 
     fetchFaqs();
-  }, [language, t]);
+  }, [language, t, limit]);
 
   return (
     <section className="relative z-10 bg-[#000918] px-5 py-20 text-white sm:px-8 sm:py-24 lg:px-12 lg:py-28" aria-labelledby="faq-heading">

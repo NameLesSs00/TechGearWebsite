@@ -8,7 +8,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { serviceService, type ServiceApiItem } from "@/services/serviceService";
-import { isValidGuid, normalizeSlug } from "@/lib/apiClient";
+import { createSlug, matchesEntitySlug } from "@/lib/apiClient";
 import { useLanguage } from "@/context/LanguageContext";
 import { useTranslation } from "@/translations";
 
@@ -124,15 +124,15 @@ export default function ServiceDetails({ locale, serviceSlug }: { locale: string
     const loadService = async () => {
       try {
         const services = await serviceService.getServices(locale, 1, 50);
-        const response = services.find((s) => normalizeSlug(s.title) === serviceSlug);
+        const response = services.find((s) => matchesEntitySlug(serviceSlug, s, s.title));
 
         if (response) {
-          const slugKey = normalizeSlug(response.title) || normalizeSlug(serviceSlug) || response.id;
+          const slugKey = createSlug(response.title) || createSlug(serviceSlug) || response.id;
           const serviceIcon = slugKey.includes("mobile") ? Smartphone : slugKey.includes("web") || slugKey.includes("website") ? Monitor : slugKey.includes("software") ? CloudCog : slugKey.includes("market") ? Megaphone : slugKey.includes("design") ? PenTool : slugKey.includes("seo") ? Search : Monitor;
 
           const mappedService: ServiceDetailsData = {
             title: response.title || "Service",
-            eyebrow: response.subtitle || response.title || "Our service",
+            eyebrow: response.subtitle || response.title || t("service_eyebrow"),
             description: response.description || "We build modern digital solutions tailored to your business goals.",
             deliverables: response.whatWeDeliver || [],
             icon: serviceIcon,
@@ -150,6 +150,9 @@ export default function ServiceDetails({ locale, serviceSlug }: { locale: string
                 logo: feature.imageUrl || "",
               }))
           );
+        } else {
+          setServiceData(null);
+          setTechnologies([]);
         }
       } catch (error) {
         console.error("Failed to fetch service details:", error);
@@ -181,10 +184,12 @@ export default function ServiceDetails({ locale, serviceSlug }: { locale: string
           <span className="text-[#22D3EE]">{serviceData?.title ?? "Loading..."}</span>
         </motion.nav>
 
-        {loading || !serviceData ? (
+        {loading ? (
           <div className="flex min-h-[50vh] items-center justify-center">
             <div className="h-10 w-10 animate-spin rounded-full border-4 border-[#22D3EE]/20 border-t-[#22D3EE]" />
           </div>
+        ) : !serviceData ? (
+          <div className="rounded-2xl border border-white/10 p-12 text-center text-white/70">{t("service_error")}</div>
         ) : (
           <>
           <section className="-mt-[40px] grid items-center gap-10 lg:grid-cols-[1fr_.9fr] lg:gap-[200px]" aria-labelledby="service-heading">
@@ -200,11 +205,11 @@ export default function ServiceDetails({ locale, serviceSlug }: { locale: string
               ) : (
                 <Icon size={28} strokeWidth={1.6} />
               )}
-              <span className="text-xs font-semibold uppercase tracking-[0.25em]">Our service</span>
+              <span className="text-xs font-semibold uppercase tracking-[0.25em]">{t("service_eyebrow")}</span>
             </div>
             <h1 id="service-heading" className="text-3xl font-bold leading-tight sm:text-4xl">{serviceData.eyebrow}</h1>
             <p className="mt-7 max-w-[650px] text-sm leading-relaxed text-white/90 sm:text-base lg:text-lg">{serviceData.description}</p>
-            <h2 className="mt-12 text-2xl font-bold leading-tight sm:text-3xl">What We Deliver</h2>
+            <h2 className="mt-12 text-2xl font-bold leading-tight sm:text-3xl">{t("service_deliverables_heading")}</h2>
             <ul className="mt-6 space-y-4">
               {serviceData.deliverables.length > 0 ? (
                 serviceData.deliverables.map((item, index) => (
@@ -221,7 +226,7 @@ export default function ServiceDetails({ locale, serviceSlug }: { locale: string
                   </motion.li>
                 ))
               ) : (
-                <li className="text-white/70">No deliverables available.</li>
+                <li className="text-white/70">{t("service_no_deliverables")}</li>
               )}
             </ul>
           </motion.div>
@@ -254,7 +259,7 @@ export default function ServiceDetails({ locale, serviceSlug }: { locale: string
             className="mt-24 text-center sm:mt-32"
             aria-labelledby="technology-heading"
           >
-            <h2 id="technology-heading" className="text-3xl font-bold leading-tight sm:text-4xl">Tools &amp; Technologies We Use</h2>
+            <h2 id="technology-heading" className="text-3xl font-bold leading-tight sm:text-4xl">{t("service_tools_heading")}</h2>
             <span className="mx-auto mt-5 block h-1.5 w-28 rounded-full bg-[#22D3EE] shadow-[0_0_15px_rgba(34,211,238,0.6)]" />
             <div className="mt-12 flex flex-wrap justify-center gap-6 sm:gap-8">
               {visibleTechnologies.map((tech, index) => (
@@ -283,7 +288,7 @@ export default function ServiceDetails({ locale, serviceSlug }: { locale: string
           className="mx-auto mt-16 flex w-fit"
         >
           <Link href={`/${locale}/contactus`} className="inline-flex min-w-[190px] items-center justify-center gap-2 rounded-full bg-[#22D3EE] px-8 py-3.5 text-sm font-bold !text-[#011022] shadow-[0_0_20px_rgba(34,211,238,0.2)] transition-shadow hover:shadow-[0_0_25px_rgba(34,211,238,0.4)] focus:outline-none focus:ring-2 focus:ring-[#22D3EE] focus:ring-offset-2 focus:ring-offset-[#202d3b] md:mt-[0px] mt-[40px] sm:text-base">
-            Start a project <ArrowUpRight size={17} />
+            {t("service_start_project")} <ArrowUpRight size={17} />
           </Link>
         </motion.div>
         </>

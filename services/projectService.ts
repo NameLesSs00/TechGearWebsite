@@ -1,4 +1,4 @@
-import apiClient, { resolveImageUrl } from "@/lib/apiClient";
+import apiClient, { filterRequestedLanguage, hasRequestedLanguage, resolveImageUrl } from "@/lib/apiClient";
 
 // Legacy enum removed: categories are now dynamic strings
 
@@ -66,6 +66,7 @@ export const projectService = {
     pageSize: number = 20,
   ): Promise<PaginatedProjects> => {
     const params: Record<string, string | number> = {
+      language,
       page,
       pageSize,
     };
@@ -88,7 +89,7 @@ export const projectService = {
 
     return {
       ...data,
-      items: data.items.map(normalizeProject),
+      items: filterRequestedLanguage(data.items, language).map(normalizeProject),
     };
   },
 
@@ -107,6 +108,10 @@ export const projectService = {
 
     if (!response.data?.success || !response.data?.data) {
       throw new Error(response.data?.message ?? "Project not found");
+    }
+
+    if (!hasRequestedLanguage(response.data.data, language)) {
+      throw new Error("Project translation not found");
     }
 
     return normalizeProject(response.data.data);

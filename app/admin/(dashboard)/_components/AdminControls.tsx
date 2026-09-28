@@ -3,7 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { ChangeEvent, ReactNode } from "react";
-import { AlertCircle, ArrowLeft, ImageIcon, Loader2, Plus, Save, Trash2, Upload } from "lucide-react";
+import { AlertCircle, ArrowLeft, CheckCircle, ImageIcon, Info, Loader2, Plus, Save, Trash2, Upload, X } from "lucide-react";
 
 const inputClass =
   "w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white outline-none transition-colors placeholder:text-slate-600 focus:border-[#22D3EE]/60 disabled:cursor-not-allowed disabled:opacity-60";
@@ -68,6 +68,52 @@ export function AdminError({ message }: { message?: string }) {
     <div className="flex items-start gap-2 rounded-xl border border-red-500/20 bg-red-500/10 p-4 text-sm text-red-200">
       <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
       <span>{message}</span>
+    </div>
+  );
+}
+
+export type AdminNoticeTone = "success" | "error" | "info";
+
+export function AdminNotice({
+  message,
+  tone = "success",
+  onClose,
+}: {
+  message?: string;
+  tone?: AdminNoticeTone;
+  onClose?: () => void;
+}) {
+  if (!message) return null;
+
+  const styles = {
+    success: {
+      wrapper: "border-green-500/20 bg-green-500/10 text-green-100",
+      icon: "text-green-300",
+      Icon: CheckCircle,
+    },
+    error: {
+      wrapper: "border-red-500/20 bg-red-500/10 text-red-200",
+      icon: "text-red-300",
+      Icon: AlertCircle,
+    },
+    info: {
+      wrapper: "border-[#22D3EE]/20 bg-[#22D3EE]/10 text-cyan-100",
+      icon: "text-[#22D3EE]",
+      Icon: Info,
+    },
+  }[tone];
+
+  const Icon = styles.Icon;
+
+  return (
+    <div className={`flex items-start gap-3 rounded-xl border p-4 text-sm ${styles.wrapper}`} role={tone === "error" ? "alert" : "status"}>
+      <Icon className={`mt-0.5 h-4 w-4 shrink-0 ${styles.icon}`} />
+      <span className="min-w-0 flex-1">{message}</span>
+      {onClose ? (
+        <button className="rounded p-0.5 opacity-70 transition-opacity hover:opacity-100" type="button" onClick={onClose} aria-label="Dismiss notice">
+          <X className="h-4 w-4" />
+        </button>
+      ) : null}
     </div>
   );
 }
@@ -263,12 +309,14 @@ export function ImagePicker({
   file,
   onChange,
   compact,
+  removeLabel = "Clear selected image",
 }: {
   label: string;
   currentUrl?: string | null;
   file?: File | null;
   onChange: (file: File | null) => void;
   compact?: boolean;
+  removeLabel?: string;
 }) {
   const preview = file ? URL.createObjectURL(file) : currentUrl || "";
 
@@ -292,7 +340,7 @@ export function ImagePicker({
       </label>
       {file || currentUrl ? (
         <button className="text-xs text-red-400 transition-colors hover:text-red-300" type="button" onClick={() => onChange(null)}>
-          Clear selected image
+          {file ? "Clear selected image" : removeLabel}
         </button>
       ) : null}
     </div>

@@ -4,13 +4,14 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Edit2, Plus, Trash2, Users } from "lucide-react";
-import { AdminEmptyState, AdminError, AdminPageHeader, AdminTable } from "../_components/AdminControls";
+import { AdminEmptyState, AdminError, AdminNotice, AdminPageHeader, AdminTable } from "../_components/AdminControls";
 import { TeamMember, adminApi } from "@/services/adminApi";
 import { ConfirmModal } from "@/component/ConfirmModal";
 
 export default function AdminTeamMembersPage() {
   const [items, setItems] = useState<TeamMember[]>([]);
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(true);
   const [itemToDelete, setItemToDelete] = useState<TeamMember | null>(null);
 
@@ -28,7 +29,10 @@ export default function AdminTeamMembersPage() {
     try {
       await adminApi.teamMembers.remove(item.id);
       setItems((current) => current.filter((row) => row.id !== item.id));
+      setError("");
+      setSuccess("Team member deleted successfully.");
     } catch (err: any) {
+      setSuccess("");
       setError(err?.message ?? "Failed to delete team member.");
     }
   };
@@ -37,6 +41,7 @@ export default function AdminTeamMembersPage() {
     <div className="space-y-6">
       <AdminPageHeader actionHref="/admin/team-members/create" actionIcon={<Plus className="h-4 w-4" />} actionLabel="Create Member" title="Team Members" description="Manage people shown in the About page team area." />
       <AdminError message={error} />
+      <AdminNotice message={success} onClose={() => setSuccess("")} />
       {loading ? <div className="py-16 text-center text-slate-400">Loading team members...</div> : items.length === 0 ? (
         <div className="rounded-2xl border border-white/10 bg-[#000c24]"><AdminEmptyState icon={<Users className="h-12 w-12" />} title="No team members yet" /></div>
       ) : (
