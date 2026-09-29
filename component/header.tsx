@@ -12,7 +12,7 @@ import { useTranslation } from "@/translations";
 import { getLocaleFromPathname, switchLocaleInPathname } from "@/lib/localeRouting";
 import Button from "./Button";
 import NavLink from "./NavLink";
-import { buildEntitySlug } from "@/lib/apiClient";
+import { buildPublicEntitySlug } from "@/lib/apiClient";
 const Logo = "/logo.svg";
 
 
@@ -38,7 +38,7 @@ export default function Header({ locale }: HeaderProps) {
   const [isLanguageSwitching, setIsLanguageSwitching] = useState(false);
 
   const { data: fetchedServices = [] } = useServices(currentLocale);
-  const servicesList = fetchedServices.map(s => ({ id: s.id, slug: buildEntitySlug(s.id, s.title), name: s.title }));
+  const servicesList = fetchedServices.map(s => ({ id: s.id, slug: buildPublicEntitySlug(s.title, s.id), name: s.title }));
 
   const headerRef = useRef<HTMLElement>(null);
 

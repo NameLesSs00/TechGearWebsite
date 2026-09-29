@@ -1,7 +1,7 @@
 import { serviceService } from "@/services/serviceService";
 import { productService } from "@/services/productService";
 import { projectService } from "@/services/projectService";
-import { buildEntitySlug, matchesEntitySlug } from "@/lib/apiClient";
+import { buildPublicEntitySlug, matchesEntitySlug } from "@/lib/apiClient";
 
 /**
  * Extract locale from pathname
@@ -81,21 +81,21 @@ export async function switchLocaleInPathname(
       const service = allServices.find((s) => matchesEntitySlug(slug, s, s.title));
       if (service) {
         const translatedService = await serviceService.getServiceById(service.id, newLocale);
-        translatedSlug = buildEntitySlug(service.id, translatedService?.title ?? service.title);
+        translatedSlug = buildPublicEntitySlug(translatedService?.title ?? service.title, service.id);
       }
     } else if (resource === "products") {
       const allProducts = await productService.getProducts(currentLocale, 1, 100);
       const product = allProducts.find((p) => matchesEntitySlug(slug, p, p.name));
       if (product) {
         const translatedProduct = await productService.getProductById(product.id, newLocale);
-        translatedSlug = buildEntitySlug(product.id, translatedProduct?.name ?? product.name);
+        translatedSlug = buildPublicEntitySlug(translatedProduct?.name ?? product.name, product.id);
       }
     } else if (resource === "projects") {
       const allProjects = await projectService.getProjects(currentLocale, null, 1, 100);
       const project = allProjects.items.find((p) => matchesEntitySlug(slug, p, p.title));
       if (project) {
         const translatedProject = await projectService.getProjectById(project.id, newLocale).catch(() => null);
-        translatedSlug = buildEntitySlug(project.id, translatedProject?.title ?? project.title);
+        translatedSlug = buildPublicEntitySlug(translatedProject?.title ?? project.title, project.id);
       }
     }
     

@@ -194,6 +194,10 @@ export function buildEntitySlug(id?: string | null, title?: string | null): stri
   return slug ? `${cleanId}-${slug}` : cleanId;
 }
 
+export function buildPublicEntitySlug(title?: string | null, fallbackId?: string | null): string {
+  return createSlug(title) || fallbackId?.trim() || "";
+}
+
 export function extractEntityId(value?: string | null): string | null {
   if (!value) {
     return null;

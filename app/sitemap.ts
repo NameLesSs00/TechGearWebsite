@@ -3,7 +3,7 @@ import { getFullUrl } from "@/lib/seo";
 import { serviceService, type ServiceApiItem } from "@/services/serviceService";
 import { projectService, type Project } from "@/services/projectService";
 import { productService, type ProductApiItem } from "@/services/productService";
-import { buildEntitySlug } from "@/lib/apiClient";
+import { buildPublicEntitySlug } from "@/lib/apiClient";
 
 const SITEMAP_PAGE_SIZE = 100;
 
@@ -139,13 +139,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   ]);
 
   const serviceRoutes = services.map((service) =>
-    createDynamicRoute(baseUrl, `services/${buildEntitySlug(service.id, service.title)}`, service.updatedAt),
+    createDynamicRoute(baseUrl, `services/${buildPublicEntitySlug(service.title, service.id)}`, service.updatedAt),
   );
   const projectRoutes = projects.map((project) =>
-    createDynamicRoute(baseUrl, `projects/${buildEntitySlug(project.id, project.title)}`, project.updatedAt),
+    createDynamicRoute(baseUrl, `projects/${buildPublicEntitySlug(project.title, project.id)}`, project.updatedAt),
   );
   const productRoutes = products.map((product) =>
-    createDynamicRoute(baseUrl, `products/${buildEntitySlug(product.id, product.name)}`, product.updatedAt),
+    createDynamicRoute(baseUrl, `products/${buildPublicEntitySlug(product.name, product.id)}`, product.updatedAt),
   );
 
   return deduplicateRoutes([

@@ -6,7 +6,7 @@ import Link from "next/link";
 import { ArrowUpRight, CheckCircle2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { productService, type ProductApiItem } from "@/services/productService";
-import { buildEntitySlug } from "@/lib/apiClient";
+import { buildPublicEntitySlug } from "@/lib/apiClient";
 import { useLanguage } from "@/context/LanguageContext";
 import { useTranslation } from "@/translations";
 
@@ -137,7 +137,7 @@ export default function HomeProductsSection({ locale }: HomeProductsSectionProps
                   ) : null}
 
                   <Link
-                    href={`/${locale}/products/${buildEntitySlug(product.id, product.name)}`}
+                    href={`/${locale}/products/${buildPublicEntitySlug(product.name, product.id)}`}
                     className="mt-10 inline-flex w-full max-w-sm items-center justify-center gap-2 rounded-full bg-[#22D3EE] px-7 py-3.5 text-base font-extrabold !text-[#011022] transition-colors hover:bg-[#1bb8d0]"
                   >
                     {t("product_view_product")}
@@ -145,7 +145,7 @@ export default function HomeProductsSection({ locale }: HomeProductsSectionProps
                   </Link>
                 </div>
 
-                <Link href={`/${locale}/products/${buildEntitySlug(product.id, product.name)}`} className="relative order-first min-h-[350px] bg-[#0f1b29] lg:order-last lg:min-h-[500px] cursor-pointer group block">
+                <Link href={`/${locale}/products/${buildPublicEntitySlug(product.name, product.id)}`} className="relative order-first min-h-[350px] bg-[#0f1b29] lg:order-last lg:min-h-[500px] cursor-pointer group block">
                   {product.heroImageUrl ? (
                     <Image
                       src={product.heroImageUrl}

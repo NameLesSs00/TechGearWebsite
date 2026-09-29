@@ -9,7 +9,7 @@ import { useMemo } from "react";
 import { useServices } from "@/hooks/useServices";
 import { useLanguage } from "@/context/LanguageContext";
 import { useTranslation } from "@/translations";
-import { buildEntitySlug, createSlug } from "@/lib/apiClient";
+import { buildPublicEntitySlug, createSlug } from "@/lib/apiClient";
 
 interface ServiceItem {
   id: string;
@@ -91,7 +91,7 @@ export default function ServiceSection({ locale }: ServiceSectionProps) {
         id: service.id,
         title: service.title,
         subtitle: service.subtitle || undefined,
-        href: `/${currentLocale}/services/${buildEntitySlug(service.id, service.title)}`,
+        href: `/${currentLocale}/services/${buildPublicEntitySlug(service.title, service.id)}`,
         icon: defaultIcons[iconKey] ?? Monitor,
         iconImageUrl: service.iconImageUrl,
       };
