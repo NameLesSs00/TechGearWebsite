@@ -1,17 +1,14 @@
 "use client";
 
 import { LogOut } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { authService } from "@/services/authService";
 
 export default function LogoutButton() {
-  const router = useRouter();
-
   const handleLogout = (e: React.MouseEvent) => {
     e.preventDefault();
-    authService.removeToken();
-    router.push("/admin/login");
-    router.refresh();
+    // Navigate to the server-side logout route which clears the cookie
+    // via Set-Cookie header before redirecting to /admin/login.
+    // This avoids the race condition of client-side cookie deletion.
+    window.location.href = "/admin/logout";
   };
 
   return (

@@ -1,4 +1,4 @@
-import MediaEntityForm from "../../_components/MediaEntityForm";
+import JourneyForm from "../../_components/JourneyForm";
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -6,6 +6,5 @@ interface PageProps {
 
 export default async function EditJourneyPage({ params }: PageProps) {
   const { id } = await params;
-  return <MediaEntityForm id={id} kind="journey" />;
+  return <JourneyForm id={id} />;
 }
-

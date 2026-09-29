@@ -132,6 +132,7 @@ function JourneyVerticalTimeline({ journeys, isRtl }: { journeys: Journey[], isR
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-40px" }}
               transition={{ duration: 0.6, delay: index * 0.25, ease: "easeOut" }}
+              dir="ltr"
               className="flex items-center"
               style={{ flexDirection: isRtl ? "row-reverse" : "row" }}
             >

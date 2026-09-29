@@ -1,6 +1,5 @@
-import MediaEntityForm from "../../_components/MediaEntityForm";
+import JourneyForm from "../../_components/JourneyForm";
 
 export default function CreateJourneyPage() {
-  return <MediaEntityForm kind="journey" />;
+  return <JourneyForm />;
 }
-
