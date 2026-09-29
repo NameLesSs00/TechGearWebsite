@@ -5,13 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState, useRef } from "react";
 import { motion } from "framer-motion";
-import gsap from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { useGSAP } from "@gsap/react";
 
-if (typeof window !== "undefined") {
-  gsap.registerPlugin(ScrollTrigger, useGSAP);
-}
 const Logo = "/logo.svg";
 import { teamMemberService, TeamMember } from "@/services/teamMemberService";
 import { journeyService, Journey } from "@/services/journeyService";
@@ -20,221 +14,188 @@ import { useTranslation } from "@/translations";
 
 function SectionTitle({ children }: { children: string }) {
   return (
-    <div className="relative text-center mb-12">
+    <div className="relative text-center mb-16 flex flex-col items-center">
       <h2 className="text-3xl font-extrabold tracking-tight sm:text-4xl text-white">
         {children}
       </h2>
+      <div className="mt-4 h-1 w-16 bg-[#56C1C8] rounded-full" />
     </div>
   );
 }
 
 // ─── Journey Timeline Sub-components ───────────────────────────────────────
 
-/** Null-image fallback: a stylised gradient placeholder with a subtle icon */
-function ImagePlaceholder() {
-  return (
-    <div
-      className="w-full rounded-xl overflow-hidden"
-      style={{
-        aspectRatio: "16/9",
-        background: "linear-gradient(135deg, rgba(34,211,238,0.12) 0%, rgba(42,159,176,0.08) 100%)",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        border: "1px dashed rgba(34,211,238,0.25)",
-      }}
-    >
-      <svg width="36" height="36" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-        <rect x="3" y="3" width="18" height="18" rx="3" stroke="rgba(34,211,238,0.4)" strokeWidth="1.5" />
-        <circle cx="8.5" cy="8.5" r="1.5" fill="rgba(34,211,238,0.4)" />
-        <path d="M3 15l5-5 4 4 3-3 6 6" stroke="rgba(34,211,238,0.4)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-      </svg>
-    </div>
-  );
+function getYearOnly(val: string): string {
+  if (!val) return "";
+  const match = val.match(/\b(19\d{2}|20\d{2})\b/);
+  if (match) return match[0];
+  if (val.includes("-")) return val.split("-")[0].trim();
+  if (val.includes("/")) return val.split("/")[0].trim();
+  return val;
 }
 
-function JourneyHorizontalScroll({ journeys, isRtl }: { journeys: Journey[], isRtl: boolean }) {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const trackRef = useRef<HTMLDivElement>(null);
-  const activeIndexRef = useRef(0);
-  const [activeIndex, setActiveIndex] = useState(0);
+function JourneyVerticalTimeline({ journeys, isRtl }: { journeys: Journey[], isRtl: boolean }) {
+  const [screenWidth, setScreenWidth] = useState<number>(1200);
 
-  useGSAP(() => {
-    if (!containerRef.current || !trackRef.current || journeys.length === 0) return;
+  useEffect(() => {
+    const updateWidth = () => setScreenWidth(window.innerWidth);
+    updateWidth();
+    window.addEventListener("resize", updateWidth);
+    return () => window.removeEventListener("resize", updateWidth);
+  }, []);
 
-    ScrollTrigger.getAll().forEach((trigger) => {
-      if (trigger.trigger === containerRef.current) {
-        trigger.kill(true);
-      }
-    });
-
-    activeIndexRef.current = 0;
-    setActiveIndex(0);
-
-    const selector = gsap.utils.selector(containerRef);
-    const cards = selector(".journey-card") as HTMLElement[];
-    const totalSections = cards.length;
-    const travelDirection = isRtl ? -100 : 100;
-    const getTextElements = (card: HTMLElement) => [
-      card.querySelector<HTMLElement>('[data-journey="line"]'),
-      card.querySelector<HTMLElement>('[data-journey="year"]'),
-      card.querySelector<HTMLElement>('[data-journey="title"]'),
-      card.querySelector<HTMLElement>('[data-journey="desc"]'),
-    ].filter(Boolean) as HTMLElement[];
-
-    cards.forEach((card, index) => {
-      gsap.set(card, {
-        autoAlpha: 1,
-        force3D: true,
-        scale: 1,
-        xPercent: index === 0 ? 0 : travelDirection,
-        zIndex: index + 1,
-      });
-
-      gsap.set(getTextElements(card), {
-        autoAlpha: index === 0 ? 1 : 0,
-        y: index === 0 ? 0 : 42,
-      });
-    });
-
-    gsap.fromTo(
-      getTextElements(cards[0]),
-      { y: 42, autoAlpha: 0 },
-      { y: 0, autoAlpha: 1, duration: 0.7, ease: "power3.out", stagger: 0.1, delay: 0.15 },
+  if (journeys.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center text-center p-8 bg-white/5 border border-white/10 rounded-2xl max-w-2xl mx-auto w-full mt-12">
+        <svg className="w-16 h-16 text-[#56C1C8]/50 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+        </svg>
+        <h3 className="text-2xl font-bold text-white mb-2">Our Journey is Evolving</h3>
+        <p className="text-slate-400">There is no current data available. Check back soon for updates.</p>
+      </div>
     );
+  }
 
-    const tl = gsap.timeline({
-      scrollTrigger: {
-        trigger: containerRef.current,
-        pin: true,
-        anticipatePin: 1,
-        scrub: 0.5,
-        invalidateOnRefresh: true,
-        end: () => `+=${window.innerHeight * Math.max(totalSections - 1, 1)}`,
-        onUpdate: (self) => {
-          const index = Math.min(totalSections - 1, Math.round(self.progress * (totalSections - 1)));
-          if (index !== activeIndexRef.current) {
-            activeIndexRef.current = index;
-            setActiveIndex(index);
-          }
-        }
-      }
-    });
+  const N = journeys.length;
+  const isMobile = screenWidth < 640;
+  const isTablet = screenWidth >= 640 && screenWidth < 1024;
 
-    cards.slice(1).forEach((card, index) => {
-      const previousCard = cards[index];
-      const newYear  = card.querySelector<HTMLElement>('[data-journey="year"]');
-      const newTitle = card.querySelector<HTMLElement>('[data-journey="title"]');
-      const newDesc  = card.querySelector<HTMLElement>('[data-journey="desc"]');
-      const newLine  = card.querySelector<HTMLElement>('[data-journey="line"]');
+  // Enlarged number circle nodes
+  const nodeSize = isMobile ? 66 : isTablet ? 86 : 102;
 
-      // Start new card offscreen
-      gsap.set(card, { xPercent: travelDirection, zIndex: index + 2 });
+  // Spacing between items vertically
+  let itemSpacing = isMobile ? 180 : isTablet ? 220 : 250;
+  
+  // Base radius and negative horizontal offset so circle comes out of the screen
+  let baseRadius = isMobile ? 200 : isTablet ? 340 : 480;
+  let xCenterOffset = isMobile ? -40 : isTablet ? -80 : -120;
 
-      // ── Phase 1: Slide cards (50% of budget)
-      tl.to(previousCard, { scale: 0.93, opacity: 0, ease: "power2.inOut", force3D: true }, ">")
-        .to(card,     { xPercent: 0,  ease: "power2.inOut", force3D: true }, "<");
+  if (N <= 2) {
+    baseRadius = isMobile ? 180 : isTablet ? 320 : 440;
+    itemSpacing = isMobile ? 180 : isTablet ? 220 : 250;
+    xCenterOffset = isMobile ? -40 : isTablet ? -80 : -110;
+  } else if (N >= 4) {
+    itemSpacing = isMobile ? 160 : isTablet ? 190 : 210;
+    baseRadius = isMobile ? 240 : isTablet ? 420 : 580;
+    xCenterOffset = isMobile ? -50 : isTablet ? -100 : -140;
+  }
 
-      // ── Phase 2: Stagger the text in after the card lands (50% of budget)
-      tl.to(newLine,  { y: 0, autoAlpha: 1, ease: "power3.out", force3D: true }, ">");
-      tl.to(newYear,  { y: 0, autoAlpha: 1, ease: "power3.out", force3D: true }, "-=0.6");
-      tl.to(newTitle, { y: 0, autoAlpha: 1, ease: "power3.out", force3D: true }, "-=0.5");
-      tl.to(newDesc,  { y: 0, autoAlpha: 1, ease: "power3.out", force3D: true }, "-=0.5");
-    });
-
-    requestAnimationFrame(() => ScrollTrigger.refresh());
-
-  }, { scope: containerRef, dependencies: [journeys, isRtl], revertOnUpdate: true });
+  const deltaYMax = N > 1 ? ((N - 1) / 2) * itemSpacing : 0;
+  const R = Math.max(baseRadius, Math.round(deltaYMax * 1.35));
+  const containerHeight = Math.max(2 * R + 80, N * itemSpacing + 140);
+  const Y_center = containerHeight / 2;
 
   return (
-    <div ref={containerRef} className="relative mt-12 bg-[#000918]">
-      <div className="h-screen w-full flex flex-col items-center justify-center">
-        {journeys.length === 0 ? (
-          <div className="flex flex-col items-center justify-center text-center p-8 bg-white/5 border border-white/10 rounded-2xl max-w-2xl w-[92vw]">
-            <svg className="w-16 h-16 text-[#22D3EE]/50 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-            </svg>
-            <h3 className="text-2xl font-bold text-white mb-2">Our Journey is Evolving</h3>
-            <p className="text-slate-400">There is no current data available. Check back soon for updates.</p>
-          </div>
-        ) : (
-          <>
-            {/* Track — overflow-hidden HERE clips the sliding cards */}
-          <div 
-            ref={trackRef}
-            className="relative w-[92vw] max-w-[1500px] h-[68vh] overflow-hidden rounded-[2rem]"
+    <div 
+      className="relative mt-8 w-full overflow-hidden"
+      style={{ height: `${containerHeight}px` }}
+    >
+      {/* Background Half-Circle Div coming out of the screen */}
+      <div 
+        className="absolute rounded-full pointer-events-none"
+        style={{
+          width: `${2 * R}px`,
+          height: `${2 * R}px`,
+          border: "2px solid #334155",
+          [isRtl ? "right" : "left"]: `${xCenterOffset - R}px`,
+          top: `${Y_center - R}px`,
+        }}
+      />
+
+      {/* Journey Nodes & Cards */}
+      {journeys.map((item, index) => {
+        // Position items starting from top down
+        let deltaY: number;
+        if (N === 1) {
+          deltaY = 0;
+        } else if (N === 2) {
+          deltaY = index === 0 ? -170 : 80;
+        } else {
+          deltaY = (index - (N - 1) / 2) * itemSpacing;
+        }
+
+        const y = Math.round(Y_center + deltaY);
+        const x = Math.round(xCenterOffset + Math.sqrt(Math.max(0, R * R - deltaY * deltaY)));
+
+        return (
+          <div
+            key={item.id}
+            className="absolute flex items-center -translate-y-1/2 z-10"
+            style={{
+              top: `${y}px`,
+              [isRtl ? "right" : "left"]: `${x - Math.round(nodeSize / 2)}px`,
+            }}
           >
-          {journeys.map((item, index) => (
-            <div
-              key={item.id}
-              className="journey-card absolute inset-0 w-full h-full rounded-[2rem] overflow-hidden border border-white/10 bg-[#000918] shadow-[0_4px_24px_rgba(0,0,0,0.5)] flex flex-col"
-              style={{ willChange: "transform, opacity" }}
+            {/* Appear sequentially from top down */}
+            <motion.div
+              initial={{ opacity: 0, y: -45 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-40px" }}
+              transition={{ duration: 0.6, delay: index * 0.25, ease: "easeOut" }}
+              className="flex items-center"
+              style={{ flexDirection: isRtl ? "row-reverse" : "row" }}
             >
-              {/* Massive Image Background */}
-              <div className="absolute inset-0 w-full h-full overflow-hidden">
-                {item.imageUrl ? (
-                  <Image
-                    src={item.imageUrl}
-                    alt={item.title}
-                    fill
-                    className="object-cover"
-                    sizes="95vw"
-                    unoptimized
-                  />
-                ) : (
-                  <ImagePlaceholder />
-                )}
-              {/* Heavy dark gradient — always visible */}
-                <div className="absolute inset-0 bg-gradient-to-t from-[#000918] via-[#000918]/70 to-transparent" />
-              </div>
+              {/* Glowing Number Circle Node */}
+              <div 
+                className="relative flex-shrink-0 rounded-full flex items-center justify-center bg-[#1a3d47]/85 backdrop-blur-md border-2 border-[#56C1C8]/60 transition-all duration-300"
+                style={{ 
+                  width: `${nodeSize}px`, 
+                  height: `${nodeSize}px`,
+                  boxShadow: "0 0 25px rgba(86, 193, 200, 0.45), 0 0 50px rgba(86, 193, 200, 0.2), inset 0 0 15px rgba(86, 193, 200, 0.25)"
+                }}
+              >
+                {/* Subtle Ambient Pulse Aura */}
+                <div className="absolute -inset-1.5 rounded-full bg-[#56C1C8]/25 blur-md pointer-events-none animate-pulse" />
 
-              {/* Content Overlay — clean vertical stack, always fits */}
-              <div className="relative z-10 flex-1 flex flex-col justify-end p-6 md:p-10 lg:p-12">
-                {/* Decorative top line */}
-                <div data-journey="line" className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-[#22D3EE]/50 to-transparent" />
-
-                {/* Year badge — small pill, never overflows */}
-                <div
-                  data-journey="year"
-                  className="mb-4 inline-flex items-center self-start gap-2 px-4 py-2 rounded-full border border-[#22D3EE]/30 bg-[#22D3EE]/10 backdrop-blur-sm"
+                {/* Inner Glowing Turquoise Circle */}
+                <div 
+                  className="relative z-10 rounded-full bg-gradient-to-br from-[#5ae2ec] to-[#36b2be] flex items-center justify-center"
+                  style={{ 
+                    width: `${Math.round(nodeSize * 0.7)}px`, 
+                    height: `${Math.round(nodeSize * 0.7)}px`,
+                    boxShadow: "0 0 16px rgba(86, 193, 200, 0.7), 0 0 32px rgba(34, 211, 238, 0.35)"
+                  }}
                 >
-                  <span className="text-[#22D3EE] font-extrabold text-xl md:text-2xl tracking-widest select-none">
-                    {item.yearOrDate}
+                  <span 
+                    className="text-white font-semibold text-xl sm:text-2xl md:text-3xl drop-shadow-[0_0_6px_rgba(255,255,255,0.4)]" 
+                    style={{ fontFamily: "'Inter', sans-serif" }}
+                  >
+                    {index + 1}
                   </span>
                 </div>
-
-                {/* Title */}
-                <h3
-                  data-journey="title"
-                  className="text-white font-bold text-2xl md:text-4xl lg:text-5xl leading-tight mb-3"
-                >
-                  {item.title}
-                </h3>
-
-                {/* Description */}
-                <p
-                  data-journey="desc"
-                  className="text-slate-300 text-sm md:text-base lg:text-lg leading-relaxed max-w-3xl"
-                >
-                  {item.description}
-                </p>
               </div>
-            </div>
-          ))}
-        </div>
-        
-        {/* Step Indicators */}
-        <div className="absolute bottom-6 md:bottom-10 left-1/2 -translate-x-1/2 flex items-center gap-3 z-20" aria-hidden="true">
-          {journeys.map((_, idx) => (
-            <div 
-              key={idx}
-              className={`w-2 h-2 md:w-2.5 md:h-2.5 rounded-full transition-all duration-300 ${idx === activeIndex ? "bg-[#22D3EE] scale-150 shadow-[0_0_12px_rgba(34,211,238,0.6)]" : "bg-white/20"}`}
-            />
-          ))}
-        </div>
-          </>
-        )}
-      </div>
+
+              {/* Content Card */}
+              <div 
+                className={`bg-white rounded-[20px] sm:rounded-[24px] p-5 sm:p-7 md:p-8 shadow-2xl shadow-black/25 text-slate-900 ${
+                  isRtl ? 'mr-5 sm:mr-7 md:mr-9 text-right' : 'ml-5 sm:ml-7 md:ml-9 text-left'
+                }`}
+                style={{
+                  maxWidth: isMobile ? "calc(100vw - 150px)" : isTablet ? "380px" : "480px",
+                  width: isMobile ? "calc(100vw - 150px)" : isTablet ? "380px" : "480px",
+                }}
+              >
+                <div 
+                  className="text-2xl sm:text-3xl md:text-4xl font-semibold text-[#0B132B] tracking-normal" 
+                  style={{ fontFamily: "'Inter', sans-serif" }}
+                >
+                  {getYearOnly(item.yearOrDate)}
+                </div>
+                {item.title && (
+                  <h3 className="text-base sm:text-lg md:text-xl font-bold text-slate-800 mt-2">
+                    {item.title}
+                  </h3>
+                )}
+                {item.description && (
+                  <p className="text-slate-500 text-xs sm:text-sm md:text-base leading-relaxed mt-2 font-normal">
+                    {item.description}
+                  </p>
+                )}
+              </div>
+            </motion.div>
+          </div>
+        );
+      })}
     </div>
   );
 }
@@ -294,8 +255,8 @@ export default function AboutSection(props?: { locale?: string }) {
   ];
 
   return (
-    <main className="min-h-screen overflow-hidden bg-[#000918] px-5 pb-24 pt-32 text-white sm:px-8 sm:pt-40 lg:px-12">
-      <div className="mx-auto max-w-[1280px]">
+    <main className="min-h-screen overflow-hidden bg-[#000918] pb-24 pt-32 text-white sm:pt-40">
+      <div className="mx-auto max-w-[1280px] px-5 sm:px-8 lg:px-12">
         <motion.nav 
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -391,15 +352,23 @@ export default function AboutSection(props?: { locale?: string }) {
                   className="flex flex-col overflow-hidden rounded-3xl bg-white/[0.03] border border-white/10 backdrop-blur-md transition-colors duration-300 hover:bg-white/[0.06] hover:border-white/20"
                 >
                   {/* Image Container */}
-                  <div className="relative aspect-square w-full overflow-hidden bg-slate-900/50">
-                    <Image
-                      src={member.imageUrl}
-                      alt={member.name}
-                      fill
-                      className="object-contain"
-                      sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                      unoptimized
-                    />
+                  <div className="relative aspect-square w-full overflow-hidden bg-slate-900/50 flex items-center justify-center">
+                    {member.imageUrl ? (
+                      <Image
+                        src={member.imageUrl}
+                        alt={member.name}
+                        fill
+                        className="object-contain"
+                        sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                        unoptimized
+                      />
+                    ) : (
+                      <div className="w-20 h-20 rounded-full bg-white/10 flex items-center justify-center text-white/30">
+                        <svg className="w-10 h-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                        </svg>
+                      </div>
+                    )}
                   </div>
 
                   {/* Member Details */}
@@ -418,8 +387,11 @@ export default function AboutSection(props?: { locale?: string }) {
             <div className="mt-12 text-center text-slate-400">{t("about_team_no_data")}</div>
           )}
         </section>
+      </div>
 
-        <section className="mt-24 sm:mt-32 border-t border-white/10 pt-16" aria-labelledby="journey-heading">
+      {/* Full-width Journey Section - Circle comes out from the screen edge */}
+      <section className="mt-24 sm:mt-32 border-t border-white/10 pt-16 relative w-full overflow-hidden" aria-labelledby="journey-heading">
+        <div className="mx-auto max-w-[1280px] px-5 sm:px-8 lg:px-12">
           <SectionTitle>{t("about_journey_heading")}</SectionTitle>
 
           {journeyError && (
@@ -435,13 +407,17 @@ export default function AboutSection(props?: { locale?: string }) {
                 <p className="text-slate-400">{t("about_journey_loading")}</p>
               </div>
             </div>
-          ) : journeys.length > 0 ? (
-            <JourneyHorizontalScroll journeys={journeys} isRtl={direction === "rtl"} />
-          ) : (
+          ) : journeys.length === 0 ? (
             <div className="mt-12 text-center text-slate-400">{t("about_journey_no_data")}</div>
-          )}
-        </section>
+          ) : null}
+        </div>
 
+        {!journeyLoading && journeys.length > 0 && (
+          <JourneyVerticalTimeline journeys={journeys} isRtl={direction === "rtl"} />
+        )}
+      </section>
+
+      <div className="mx-auto max-w-[1280px] px-5 sm:px-8 lg:px-12">
         <section className="mt-24 rounded-2xl border border-white/10 bg-white/[0.04] p-7 sm:mt-32 sm:p-10 lg:flex lg:items-center lg:justify-between lg:px-14" aria-label="Contact call to action">
           <h2 className="max-w-xl text-center text-3xl font-bold leading-tight sm:text-4xl">{t("about_cta_heading")}</h2>
           <Link href={`/${locale}/contactus`} className="mt-6 inline-flex items-center justify-center gap-2 rounded-full bg-[#22D3EE] px-8 py-3.5 text-sm font-bold !text-[#011022] transition-transform hover:scale-105 lg:mt-0">{t("footer_contact_us")} <ArrowUpRight size={17} className="!text-[#011022]" /></Link>
