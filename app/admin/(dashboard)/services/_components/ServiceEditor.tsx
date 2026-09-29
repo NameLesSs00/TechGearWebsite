@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import {
-  Loader2, Plus, X, GripVertical, Trash2, CheckCircle, AlertCircle
+  Loader2, Plus, X, GripVertical, Trash2, CheckCircle, AlertCircle, Pencil, Save
 } from "lucide-react";
 import { serviceService, ServiceApiItem, ServiceFeature } from "@/services/serviceService";
 import { ConfirmModal } from "@/component/ConfirmModal";
@@ -14,7 +14,22 @@ import {
 } from "../../_components/AdminControls";
 import { withAdminNotice } from "@/lib/adminFeedback";
 
-interface DeliverItem { id: string; enText: string; arText: string; displayOrder: number; }
+interface DeliverItem { id: string; clientKey: string; enText: string; arText: string; displayOrder: number; }
+
+function getDeliverableText(item: ServiceApiItem["whatWeDeliver"][number]): string {
+  if (typeof item === "string") return item;
+  return item.name ?? item.text ?? "";
+}
+
+function getDeliverableId(item: ServiceApiItem["whatWeDeliver"][number], index: number): string {
+  if (typeof item === "string") return `legacy-${index}`;
+  return item.id;
+}
+
+function getDeliverableOrder(item: ServiceApiItem["whatWeDeliver"][number], index: number): number {
+  if (typeof item === "string") return index + 1;
+  return item.displayOrder ?? index + 1;
+}
 
 function WhatWeDeliverSection({ serviceId, initialItems }: { serviceId: string; initialItems: DeliverItem[] }) {
   const [items, setItems] = useState<DeliverItem[]>(initialItems);
@@ -22,10 +37,18 @@ function WhatWeDeliverSection({ serviceId, initialItems }: { serviceId: string; 
   const [newEn, setNewEn] = useState("");
   const [newAr, setNewAr] = useState("");
   const [saving, setSaving] = useState(false);
+  const [editingKey, setEditingKey] = useState<string | null>(null);
+  const [editEn, setEditEn] = useState("");
+  const [editAr, setEditAr] = useState("");
+  const [editSaving, setEditSaving] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<DeliverItem | null>(null);
   const [statusMap, setStatusMap] = useState<Record<string, "success" | "error">>({});
   const [notice, setNotice] = useState("");
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    setItems(initialItems);
+  }, [initialItems]);
 
   const flash = (id: string, s: "success" | "error") => {
     setStatusMap(m => ({ ...m, [id]: s }));
@@ -41,13 +64,57 @@ function WhatWeDeliverSection({ serviceId, initialItems }: { serviceId: string; 
         { languageCode: "ar", text: newAr },
       ], items.length + 1);
       if (res?.success && res?.data) {
-        setItems(prev => [...prev, { id: res.data!, enText: newEn, arText: newAr, displayOrder: prev.length + 1 }]);
+        setItems(prev => [...prev, { id: res.data!, clientKey: res.data!, enText: newEn, arText: newAr, displayOrder: prev.length + 1 }]);
         setNewEn(""); setNewAr(""); setAdding(false);
         setError("");
         setNotice("Deliverable added successfully.");
       }
     } catch { setNotice(""); setError("Failed to add deliverable."); }
     setSaving(false);
+  };
+
+  const startEdit = (item: DeliverItem) => {
+    setEditingKey(item.clientKey);
+    setEditEn(item.enText);
+    setEditAr(item.arText);
+    setNotice("");
+    setError("");
+  };
+
+  const cancelEdit = () => {
+    setEditingKey(null);
+    setEditEn("");
+    setEditAr("");
+  };
+
+  const handleUpdate = async (item: DeliverItem) => {
+    if (!editEn.trim()) return;
+
+    setEditSaving(true);
+    try {
+      const res = await serviceService.updateWhatWeDeliver(serviceId, item.id, [
+        { languageCode: "en", text: editEn },
+        { languageCode: "ar", text: editAr },
+      ], item.displayOrder);
+
+      if (res?.success) {
+        setItems(prev => prev.map(current => current.clientKey === item.clientKey ? { ...current, enText: editEn, arText: editAr } : current));
+        flash(item.clientKey, "success");
+        cancelEdit();
+        setError("");
+        setNotice("Deliverable updated successfully.");
+      } else {
+        flash(item.clientKey, "error");
+        setNotice("");
+        setError(res?.message || "Failed to update deliverable.");
+      }
+    } catch {
+      flash(item.clientKey, "error");
+      setNotice("");
+      setError("Failed to update deliverable.");
+    } finally {
+      setEditSaving(false);
+    }
   };
 
   const confirmDelete = async () => {
@@ -57,15 +124,15 @@ function WhatWeDeliverSection({ serviceId, initialItems }: { serviceId: string; 
     try {
       const res = await serviceService.deleteWhatWeDeliver(serviceId, item.id);
       if (res?.success) {
-        setItems(prev => prev.filter(i => i.id !== item.id));
+        setItems(prev => prev.filter(i => i.clientKey !== item.clientKey));
         setError("");
         setNotice("Deliverable deleted successfully.");
       } else {
-        flash(item.id, "error");
+        flash(item.clientKey, "error");
         setNotice("");
         setError("Failed to delete deliverable.");
       }
-    } catch { flash(item.id, "error"); setNotice(""); setError("Failed to delete deliverable."); }
+    } catch { flash(item.clientKey, "error"); setNotice(""); setError("Failed to delete deliverable."); }
   };
 
   return (
@@ -82,20 +149,74 @@ function WhatWeDeliverSection({ serviceId, initialItems }: { serviceId: string; 
       </div>
 
       <div className="space-y-2">
-        {items.map((item) => (
-          <div key={item.id} className="flex items-center gap-3 p-3 bg-white/[0.03] border border-white/10 rounded-xl group">
-            <GripVertical className="w-4 h-4 text-slate-600 shrink-0" />
-            <div className="flex-1 min-w-0">
-              <p className="text-white text-sm truncate">{item.enText}</p>
-              {item.arText && <p className="text-slate-500 text-xs truncate" dir="rtl">{item.arText}</p>}
+        {items.map((item) => {
+          const isEditing = editingKey === item.clientKey;
+
+          return (
+            <div key={item.clientKey} className="flex items-start gap-3 p-3 bg-white/[0.03] border border-white/10 rounded-xl group">
+              <GripVertical className="mt-1 w-4 h-4 text-slate-600 shrink-0" />
+              <div className="flex-1 min-w-0">
+                {isEditing ? (
+                  <div className="grid gap-2">
+                    <input
+                      type="text"
+                      placeholder="English text"
+                      value={editEn}
+                      onChange={e => setEditEn(e.target.value)}
+                      className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white text-sm focus:outline-none focus:border-[#22D3EE]/50 transition-all"
+                    />
+                    <input
+                      type="text"
+                      placeholder="Arabic text"
+                      dir="rtl"
+                      value={editAr}
+                      onChange={e => setEditAr(e.target.value)}
+                      className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white text-sm focus:outline-none focus:border-[#22D3EE]/50 transition-all"
+                    />
+                  </div>
+                ) : (
+                  <>
+                    <p className="text-white text-sm truncate">{item.enText}</p>
+                    {item.arText && <p className="text-slate-500 text-xs truncate" dir="rtl">{item.arText}</p>}
+                  </>
+                )}
+              </div>
+              {statusMap[item.clientKey] === "success" && <CheckCircle className="mt-1 w-4 h-4 text-green-400 shrink-0" />}
+              {statusMap[item.clientKey] === "error" && <AlertCircle className="mt-1 w-4 h-4 text-red-400 shrink-0" />}
+              {isEditing ? (
+                <div className="flex items-center gap-2 shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => handleUpdate(item)}
+                    disabled={editSaving || !editEn.trim()}
+                    className="grid h-8 w-8 place-items-center rounded-lg bg-[#22D3EE] text-[#000918] transition-colors hover:bg-[#1bb8d1] disabled:cursor-not-allowed disabled:opacity-50"
+                    aria-label="Save deliverable"
+                  >
+                    {editSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={cancelEdit}
+                    disabled={editSaving}
+                    className="grid h-8 w-8 place-items-center rounded-lg bg-white/5 text-slate-300 transition-colors hover:bg-white/10 hover:text-white disabled:opacity-50"
+                    aria-label="Cancel edit"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+              ) : (
+                <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+                  <button type="button" onClick={() => startEdit(item)} className="text-slate-400 hover:text-[#22D3EE] transition-colors" aria-label="Edit deliverable">
+                    <Pencil className="w-4 h-4" />
+                  </button>
+                  <button type="button" onClick={() => setItemToDelete(item)} className="text-red-400 hover:text-red-300 transition-colors" aria-label="Delete deliverable">
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
+              )}
             </div>
-            {statusMap[item.id] === "success" && <CheckCircle className="w-4 h-4 text-green-400 shrink-0" />}
-            {statusMap[item.id] === "error" && <AlertCircle className="w-4 h-4 text-red-400 shrink-0" />}
-            <button type="button" onClick={() => setItemToDelete(item)} className="opacity-0 group-hover:opacity-100 text-red-400 hover:text-red-300 transition-all shrink-0">
-              <Trash2 className="w-4 h-4" />
-            </button>
-          </div>
-        ))}
+          );
+        })}
         {items.length === 0 && !adding && (
           <p className="text-slate-500 text-sm text-center py-4">No items yet. Click &quot;Add Item&quot; to start.</p>
         )}
@@ -284,7 +405,7 @@ export default function ServiceEditor({ serviceId }: { serviceId?: string }) {
     arTitle: "", arSubtitle: "", arDescription: "",
   });
 
-  const [deliverItems, setDeliverItems] = useState<{ id: string; enText: string; arText: string; displayOrder: number }[]>([]);
+  const [deliverItems, setDeliverItems] = useState<DeliverItem[]>([]);
 
   useEffect(() => {
     if (!serviceId) return;
@@ -305,11 +426,12 @@ export default function ServiceEditor({ serviceId }: { serviceId?: string }) {
           });
           const enItems = en.whatWeDeliver || [];
           const arItems = ar?.whatWeDeliver || [];
-          setDeliverItems(enItems.map((text, i) => ({
-            id: `legacy-${i}`,
-            enText: text,
-            arText: arItems[i] || "",
-            displayOrder: i + 1,
+          setDeliverItems(enItems.map((item, i) => ({
+            id: getDeliverableId(item, i),
+            clientKey: `${getDeliverableId(item, i)}-${i}`,
+            enText: getDeliverableText(item),
+            arText: arItems[i] ? getDeliverableText(arItems[i]) : "",
+            displayOrder: getDeliverableOrder(item, i),
           })));
         }
       } catch (err) {

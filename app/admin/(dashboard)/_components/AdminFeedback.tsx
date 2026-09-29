@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { toast } from "sonner";
 import { ADMIN_NOTICE_PARAM, ADMIN_NOTICE_TYPE_PARAM } from "@/lib/adminFeedback";
-import { AdminNotice, AdminNoticeTone } from "./AdminControls";
+import { AdminNoticeTone } from "./AdminControls";
 
 function isNoticeTone(value: string | null): value is AdminNoticeTone {
   return value === "success" || value === "error" || value === "info";
@@ -16,7 +17,6 @@ export default function AdminFeedback() {
   const notice = searchParams.get(ADMIN_NOTICE_PARAM);
   const rawTone = searchParams.get(ADMIN_NOTICE_TYPE_PARAM);
   const tone = isNoticeTone(rawTone) ? rawTone : "success";
-  const [visible, setVisible] = useState(Boolean(notice));
 
   const cleanHref = useMemo(() => {
     const params = new URLSearchParams(searchParams.toString());
@@ -27,25 +27,13 @@ export default function AdminFeedback() {
   }, [pathname, searchParams]);
 
   useEffect(() => {
-    setVisible(Boolean(notice));
-  }, [notice]);
-
-  useEffect(() => {
     if (!notice) return;
-    const timeout = window.setTimeout(() => {
-      setVisible(false);
-      router.replace(cleanHref, { scroll: false });
-    }, 5000);
 
-    return () => window.clearTimeout(timeout);
-  }, [cleanHref, notice, router]);
-
-  if (!notice || !visible) return null;
-
-  const close = () => {
-    setVisible(false);
+    toast[tone](notice, {
+      id: `${tone}:${notice}`,
+    });
     router.replace(cleanHref, { scroll: false });
-  };
+  }, [cleanHref, notice, router, tone]);
 
-  return <AdminNotice message={notice} tone={tone} onClose={close} />;
+  return null;
 }

@@ -1,4 +1,4 @@
-import axios, { AxiosInstance, AxiosRequestConfig, InternalAxiosRequestConfig } from "axios";
+import axios, { AxiosInstance, InternalAxiosRequestConfig } from "axios";
 const ImageUrl = "https://tech-gear-backend-site.premiumasp.net"
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "https://tech-gear-backend-site.premiumasp.net";
 
@@ -7,6 +7,61 @@ const apiClient: AxiosInstance = axios.create({
   baseURL: API_BASE_URL,
   timeout: 30000,
 });
+
+type ApiSuccessBody = {
+  success?: boolean;
+  message?: string | null;
+};
+
+type ApiResponseLike = {
+  status: number;
+  data?: unknown;
+};
+
+function isApiSuccessBody(data: unknown): data is ApiSuccessBody {
+  return typeof data === "object" && data !== null && "success" in data;
+}
+
+export function getApiErrorMessage(data: unknown, fallback: string): string {
+  if (typeof data === "object" && data !== null && "message" in data) {
+    const message = (data as { message?: unknown }).message;
+    if (typeof message === "string" && message.trim()) {
+      return message;
+    }
+  }
+
+  return fallback;
+}
+
+export function isSuccessfulApiResponse(response: ApiResponseLike): boolean {
+  if (isApiSuccessBody(response.data) && response.data.success === false) {
+    return false;
+  }
+
+  return response.status >= 200 && response.status < 300;
+}
+
+export function assertApiSuccess(response: ApiResponseLike, fallback: string): void {
+  if (!isSuccessfulApiResponse(response)) {
+    throw new Error(getApiErrorMessage(response.data, fallback));
+  }
+}
+
+export function normalizeMutationResponse<T extends ApiSuccessBody>(
+  response: ApiResponseLike,
+  fallback: string,
+): T {
+  assertApiSuccess(response, fallback);
+
+  if (isApiSuccessBody(response.data)) {
+    return response.data as T;
+  }
+
+  return {
+    success: true,
+    message: null,
+  } as T;
+}
 
 // Variable to store current language (will be set by the app)
 let currentLanguage: string = "en";

@@ -1,4 +1,4 @@
-import apiClient, { resolveImageUrl } from "@/lib/apiClient";
+import apiClient, { assertApiSuccess, resolveImageUrl } from "@/lib/apiClient";
 
 export interface ApiResponse<T> {
   success: boolean;
@@ -189,16 +189,16 @@ export const adminApi = {
     },
     create: async (payload: unknown) => {
       const response = await apiClient.post<ApiResponse<string>>("/api/products", payload);
-      if (!response.data.success) throw new Error(response.data.message ?? "Failed to create product");
+      assertApiSuccess(response, "Failed to create product");
       return response.data.data;
     },
     update: async (id: string, payload: unknown) => {
       const response = await apiClient.put<ApiResponse<string | null>>(`/api/products/${id}`, payload);
-      if (!response.data.success) throw new Error(response.data.message ?? "Failed to update product");
+      assertApiSuccess(response, "Failed to update product");
     },
     remove: async (id: string) => {
       const response = await apiClient.delete<ApiResponse<string | null>>(`/api/products/${id}`);
-      if (!response.data.success) throw new Error(response.data.message ?? "Failed to delete product");
+      assertApiSuccess(response, "Failed to delete product");
     },
     updateImages: async (id: string, heroImage?: File | null, iconImage?: File | null) => {
       const formData = new FormData();
@@ -208,26 +208,35 @@ export const adminApi = {
       const response = await apiClient.put<ApiResponse<string | null>>(`/api/products/${id}/images`, formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
-      if (!response.data.success) throw new Error(response.data.message ?? "Failed to update product images");
+      assertApiSuccess(response, "Failed to update product images");
     },
-    deleteHero: async (id: string) => apiClient.delete(`/api/products/${id}/images/hero`),
-    deleteIcon: async (id: string) => apiClient.delete(`/api/products/${id}/images/icon`),
+    deleteHero: async (id: string) => {
+      const response = await apiClient.delete(`/api/products/${id}/images/hero`);
+      assertApiSuccess(response, "Failed to delete product hero image");
+    },
+    deleteIcon: async (id: string) => {
+      const response = await apiClient.delete(`/api/products/${id}/images/icon`);
+      assertApiSuccess(response, "Failed to delete product icon image");
+    },
     updateFeatureBlockImage: async (productId: string, featureBlockId: string, image: File) => {
       const formData = new FormData();
       formData.append("Image", image);
-      await apiClient.put(`/api/products/${productId}/feature-blocks/${featureBlockId}/image`, formData, {
+      const response = await apiClient.put(`/api/products/${productId}/feature-blocks/${featureBlockId}/image`, formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
+      assertApiSuccess(response, "Failed to update feature block image");
     },
     deleteFeatureBlockImage: async (productId: string, featureBlockId: string) => {
-      await apiClient.delete(`/api/products/${productId}/feature-blocks/${featureBlockId}/image`);
+      const response = await apiClient.delete(`/api/products/${productId}/feature-blocks/${featureBlockId}/image`);
+      assertApiSuccess(response, "Failed to delete feature block image");
     },
     updateReviewAvatar: async (productId: string, reviewId: string, avatar: File) => {
       const formData = new FormData();
       formData.append("Avatar", avatar);
-      await apiClient.put(`/api/products/${productId}/reviews/${reviewId}/avatar`, formData, {
+      const response = await apiClient.put(`/api/products/${productId}/reviews/${reviewId}/avatar`, formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
+      assertApiSuccess(response, "Failed to update review avatar");
     },
   },
 
@@ -245,14 +254,17 @@ export const adminApi = {
     },
     create: async (payload: unknown) => {
       const response = await apiClient.post<ApiResponse<string>>("/api/faqs", payload);
-      if (!response.data.success) throw new Error(response.data.message ?? "Failed to create FAQ");
+      assertApiSuccess(response, "Failed to create FAQ");
       return response.data.data;
     },
     update: async (id: string, payload: unknown) => {
       const response = await apiClient.put<ApiResponse<null>>(`/api/faqs/${id}`, payload);
-      if (!response.data.success) throw new Error(response.data.message ?? "Failed to update FAQ");
+      assertApiSuccess(response, "Failed to update FAQ");
     },
-    remove: async (id: string) => apiClient.delete(`/api/faqs/${id}`),
+    remove: async (id: string) => {
+      const response = await apiClient.delete(`/api/faqs/${id}`);
+      assertApiSuccess(response, "Failed to delete FAQ");
+    },
   },
 
   contactMessages: {
@@ -267,9 +279,13 @@ export const adminApi = {
       return response.data.data;
     },
     updateRead: async (id: string, isRead: boolean) => {
-      await apiClient.put(`/api/contact-messages/${id}`, { id, isRead });
+      const response = await apiClient.put(`/api/contact-messages/${id}`, { id, isRead });
+      assertApiSuccess(response, "Failed to update contact message");
     },
-    remove: async (id: string) => apiClient.delete(`/api/contact-messages/${id}`),
+    remove: async (id: string) => {
+      const response = await apiClient.delete(`/api/contact-messages/${id}`);
+      assertApiSuccess(response, "Failed to delete contact message");
+    },
   },
 
   journeys: {
@@ -294,10 +310,13 @@ export const adminApi = {
       formData.append("ImageUrl", data.imageUrl || "string");
       appendJsonArray(formData, "Translations", data.translations);
       const response = await apiClient[method]<ApiResponse<string | null>>(endpoint, formData, { headers: { "Content-Type": "multipart/form-data" } });
-      if (!response.data.success) throw new Error(response.data.message ?? "Failed to save journey");
-      return response.data.data;
+      assertApiSuccess(response, "Failed to save journey");
+      return response.data?.data ?? null;
     },
-    remove: async (id: string) => apiClient.delete(`/api/journeys/${id}`),
+    remove: async (id: string) => {
+      const response = await apiClient.delete(`/api/journeys/${id}`);
+      assertApiSuccess(response, "Failed to delete journey");
+    },
   },
 
   partners: {
@@ -321,10 +340,13 @@ export const adminApi = {
       if (data.logoUrl) formData.append("LogoUrl", data.logoUrl);
       appendJsonArray(formData, "Translations", data.translations);
       const response = await apiClient[method]<ApiResponse<string | null>>(endpoint, formData, { headers: { "Content-Type": "multipart/form-data" } });
-      if (!response.data.success) throw new Error(response.data.message ?? "Failed to save partner");
-      return response.data.data;
+      assertApiSuccess(response, "Failed to save partner");
+      return response.data?.data ?? null;
     },
-    remove: async (id: string) => apiClient.delete(`/api/partners/${id}`),
+    remove: async (id: string) => {
+      const response = await apiClient.delete(`/api/partners/${id}`);
+      assertApiSuccess(response, "Failed to delete partner");
+    },
   },
 
   teamMembers: {
@@ -348,10 +370,13 @@ export const adminApi = {
       if (data.imageUrl) formData.append("ImageUrl", data.imageUrl);
       appendJsonArray(formData, "Translations", data.translations);
       const response = await apiClient[method]<ApiResponse<string | null>>(endpoint, formData, { headers: { "Content-Type": "multipart/form-data" } });
-      if (!response.data.success) throw new Error(response.data.message ?? "Failed to save team member");
-      return response.data.data;
+      assertApiSuccess(response, "Failed to save team member");
+      return response.data?.data ?? null;
     },
-    remove: async (id: string) => apiClient.delete(`/api/team-members/${id}`),
+    remove: async (id: string) => {
+      const response = await apiClient.delete(`/api/team-members/${id}`);
+      assertApiSuccess(response, "Failed to delete team member");
+    },
   },
 };
 

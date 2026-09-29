@@ -38,6 +38,11 @@ interface Technology {
   logo: string;
 }
 
+function getDeliverableLabel(item: ServiceApiItem["whatWeDeliver"][number]): string {
+  if (typeof item === "string") return item;
+  return item.name ?? item.text ?? "";
+}
+
 const defaultServiceDetails: Record<string, ServiceDetailsData> = {
   "web-development": {
     title: "Web Development",
@@ -134,7 +139,7 @@ export default function ServiceDetails({ locale, serviceSlug }: { locale: string
             title: response.title || "Service",
             eyebrow: response.subtitle || response.title || t("service_eyebrow"),
             description: response.description || "We build modern digital solutions tailored to your business goals.",
-            deliverables: response.whatWeDeliver || [],
+            deliverables: (response.whatWeDeliver || []).map(getDeliverableLabel).filter(Boolean),
             icon: serviceIcon,
             iconImageUrl: response.iconImageUrl ?? undefined,
             image: response.serviceImageUrl || defaultServiceDetails[slugKey]?.image || WebVisual.src,

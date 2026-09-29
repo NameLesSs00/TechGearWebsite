@@ -7,6 +7,6 @@ export const metadata = constructMetadata({
   noIndex: true,
 });
 
-export default function NotFound() {
-  return <NotFoundContent standalone />;
+export default function LocaleNotFound() {
+  return <NotFoundContent />;
 }

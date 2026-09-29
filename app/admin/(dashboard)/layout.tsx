@@ -5,6 +5,7 @@ import { Suspense } from "react";
 import { HelpCircle, Home, Mail, MessageSquare, Milestone, Package, Users, Wrench, FolderKanban, Handshake, Layers } from "lucide-react";
 import LogoutButton from "@/component/LogoutButton";
 import AdminFeedback from "./_components/AdminFeedback";
+import AdminToastViewport from "./_components/AdminToastViewport";
 
 const navItems = [
   { href: "/admin", label: "Dashboard", icon: Home },
@@ -34,6 +35,7 @@ export default async function DashboardLayout({
 
   return (
     <div className="min-h-screen flex bg-[#000918]">
+      <AdminToastViewport />
       {/* Sidebar */}
       <aside className="w-72 border-r border-white/10 bg-[#000c24] flex flex-col">
         <div className="p-6 border-b border-white/10 flex items-center justify-center">

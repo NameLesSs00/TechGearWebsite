@@ -1,4 +1,4 @@
-import apiClient, { filterRequestedLanguage, hasRequestedLanguage, resolveImageUrl } from "@/lib/apiClient";
+import apiClient, { assertApiSuccess, filterRequestedLanguage, hasRequestedLanguage, resolveImageUrl } from "@/lib/apiClient";
 
 // Legacy enum removed: categories are now dynamic strings
 
@@ -121,9 +121,7 @@ export const projectService = {
     const response = await apiClient.post<ApiResponse<string>>("/api/projects", formData, {
       headers: { "Content-Type": "multipart/form-data" },
     });
-    if (!response.data?.success) {
-      throw new Error(response.data?.message ?? "Failed to create project");
-    }
+    assertApiSuccess(response, "Failed to create project");
     return response.data.data;
   },
 
@@ -131,16 +129,12 @@ export const projectService = {
     const response = await apiClient.put<ApiResponse<string>>(`/api/projects/${id}`, formData, {
       headers: { "Content-Type": "multipart/form-data" },
     });
-    if (!response.data?.success) {
-      throw new Error(response.data?.message ?? "Failed to update project");
-    }
+    assertApiSuccess(response, "Failed to update project");
   },
 
   deleteProject: async (id: string): Promise<void> => {
     const response = await apiClient.delete<ApiResponse<string>>(`/api/projects/${id}`);
-    if (response.data && response.data.success === false) {
-      throw new Error(response.data.message ?? "Failed to delete project");
-    }
+    assertApiSuccess(response, "Failed to delete project");
   },
 };
 

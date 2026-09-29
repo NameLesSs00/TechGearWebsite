@@ -1,4 +1,4 @@
-import apiClient, { filterRequestedLanguage, languageRequestConfig } from "@/lib/apiClient";
+import apiClient, { assertApiSuccess, filterRequestedLanguage, languageRequestConfig } from "@/lib/apiClient";
 
 export interface ProjectCategoryTranslation {
   languageCode: string;
@@ -63,23 +63,17 @@ export const projectCategoryService = {
 
   createCategory: async (data: CreateProjectCategoryDto): Promise<string> => {
     const response = await apiClient.post("/api/project-categories", data);
-    if (response.data.success) {
-      return response.data.data as string;
-    }
-    throw new Error(response.data.message || "Failed to create project category");
+    assertApiSuccess(response, "Failed to create project category");
+    return response.data.data as string;
   },
 
   updateCategory: async (id: string, data: UpdateProjectCategoryDto): Promise<void> => {
     const response = await apiClient.put(`/api/project-categories/${id}`, data);
-    if (!response.data.success) {
-      throw new Error(response.data.message || "Failed to update project category");
-    }
+    assertApiSuccess(response, "Failed to update project category");
   },
 
   deleteCategory: async (id: string): Promise<void> => {
     const response = await apiClient.delete(`/api/project-categories/${id}`);
-    if (!response.data.success) {
-      throw new Error(response.data.message || "Failed to delete project category");
-    }
+    assertApiSuccess(response, "Failed to delete project category");
   },
 };

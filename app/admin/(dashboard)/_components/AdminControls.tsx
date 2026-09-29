@@ -2,8 +2,9 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { ChangeEvent, ReactNode } from "react";
-import { AlertCircle, ArrowLeft, CheckCircle, ImageIcon, Info, Loader2, Plus, Save, Trash2, Upload, X } from "lucide-react";
+import { ChangeEvent, ReactNode, useEffect } from "react";
+import { toast } from "sonner";
+import { AlertCircle, ArrowLeft, ImageIcon, Loader2, Plus, Save, Trash2, Upload } from "lucide-react";
 
 const inputClass =
   "w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white outline-none transition-colors placeholder:text-slate-600 focus:border-[#22D3EE]/60 disabled:cursor-not-allowed disabled:opacity-60";
@@ -63,7 +64,14 @@ export function AdminPanel({ title, description, children }: { title?: string; d
 }
 
 export function AdminError({ message }: { message?: string }) {
+  useEffect(() => {
+    if (message) {
+      toast.error(message, { id: `admin-error:${message}` });
+    }
+  }, [message]);
+
   if (!message) return null;
+
   return (
     <div className="flex items-start gap-2 rounded-xl border border-red-500/20 bg-red-500/10 p-4 text-sm text-red-200">
       <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
@@ -83,39 +91,14 @@ export function AdminNotice({
   tone?: AdminNoticeTone;
   onClose?: () => void;
 }) {
-  if (!message) return null;
+  useEffect(() => {
+    if (!message) return;
 
-  const styles = {
-    success: {
-      wrapper: "border-green-500/20 bg-green-500/10 text-green-100",
-      icon: "text-green-300",
-      Icon: CheckCircle,
-    },
-    error: {
-      wrapper: "border-red-500/20 bg-red-500/10 text-red-200",
-      icon: "text-red-300",
-      Icon: AlertCircle,
-    },
-    info: {
-      wrapper: "border-[#22D3EE]/20 bg-[#22D3EE]/10 text-cyan-100",
-      icon: "text-[#22D3EE]",
-      Icon: Info,
-    },
-  }[tone];
+    toast[tone](message, { id: `admin-notice:${tone}:${message}` });
+    onClose?.();
+  }, [message, onClose, tone]);
 
-  const Icon = styles.Icon;
-
-  return (
-    <div className={`flex items-start gap-3 rounded-xl border p-4 text-sm ${styles.wrapper}`} role={tone === "error" ? "alert" : "status"}>
-      <Icon className={`mt-0.5 h-4 w-4 shrink-0 ${styles.icon}`} />
-      <span className="min-w-0 flex-1">{message}</span>
-      {onClose ? (
-        <button className="rounded p-0.5 opacity-70 transition-opacity hover:opacity-100" type="button" onClick={onClose} aria-label="Dismiss notice">
-          <X className="h-4 w-4" />
-        </button>
-      ) : null}
-    </div>
-  );
+  return null;
 }
 
 export function AdminEmptyState({ icon, title, description }: { icon?: ReactNode; title: string; description?: string }) {

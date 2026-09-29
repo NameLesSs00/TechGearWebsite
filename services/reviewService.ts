@@ -1,4 +1,4 @@
-import apiClient, { filterRequestedLanguage, hasRequestedLanguage, languageRequestConfig, resolveMediaUrl } from "@/lib/apiClient";
+import apiClient, { filterRequestedLanguage, hasRequestedLanguage, isSuccessfulApiResponse, languageRequestConfig, resolveMediaUrl } from "@/lib/apiClient";
 
 export interface ReviewApiItem {
   id: string;
@@ -103,7 +103,7 @@ export const reviewService = {
   updateReview: async (id: string, data: any): Promise<boolean> => {
     try {
       const response = await apiClient.put<BaseResponse>(`/api/reviews/${id}`, data);
-      return response.data?.success === true;
+      return isSuccessfulApiResponse(response);
     } catch (error) {
       console.error(`Error updating review with id ${id}:`, error);
       return false;
@@ -113,7 +113,7 @@ export const reviewService = {
   deleteReview: async (id: string): Promise<boolean> => {
     try {
       const response = await apiClient.delete<BaseResponse>(`/api/reviews/${id}`);
-      return response.data?.success === true;
+      return isSuccessfulApiResponse(response);
     } catch (error) {
       console.error(`Error deleting review with id ${id}:`, error);
       return false;
@@ -126,7 +126,7 @@ export const reviewService = {
       const response = await apiClient.put<BaseResponse>(`/api/reviews/${id}/images/client`, formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
-      return response.data?.success === true;
+      return isSuccessfulApiResponse(response);
     } catch (error) {
       console.error(`Error uploading client image for review ${id}:`, error);
       return false;
@@ -136,7 +136,7 @@ export const reviewService = {
   deleteClientImage: async (id: string): Promise<boolean> => {
     try {
       const response = await apiClient.delete<BaseResponse>(`/api/reviews/${id}/images/client`);
-      return response.data?.success === true;
+      return isSuccessfulApiResponse(response);
     } catch (error) {
       console.error(`Error deleting client image for review ${id}:`, error);
       return false;
@@ -148,7 +148,7 @@ export const reviewService = {
       const response = await apiClient.put<BaseResponse>(`/api/reviews/${id}/images/hero`, formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
-      return response.data?.success === true;
+      return isSuccessfulApiResponse(response);
     } catch (error) {
       console.error(`Error uploading hero image for review ${id}:`, error);
       return false;
@@ -158,7 +158,7 @@ export const reviewService = {
   deleteHeroImage: async (id: string): Promise<boolean> => {
     try {
       const response = await apiClient.delete<BaseResponse>(`/api/reviews/${id}/images/hero`);
-      return response.data?.success === true;
+      return isSuccessfulApiResponse(response);
     } catch (error) {
       console.error(`Error deleting hero image for review ${id}:`, error);
       return false;
@@ -170,7 +170,7 @@ export const reviewService = {
       const response = await apiClient.put<BaseResponse>(`/api/reviews/${id}/images/icon`, formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
-      return response.data?.success === true;
+      return isSuccessfulApiResponse(response);
     } catch (error) {
       console.error(`Error uploading icon image for review ${id}:`, error);
       return false;
@@ -180,7 +180,7 @@ export const reviewService = {
   deleteIconImage: async (id: string): Promise<boolean> => {
     try {
       const response = await apiClient.delete<BaseResponse>(`/api/reviews/${id}/images/icon`);
-      return response.data?.success === true;
+      return isSuccessfulApiResponse(response);
     } catch (error) {
       console.error(`Error deleting icon image for review ${id}:`, error);
       return false;

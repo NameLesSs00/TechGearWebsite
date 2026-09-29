@@ -8,7 +8,7 @@ import { ArrowLeft, Loader2, Save, CheckCircle, Trash2, Upload, X, Plus } from "
 import { projectService, Project } from "@/services/projectService";
 import { projectCategoryService, ProjectCategory } from "@/services/projectCategoryService";
 import { ConfirmModal } from "@/component/ConfirmModal";
-import { AdminNotice } from "../../_components/AdminControls";
+import { AdminError, AdminNotice } from "../../_components/AdminControls";
 import { withAdminNotice } from "@/lib/adminFeedback";
 
 interface PageProps { params: Promise<{ id: string }>; }
@@ -138,7 +138,7 @@ export default function EditProjectPage({ params }: PageProps) {
         </button>
       </div>
 
-      {error && <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-sm text-red-200">{error}</div>}
+      <AdminError message={error} />
       <AdminNotice message={success} onClose={() => setSuccess("")} />
 
       <form onSubmit={handleSave} className="space-y-6">

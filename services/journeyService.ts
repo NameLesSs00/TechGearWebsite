@@ -1,4 +1,4 @@
-import apiClient, { filterRequestedLanguage, hasRequestedLanguage, languageRequestConfig, resolveImageUrl } from "@/lib/apiClient";
+import apiClient, { filterRequestedLanguage, hasRequestedLanguage, isSuccessfulApiResponse, languageRequestConfig, resolveImageUrl } from "@/lib/apiClient";
 
 export interface Journey {
   id: string;
@@ -97,7 +97,7 @@ export const journeyService = {
           "Content-Type": "multipart/form-data",
         },
       });
-      return response.data?.success === true;
+      return isSuccessfulApiResponse(response);
     } catch (error) {
       console.error(`Error updating journey with id ${id}:`, error);
       return false;
@@ -107,7 +107,7 @@ export const journeyService = {
   deleteJourney: async (id: string): Promise<boolean> => {
     try {
       const response = await apiClient.delete<BaseResponse>(`/api/journeys/${id}`);
-      return response.data?.success === true;
+      return isSuccessfulApiResponse(response);
     } catch (error) {
       console.error(`Error deleting journey with id ${id}:`, error);
       return false;

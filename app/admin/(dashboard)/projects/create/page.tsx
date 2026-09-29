@@ -4,10 +4,11 @@ import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowLeft, Loader2, Upload, X } from "lucide-react";
+import { ArrowLeft, Loader2, Plus, Upload, X } from "lucide-react";
 import { projectService } from "@/services/projectService";
 import { projectCategoryService, ProjectCategory } from "@/services/projectCategoryService";
 import { withAdminNotice } from "@/lib/adminFeedback";
+import { AdminError } from "../../_components/AdminControls";
 
 export default function CreateProjectPage() {
   const router = useRouter();
@@ -102,7 +103,7 @@ export default function CreateProjectPage() {
         </div>
       </div>
 
-      {error && <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-sm text-red-200">{error}</div>}
+      <AdminError message={error} />
 
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Basic Info */}
@@ -207,5 +208,3 @@ export default function CreateProjectPage() {
   );
 }
 
-// needed by JSX
-import { Plus } from "lucide-react";

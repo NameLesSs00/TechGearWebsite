@@ -1,10 +1,17 @@
-import apiClient, { resolveImageUrl, isValidGuid, filterRequestedLanguage, hasRequestedLanguage, languageRequestConfig } from "@/lib/apiClient";
+import apiClient, { filterRequestedLanguage, hasRequestedLanguage, isValidGuid, languageRequestConfig, normalizeMutationResponse, resolveImageUrl } from "@/lib/apiClient";
 
 export interface ServiceFeature {
   id: string;
   imageUrl: string | null;
   name: string;
   displayOrder: number;
+}
+
+export interface ServiceDeliverable {
+  id: string;
+  name?: string | null;
+  text?: string | null;
+  displayOrder?: number | null;
 }
 
 export interface ServiceApiItem {
@@ -15,7 +22,7 @@ export interface ServiceApiItem {
   subtitle: string | null;
   description: string | null;
   resolvedLanguage: string | null;
-  whatWeDeliver: string[];
+  whatWeDeliver: Array<string | ServiceDeliverable>;
   features: ServiceFeature[];
   createdAt: string | null;
   updatedAt: string | null;
@@ -59,6 +66,15 @@ export interface FeatureTranslation {
   languageCode: string;
   name: string;
 }
+
+type ServiceMutationResponse<T = unknown> = {
+  success: boolean;
+  data: T;
+  message?: string | null;
+  errors?: unknown;
+  traceId?: string | null;
+};
+
 export const serviceService = {
   // Queries
   getServices: async (language: string = "en", page: number = 1, pageSize: number = 20): Promise<ServiceApiItem[]> => {
@@ -116,17 +132,17 @@ export const serviceService = {
   // Service Management
   createService: async (translations: ServiceTranslation[]) => {
     const response = await apiClient.post("/api/services", { translations });
-    return response.data;
+    return normalizeMutationResponse<ServiceMutationResponse<string>>(response, "Failed to create service");
   },
 
   updateService: async (id: string, translations: ServiceTranslation[]) => {
     const response = await apiClient.put(`/api/services/${id}`, { id, translations });
-    return response.data;
+    return normalizeMutationResponse<ServiceMutationResponse>(response, "Failed to update service");
   },
 
   deleteService: async (id: string) => {
     const response = await apiClient.delete(`/api/services/${id}`);
-    return response.data;
+    return normalizeMutationResponse<ServiceMutationResponse>(response, "Failed to delete service");
   },
 
   // Image Management
@@ -136,12 +152,12 @@ export const serviceService = {
     const response = await apiClient.put(`/api/services/${id}/icon`, formData, {
       headers: { "Content-Type": "multipart/form-data" },
     });
-    return response.data;
+    return normalizeMutationResponse<ServiceMutationResponse>(response, "Failed to update service icon");
   },
 
   deleteServiceIcon: async (id: string) => {
     const response = await apiClient.delete(`/api/services/${id}/icon`);
-    return response.data;
+    return normalizeMutationResponse<ServiceMutationResponse>(response, "Failed to delete service icon");
   },
 
   updateServiceImage: async (id: string, serviceImage: File) => {
@@ -150,33 +166,33 @@ export const serviceService = {
     const response = await apiClient.put(`/api/services/${id}/service-image`, formData, {
       headers: { "Content-Type": "multipart/form-data" },
     });
-    return response.data;
+    return normalizeMutationResponse<ServiceMutationResponse>(response, "Failed to update service image");
   },
 
   deleteServiceImage: async (id: string) => {
     const response = await apiClient.delete(`/api/services/${id}/service-image`);
-    return response.data;
+    return normalizeMutationResponse<ServiceMutationResponse>(response, "Failed to delete service image");
   },
 
   // What We Deliver Management
   addWhatWeDeliver: async (id: string, translations: WhatWeDeliverTranslation[], displayOrder: number) => {
     const response = await apiClient.post(`/api/services/${id}/what-we-deliver`, { translations, displayOrder });
-    return response.data;
+    return normalizeMutationResponse<ServiceMutationResponse<string>>(response, "Failed to add deliverable");
   },
 
   updateWhatWeDeliver: async (id: string, itemId: string, translations: WhatWeDeliverTranslation[], displayOrder: number) => {
     const response = await apiClient.put(`/api/services/${id}/what-we-deliver/${itemId}`, { id: itemId, translations, displayOrder });
-    return response.data;
+    return normalizeMutationResponse<ServiceMutationResponse>(response, "Failed to update deliverable");
   },
 
   deleteWhatWeDeliver: async (id: string, itemId: string) => {
     const response = await apiClient.delete(`/api/services/${id}/what-we-deliver/${itemId}`);
-    return response.data;
+    return normalizeMutationResponse<ServiceMutationResponse>(response, "Failed to delete deliverable");
   },
 
   reorderWhatWeDeliver: async (id: string, items: { id: string, displayOrder: number }[]) => {
     const response = await apiClient.put(`/api/services/${id}/what-we-deliver/reorder`, { items });
-    return response.data;
+    return normalizeMutationResponse<ServiceMutationResponse>(response, "Failed to reorder deliverables");
   },
 
   // Features Management
@@ -193,17 +209,17 @@ export const serviceService = {
     const response = await apiClient.post(`/api/services/${id}/features`, formData, {
       headers: { "Content-Type": "multipart/form-data" },
     });
-    return response.data;
+    return normalizeMutationResponse<ServiceMutationResponse<string>>(response, "Failed to add feature");
   },
 
   updateFeature: async (id: string, featureId: string, translations: FeatureTranslation[], displayOrder: number) => {
     const response = await apiClient.put(`/api/services/${id}/features/${featureId}`, { id: featureId, translations, displayOrder });
-    return response.data;
+    return normalizeMutationResponse<ServiceMutationResponse>(response, "Failed to update feature");
   },
 
   deleteFeature: async (id: string, featureId: string) => {
     const response = await apiClient.delete(`/api/services/${id}/features/${featureId}`);
-    return response.data;
+    return normalizeMutationResponse<ServiceMutationResponse>(response, "Failed to delete feature");
   },
 
   updateFeatureImage: async (id: string, featureId: string, featureImage: File) => {
@@ -212,11 +228,11 @@ export const serviceService = {
     const response = await apiClient.put(`/api/services/${id}/features/${featureId}/image`, formData, {
       headers: { "Content-Type": "multipart/form-data" },
     });
-    return response.data;
+    return normalizeMutationResponse<ServiceMutationResponse>(response, "Failed to update feature image");
   },
 
   reorderFeatures: async (id: string, items: { id: string, displayOrder: number }[]) => {
     const response = await apiClient.put(`/api/services/${id}/features/reorder`, { items });
-    return response.data;
+    return normalizeMutationResponse<ServiceMutationResponse>(response, "Failed to reorder features");
   }
 };
