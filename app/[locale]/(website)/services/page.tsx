@@ -21,7 +21,7 @@ export default async function ServicesPage({ params }: ServicesPageProps) {
 
   return (
     <main className="min-h-screen bg-[#000918] pt-24 text-white">
-      <ServiceSection locale={locale} />
+      <ServiceSection locale={locale} showBreadcrumb={true} />
     </main>
   );
 }

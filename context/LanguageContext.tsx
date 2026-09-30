@@ -35,13 +35,13 @@ export function LanguageProvider({ children, initialLocale }: LanguageProviderPr
     } else {
       // Fallback to localStorage
       const storedLanguage = localStorage.getItem(LANGUAGE_STORAGE_KEY) as Language | null;
-      
+
       if (storedLanguage === "en" || storedLanguage === "ar") {
         setLanguageState(storedLanguage);
         setDirection(storedLanguage === "ar" ? "rtl" : "ltr");
       }
     }
-    
+
     setMounted(true);
   }, [initialLocale]);
 
@@ -86,10 +86,10 @@ export function LanguageProvider({ children, initialLocale }: LanguageProviderPr
 
 export function useLanguage() {
   const context = useContext(LanguageContext);
-  
+
   if (context === undefined) {
     throw new Error("useLanguage must be used within a LanguageProvider");
   }
-  
+
   return context;
 }

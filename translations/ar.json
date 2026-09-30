@@ -5,6 +5,7 @@
   "nav_products": "المنتجات",
   "nav_about_us": "من نحن",
   "nav_contact_us": "اتصل بنا",
+  "nav_reviews": "التقييمات",
   "language": "AR",
   "get_a_quote": "احصل على عرض",
   "hero_title_complete": "حلول",
@@ -148,5 +149,11 @@
   "apply": "تطبيق",
   "select_language": "اختر اللغة",
   "open_menu": "فتح القائمة",
-  "close_menu": "إغلاق القائمة"
+  "close_menu": "إغلاق القائمة",
+  "reviews_label": "ماذا يقول عملاؤنا",
+  "reviews_heading": "تقييمات العملاء",
+  "reviews_breadcrumb": "التقييمات",
+  "reviews_no_reviews": "لا توجد تقييمات متاحة حالياً.",
+  "reviews_watch_video": "شاهد الفيديو",
+  "reviews_stars_label": "نجوم من 5"
 }

@@ -124,15 +124,13 @@ export default function ContactSection(_props?: { locale?: string }) {
 
       <div className="relative z-10 mx-auto max-w-[1200px]">
         <motion.nav 
-          initial={{ opacity: 0, y: -10 }}
+          initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          aria-label="Breadcrumb" 
-          className="mb-16 text-center text-sm text-white/90 sm:mb-20 sm:text-base lg:text-left"
+          className="mb-16 text-center text-sm font-medium sm:text-base"
         >
-          <Link href="/" className="transition-colors hover:text-[#22D3EE]">{t("nav_home")}</Link>
-          <span className="mx-1.5">{isRtl ? "<" : ">"}</span>
-          <span className="font-semibold text-[#22D3EE]">{t("contact_breadcrumb")}</span>
+          <Link href={`/${language}`} className="text-white hover:text-[#22D3EE] transition-colors">{t("nav_home")}</Link>
+          <span className="mx-2 text-white">{language === "ar" ? "<" : ">"}</span>
+          <span className="text-[#22D3EE]">{t("contact_breadcrumb")}</span>
         </motion.nav>
 
         <div className="grid grid-cols-1 gap-16 lg:grid-cols-[1fr_1.1fr] lg:gap-24">

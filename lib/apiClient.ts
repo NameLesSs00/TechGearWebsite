@@ -214,12 +214,19 @@ export function matchesEntitySlug(
   entity: { id?: string | null },
   title?: string | null,
 ): boolean {
+  let decodedValue = value;
+  try {
+    decodedValue = decodeURIComponent(value);
+  } catch (e) {
+    // ignore
+  }
+
   const id = entity.id?.trim();
-  if (id && (value === id || extractEntityId(value) === id)) {
+  if (id && (decodedValue === id || extractEntityId(decodedValue) === id)) {
     return true;
   }
 
-  return createSlug(title) === value;
+  return createSlug(title) === decodedValue;
 }
 
 export function hasRequestedLanguage(

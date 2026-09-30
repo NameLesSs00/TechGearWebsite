@@ -32,6 +32,8 @@ const defaultIcons: Record<string, ComponentType<{ size?: number; strokeWidth?: 
 
 interface ServiceSectionProps {
   locale?: string;
+  limit?: number;
+  showBreadcrumb?: boolean;
 }
 
 interface ServiceCardProps {
@@ -75,7 +77,7 @@ function ServiceCard({ service, index }: ServiceCardProps) {
   );
 }
 
-export default function ServiceSection({ locale }: ServiceSectionProps) {
+export default function ServiceSection({ locale, limit, showBreadcrumb }: ServiceSectionProps) {
   const { language } = useLanguage();
   const { t } = useTranslation(language);
   const currentLocale = locale || language;
@@ -98,7 +100,7 @@ export default function ServiceSection({ locale }: ServiceSectionProps) {
     });
   }, [fetchedServices, currentLocale]);
 
-  const visibleServices = useMemo(() => services, [services]);
+  const visibleServices = useMemo(() => limit ? services.slice(0, limit) : services, [services, limit]);
 
   return (
     <section className="relative isolate overflow-hidden bg-[#000918] px-5 py-20 text-white sm:px-8 sm:py-24 lg:px-12 lg:py-28" aria-labelledby="services-heading">
@@ -106,6 +108,17 @@ export default function ServiceSection({ locale }: ServiceSectionProps) {
         <div className="absolute left-1/2 top-1/2 h-[min(125vw,1200px)] w-[min(125vw,1200px)] -translate-x-1/2 -translate-y-1/2 bg-[radial-gradient(circle_at_center,rgba(34,211,238,0.1)_0%,rgba(34,211,238,0.1)_38%,rgba(34,211,238,0)_74%)] blur-2xl" />
       </div>
       <div className="relative z-10 mx-auto max-w-7xl">
+        {showBreadcrumb && (
+          <motion.nav 
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-16 text-center text-sm font-medium sm:text-base"
+          >
+            <Link href={`/${currentLocale}`} className="text-white hover:text-[#22D3EE] transition-colors">{t("nav_home")}</Link>
+            <span className="mx-2 text-white">{language === "ar" ? "<" : ">"}</span>
+            <span className="text-[#22D3EE]">{t("service_breadcrumb")}</span>
+          </motion.nav>
+        )}
         <header className="mb-14 text-center sm:mb-16">
           <p className="mb-4 text-sm font-medium uppercase tracking-[0.42em] text-[#22D3EE]">{t("services_label")}</p>
           <h2 id="services-heading" className="text-3xl font-semibold leading-tight tracking-tight sm:text-4xl">{t("services_heading")}</h2>

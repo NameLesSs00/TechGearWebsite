@@ -30,6 +30,7 @@ export default function Footer({ locale }: FooterProps) {
     { label: t("nav_products"), href: `/${locale}/products` },
     { label: t("nav_about_us"), href: `/${locale}/aboutus` },
     { label: t("nav_contact_us"), href: `/${locale}/contactus` },
+    { label: t("nav_reviews"), href: `/${locale}/reviews` },
     { label: t("faq_label"), href: `/${locale}/faq` },
   ];
 
@@ -212,7 +213,7 @@ C150 155 70 110 0 50        Z
               <motion.div whileHover={{ x: isRtl ? -6 : 6 }} transition={{ type: "spring", stiffness: 400, damping: 25 }}>
                 <Link href="https://wa.me/201021164131" target="_blank" rel="noopener noreferrer" className="flex w-fit items-start gap-3 transition-colors hover:text-[#22D3EE]">
                   <Phone className="mt-0.5 shrink-0" size={21} strokeWidth={1.8} />
-                  <span>{isRtl ? "٠١٠٢١١٦٤١٣١" : "+20 1021164131"}</span>
+                  <span dir="ltr" className="text-right">+20 1021164131</span>
                 </Link>
               </motion.div>
               <motion.div whileHover={{ x: isRtl ? -6 : 6 }} transition={{ type: "spring", stiffness: 400, damping: 25 }}>

@@ -60,7 +60,7 @@ export default async function Home({ params }: HomePageProps) {
       />
       <HeroSection locale={locale} />
       <BusinessSection locale={locale} />
-      <ServiceSection locale={locale} />
+      <ServiceSection locale={locale} limit={6} />
       <ProjectSection locale={locale} />
       <TestimonialsSection locale={locale} />
       <HomeProductsSection locale={locale} />

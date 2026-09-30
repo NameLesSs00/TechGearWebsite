@@ -49,6 +49,7 @@ export default function Header({ locale }: HeaderProps) {
     { name: t("nav_products"), href: `/${currentLocale}/products` },
     { name: t("nav_about_us"), href: `/${currentLocale}/aboutus` },
     { name: t("nav_contact_us"), href: `/${currentLocale}/contactus` },
+    { name: t("nav_reviews"), href: `/${currentLocale}/reviews` },
   ];
 
   // Close mobile menu on route change
@@ -142,17 +143,19 @@ export default function Header({ locale }: HeaderProps) {
                   <div
                     key={item.name}
                     className="relative"
+                    onMouseEnter={() => setServicesDropdownOpen(true)}
+                    onMouseLeave={() => setServicesDropdownOpen(false)}
                   >
-                    <button
-                      type="button"
-                      onClick={() => setServicesDropdownOpen(!servicesDropdownOpen)}
+                    <Link
+                      href={`/${currentLocale}/services`}
                       className={`relative inline-flex items-center gap-1.5 whitespace-nowrap text-sm font-medium transition-colors lg:text-base ${
                         pathname.includes("/services") ? "text-[#19CFFC]" : "text-white/90 hover:text-[#19CFFC]"
                       }`}
+                      onClick={() => setServicesDropdownOpen(false)}
                     >
                       <span>{t("nav_service")}</span>
                       <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${servicesDropdownOpen ? "rotate-180" : ""}`} />
-                    </button>
+                    </Link>
 
                     <AnimatePresence>
                       {servicesDropdownOpen && (

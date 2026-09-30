@@ -5,6 +5,7 @@
   "nav_products": "Products",
   "nav_about_us": "About Us",
   "nav_contact_us": "Contact Us",
+  "nav_reviews": "Reviews",
   "language": "EN",
   "get_a_quote": "Get a Quote",
   "hero_title_complete": "Complete",
@@ -148,5 +149,11 @@
   "apply": "Apply",
   "select_language": "Select language",
   "open_menu": "Open menu",
-  "close_menu": "Close menu"
+  "close_menu": "Close menu",
+  "reviews_label": "WHAT OUR CLIENTS SAY",
+  "reviews_heading": "Client Reviews",
+  "reviews_breadcrumb": "Reviews",
+  "reviews_no_reviews": "No reviews available at the moment.",
+  "reviews_watch_video": "Watch Video",
+  "reviews_stars_label": "stars out of 5"
 }
