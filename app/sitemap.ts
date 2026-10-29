@@ -50,10 +50,16 @@ function createDynamicRoute(
   const lastModified = getLastModified(updatedAt);
 
   return {
-    url: `${baseUrl}/${path}`,
+    url: `${baseUrl}/en/${path}`,
     ...(lastModified ? { lastModified } : {}),
     changeFrequency: "monthly",
     priority: 0.7,
+    alternates: {
+      languages: {
+        en: `${baseUrl}/en/${path}`,
+        ar: `${baseUrl}/ar/${path}`,
+      },
+    },
   };
 }
 
@@ -99,38 +105,26 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = getFullUrl("");
 
   // Static public pages
-  const staticRoutes: MetadataRoute.Sitemap = [
-    {
-      url: baseUrl,
-      changeFrequency: "weekly",
-      priority: 1.0,
-    },
-    {
-      url: `${baseUrl}/aboutus`,
-      changeFrequency: "monthly",
-      priority: 0.8,
-    },
-    {
-      url: `${baseUrl}/services`,
-      changeFrequency: "weekly",
-      priority: 0.9,
-    },
-    {
-      url: `${baseUrl}/projects`,
-      changeFrequency: "weekly",
-      priority: 0.9,
-    },
-    {
-      url: `${baseUrl}/products`,
-      changeFrequency: "weekly",
-      priority: 0.8,
-    },
-    {
-      url: `${baseUrl}/contactus`,
-      changeFrequency: "monthly",
-      priority: 0.8,
-    },
+  const staticPaths = [
+    { path: "", changeFrequency: "weekly" as const, priority: 1.0 },
+    { path: "aboutus", changeFrequency: "monthly" as const, priority: 0.8 },
+    { path: "services", changeFrequency: "weekly" as const, priority: 0.9 },
+    { path: "projects", changeFrequency: "weekly" as const, priority: 0.9 },
+    { path: "products", changeFrequency: "weekly" as const, priority: 0.8 },
+    { path: "contactus", changeFrequency: "monthly" as const, priority: 0.8 },
   ];
+
+  const staticRoutes: MetadataRoute.Sitemap = staticPaths.map((route) => ({
+    url: `${baseUrl}/en${route.path ? `/${route.path}` : ""}`,
+    changeFrequency: route.changeFrequency,
+    priority: route.priority,
+    alternates: {
+      languages: {
+        en: `${baseUrl}/en${route.path ? `/${route.path}` : ""}`,
+        ar: `${baseUrl}/ar${route.path ? `/${route.path}` : ""}`,
+      },
+    },
+  }));
 
   const [services, projects, products] = await Promise.all([
     getServiceItems(),

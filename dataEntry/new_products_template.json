@@ -1,0 +1,223 @@
+[
+  {
+    "notes": "=== PRODUCT 1 TEMPLATE ===",
+    "productLink": "https://example.com/product-one-demo",
+    "iconImagePath": "path/to/icon-or-logo.png",
+    "heroImagePath": "path/to/hero-banner.png",
+
+    "translations": [
+      {
+        "languageCode": "en",
+        "title": "Product One Name",
+        "description": "Comprehensive description explaining what Product One does, its target audience, and key benefits.",
+        "ctaText": "Start Free Trial"
+      },
+      {
+        "languageCode": "ar",
+        "title": "اسم المنتج الأول",
+        "description": "وصف شامل يوضح وظيفة المنتج الأول، الفئة المستهدفة، وأهم المزايا والفوائد.",
+        "ctaText": "ابدأ التجربة المجانية"
+      }
+    ],
+
+    "featuresSummary": [
+      {
+        "displayOrder": 1,
+        "translations": [
+          { "languageCode": "en", "text": "Cloud Based" },
+          { "languageCode": "ar", "text": "سحابي بالكامل" }
+        ]
+      },
+      {
+        "displayOrder": 2,
+        "translations": [
+          { "languageCode": "en", "text": "Real-time Analytics" },
+          { "languageCode": "ar", "text": "تحليلات فورية" }
+        ]
+      },
+      {
+        "displayOrder": 3,
+        "translations": [
+          { "languageCode": "en", "text": "Role-based Access" },
+          { "languageCode": "ar", "text": "صلاحيات متعددة المستويات" }
+        ]
+      },
+      {
+        "displayOrder": 4,
+        "translations": [
+          { "languageCode": "en", "text": "Automated Workflows" },
+          { "languageCode": "ar", "text": "أتمتة سير العمل" }
+        ]
+      }
+    ],
+
+    "featureBlocks": [
+      {
+        "displayOrder": 1,
+        "imagePath": "path/to/feature1-screenshot.png",
+        "translations": [
+          {
+            "languageCode": "en",
+            "title": "Core Module 1 Title",
+            "description": "Detailed explanation of what this module does, how it works, and how it helps the user."
+          },
+          {
+            "languageCode": "ar",
+            "title": "عنوان الوحدة الأولى",
+            "description": "شرح مفصل لكيفية عمل هذه الوحدة وكيف تفيد المستخدمين والفرق التشغيلية."
+          }
+        ]
+      },
+      {
+        "displayOrder": 2,
+        "imagePath": "",
+        "translations": [
+          {
+            "languageCode": "en",
+            "title": "Core Module 2 Title",
+            "description": "Detailed explanation of the second capability."
+          },
+          {
+            "languageCode": "ar",
+            "title": "عنوان الوحدة الثانية",
+            "description": "شرح مفصل للوظيفة والميزة الثانية."
+          }
+        ]
+      }
+    ],
+
+    "faqs": [
+      {
+        "displayOrder": 1,
+        "translations": [
+          {
+            "languageCode": "en",
+            "question": "Is this product cloud-based or self-hosted?",
+            "answer": "It is 100% cloud-based and accessible from any modern web browser."
+          },
+          {
+            "languageCode": "ar",
+            "question": "هل يعمل هذا المنتج سحابياً أم يتطلب خوادم محلية؟",
+            "answer": "يعمل سحابياً بنسبة 100% ويمكن الوصول إليه عبر أي متصفح ويب حديث."
+          }
+        ]
+      },
+      {
+        "displayOrder": 2,
+        "translations": [
+          {
+            "languageCode": "en",
+            "question": "Can I integrate it with my existing tools?",
+            "answer": "Yes, we support API integrations and export/import functionality."
+          },
+          {
+            "languageCode": "ar",
+            "question": "هل يدعم التكامل مع أدواتنا الحالية؟",
+            "answer": "نعم، يدعم الربط عبر واجهات API واستيراد وتصدير البيانات بسهولة."
+          }
+        ]
+      }
+    ],
+
+    "reviews": [
+      {
+        "displayOrder": 1,
+        "avatarPath": "",
+        "translations": [
+          {
+            "languageCode": "en",
+            "authorName": "John Doe",
+            "authorRole": "Operations Director",
+            "company": "Company Name",
+            "quote": "This solution transformed our daily team productivity within weeks."
+          },
+          {
+            "languageCode": "ar",
+            "authorName": "جون دو",
+            "authorRole": "مدير العمليات",
+            "company": "اسم الشركة",
+            "quote": "أحدث هذا الحل نقلة نوعية في إنتاجية فريقنا خلال أسابيع معدودة."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "notes": "=== PRODUCT 2 TEMPLATE ===",
+    "productLink": "https://example.com/product-two-demo",
+    "iconImagePath": "path/to/icon-or-logo.png",
+    "heroImagePath": "path/to/hero-banner.png",
+
+    "translations": [
+      {
+        "languageCode": "en",
+        "title": "Product Two Name",
+        "description": "Comprehensive description explaining Product Two.",
+        "ctaText": "Request a Demo"
+      },
+      {
+        "languageCode": "ar",
+        "title": "اسم المنتج الثاني",
+        "description": "وصف شامل يوضح المنتج الثاني.",
+        "ctaText": "اطلب عرضاً توضيحياً"
+      }
+    ],
+
+    "featuresSummary": [
+      {
+        "displayOrder": 1,
+        "translations": [
+          { "languageCode": "en", "text": "Feature Tag 1" },
+          { "languageCode": "ar", "text": "ميزة 1" }
+        ]
+      },
+      {
+        "displayOrder": 2,
+        "translations": [
+          { "languageCode": "en", "text": "Feature Tag 2" },
+          { "languageCode": "ar", "text": "ميزة 2" }
+        ]
+      }
+    ],
+
+    "featureBlocks": [
+      {
+        "displayOrder": 1,
+        "imagePath": "",
+        "translations": [
+          {
+            "languageCode": "en",
+            "title": "Feature 1 Title",
+            "description": "Feature 1 description."
+          },
+          {
+            "languageCode": "ar",
+            "title": "عنوان الميزة 1",
+            "description": "وصف الميزة 1."
+          }
+        ]
+      }
+    ],
+
+    "faqs": [
+      {
+        "displayOrder": 1,
+        "translations": [
+          {
+            "languageCode": "en",
+            "question": "How quickly can we onboard?",
+            "answer": "Onboarding takes less than 24 hours."
+          },
+          {
+            "languageCode": "ar",
+            "question": "كم من الوقت يستغرق البدء بالعمل؟",
+            "answer": "يستغرق الإعداد والبدء أقل من 24 ساعة."
+          }
+        ]
+      }
+    ],
+
+    "reviews": []
+  }
+]
+

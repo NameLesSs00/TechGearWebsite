@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import ProjectDetails from "@/component/ProjectDetails";
 import { projectService } from "@/services/projectService";
-import { constructMetadata, generateBreadcrumbSchema } from "@/lib/seo";
+import { constructMetadata, generateBreadcrumbSchema, generateProjectSchema } from "@/lib/seo";
 import { matchesEntitySlug } from "@/lib/apiClient";
 
 interface ProjectDetailsPageProps {
@@ -63,11 +63,21 @@ export default async function ProjectDetailsPage({ params }: ProjectDetailsPageP
     { name: project.title, item: `/${locale}/projects/${slug}` },
   ]);
 
+  const projectSchema = generateProjectSchema({
+    name: project.title,
+    description: project.description || project.title,
+    url: `/${locale}/projects/${slug}`,
+  });
+
   return (
     <>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(projectSchema) }}
       />
       <ProjectDetails locale={locale} projectId={project.id} />
     </>

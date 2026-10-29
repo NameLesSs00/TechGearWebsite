@@ -74,7 +74,16 @@ export default function ProductDetails({ locale, product }: ProductDetailsProps)
   const hasFeatures = product.featureBlocks.length > 0;
   const hasReviews = product.reviews.length > 0;
   const hasFaqs = product.faqs.length > 0;
-  const productHref = formatExternalLink(product.productLink);
+  const hasProductLink = Boolean(
+    product.productLink &&
+    product.productLink.trim() &&
+    product.productLink.trim() !== "#"
+  );
+  const productHref = hasProductLink ? formatExternalLink(product.productLink) : null;
+
+  const nameParts = (product.name || "").split("|").map((s) => s.trim());
+  const primaryTitle = nameParts[0] || "Untitled Product";
+  const subtitle = nameParts.length > 1 ? nameParts.slice(1).join(" | ") : null;
 
   return (
     <main className="min-h-screen bg-[#000918] px-5 pb-20 pt-28 text-white sm:px-8 sm:pt-36 lg:px-12">
@@ -95,48 +104,82 @@ export default function ProductDetails({ locale, product }: ProductDetailsProps)
           variants={stagger}
           initial="hidden"
           animate="visible"
-          className="grid overflow-hidden rounded-[24px] border border-[#22D3EE]/80 bg-[#1d3140] shadow-[0_24px_70px_rgba(0,0,0,0.32)] lg:grid-cols-[1.02fr_0.98fr]"
+          className="relative overflow-hidden rounded-[32px] border border-white/10 bg-gradient-to-br from-[#0c182b] via-[#081220] to-[#040913] p-6 sm:p-10 lg:p-12 shadow-[0_25px_80px_rgba(0,0,0,0.55)]"
         >
-          <div className="flex min-h-[430px] flex-col justify-center p-7 sm:p-10 lg:p-12">
-            {product.iconImageUrl ? (
-              <motion.div variants={fadeUp} className="mb-8 flex h-10 w-fit items-center justify-center rounded-full bg-white px-5">
-                <Image
-                  src={product.iconImageUrl}
-                  alt={`${product.name} icon`}
-                  width={128}
-                  height={36}
-                  className="max-h-7 w-auto object-contain"
-                  unoptimized
-                />
-              </motion.div>
-            ) : null}
-
-            <motion.div variants={fadeUp}>
-            <Link href={`/${locale}/products`} className="mb-6 inline-flex w-fit items-center gap-2 text-sm font-semibold text-[#22D3EE] transition-colors hover:text-white">
+          {/* Top Bar Navigation & Badge */}
+          <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
+            <Link
+              href={`/${locale}/products`}
+              className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-1.5 text-xs font-semibold text-[#22D3EE] backdrop-blur-md transition-colors hover:bg-white/10 hover:text-white"
+            >
               <ArrowLeft className="h-4 w-4" />
               {t("product_back_to_products")}
             </Link>
+
+            {product.iconImageUrl ? (
+              <div className="flex h-8 items-center justify-center rounded-full border border-white/10 bg-white/5 px-4 backdrop-blur-md">
+                <Image
+                  src={product.iconImageUrl}
+                  alt={`${product.name} icon`}
+                  width={110}
+                  height={26}
+                  className="max-h-5 w-auto object-contain"
+                  unoptimized
+                />
+              </div>
+            ) : null}
+          </div>
+
+          {/* Large Hero Image on Top */}
+          {product.heroImageUrl ? (
+            <motion.div
+              variants={fadeUp}
+              className="group relative mb-10 flex w-full items-center justify-center overflow-hidden rounded-2xl sm:rounded-3xl border border-white/10 bg-gradient-to-b from-[#0a1628] to-[#03070f] p-3 sm:p-6 shadow-2xl ring-1 ring-white/5"
+            >
+              <Image
+                src={product.heroImageUrl}
+                alt={product.name}
+                width={1600}
+                height={1200}
+                className="mx-auto block h-auto max-h-[650px] w-auto max-w-full rounded-xl object-contain drop-shadow-2xl transition-transform duration-700 group-hover:scale-[1.01]"
+                priority
+                unoptimized
+              />
+            </motion.div>
+          ) : null}
+
+          {/* Product Info & Copy */}
+          <div className="space-y-6">
+            <motion.div variants={fadeUp}>
+              <h1 className="text-3xl font-extrabold leading-tight tracking-tight text-white sm:text-4xl lg:text-5xl">
+                {primaryTitle}
+              </h1>
+
+              {subtitle ? (
+                <p className="mt-2 text-base font-semibold text-[#22D3EE] sm:text-lg">
+                  {subtitle}
+                </p>
+              ) : null}
             </motion.div>
 
-            <motion.h1 variants={fadeUp} className="text-4xl font-extrabold leading-tight tracking-tight text-white sm:text-5xl">
-              {product.name}
-            </motion.h1>
-
             {product.description ? (
-              <motion.p variants={fadeUp} className="mt-6 max-w-2xl text-base leading-8 text-white/90">
+              <motion.p variants={fadeUp} className="max-w-4xl text-base leading-relaxed text-slate-300/95 sm:text-lg">
                 {product.description}
               </motion.p>
             ) : null}
 
             {product.featuresSummary && product.featuresSummary.length > 0 ? (
-              <motion.div variants={fadeUp} className="mt-7">
-                <div className="mb-3 flex items-center gap-2 text-sm font-bold text-white">
-                  <CheckCircle2 className="h-4 w-4 text-emerald-300" />
+              <motion.div variants={fadeUp} className="pt-2">
+                <div className="mb-3 flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[#22D3EE]">
+                  <CheckCircle2 className="h-4 w-4" />
                   {t("product_key_features")}
                 </div>
-                <div className="flex flex-wrap gap-2">
+                <div className="flex flex-wrap gap-2.5">
                   {product.featuresSummary.map((feature, index) => (
-                    <span key={`${feature.id || index}`} className="rounded-full bg-slate-300/80 px-3 py-1.5 text-xs font-semibold text-[#011022]">
+                    <span
+                      key={`${feature.id || index}`}
+                      className="inline-flex items-center gap-1.5 rounded-full border border-[#22D3EE]/25 bg-[#22D3EE]/10 px-3.5 py-1.5 text-xs font-medium text-[#22D3EE]"
+                    >
                       {feature.text}
                     </span>
                   ))}
@@ -144,33 +187,28 @@ export default function ProductDetails({ locale, product }: ProductDetailsProps)
               </motion.div>
             ) : null}
 
-            <motion.a
-              variants={fadeUp}
-              href={productHref}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="mt-9 inline-flex w-full max-w-sm items-center justify-center gap-2 rounded-full bg-[#22D3EE] px-7 py-3.5 text-sm font-extrabold !text-[#011022] transition-colors hover:bg-[#1bb8d0]"
-            >
-              {t("product_view_product")}
-              <ArrowUpRight className="h-4 w-4" />
-            </motion.a>
-          </div>
+            <motion.div variants={fadeUp} className="pt-4 flex flex-wrap items-center gap-4">
+              {hasProductLink && productHref ? (
+                <a
+                  href={productHref}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center justify-center gap-2 rounded-full bg-[#22D3EE] px-8 py-3.5 text-sm font-extrabold !text-[#011022] transition-colors hover:bg-[#1bb8d0]"
+                >
+                  {t("product_view_product")}
+                  <ArrowUpRight className="h-4 w-4" />
+                </a>
+              ) : null}
 
-          <motion.div variants={fadeUp} className="relative order-first min-h-[280px] bg-[#0f1b29] lg:order-last lg:min-h-[560px]">
-            {product.heroImageUrl ? (
-              <Image
-                src={product.heroImageUrl}
-                alt={product.name}
-                fill
-                sizes="(max-width: 1024px) 100vw, 590px"
-                className="object-cover object-center"
-                priority
-                unoptimized
-              />
-            ) : (
-              <div className="flex h-full items-center justify-center text-lg font-bold text-slate-500">{product.name}</div>
-            )}
-          </motion.div>
+              <Link
+                href={`/${locale}/contactus`}
+                className="inline-flex items-center justify-center gap-2 rounded-full border border-white/15 bg-white/5 px-7 py-3.5 text-sm font-bold text-white transition-colors hover:bg-white/10 hover:border-white/25"
+              >
+                {product.ctaText || "Request Consultation"}
+                <ArrowUpRight className="h-4 w-4" />
+              </Link>
+            </motion.div>
+          </div>
         </motion.section>
 
         {hasFeatures ? (

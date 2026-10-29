@@ -1,0 +1,308 @@
+[
+  {
+    "notes": "=== TECHGEAR ACC - OFFICIAL PRODUCT DATA (HUMAN-WRITTEN & SEO-OPTIMIZED) ===",
+    "productLink": null,
+    "iconImagePath": "C:/Users/VIP/Desktop/work/techgearwebsite/public/logo.svg",
+    "heroImagePath": "C:/Users/VIP/Desktop/work/techgearwebsite/dataEntry/1000317532.png",
+
+    "translations": [
+      {
+        "languageCode": "en",
+        "title": "TechGear ACC | Enterprise Desktop Accounting & ERP System",
+        "description": "TechGear ACC is a high-performance desktop ERP designed for businesses that demand uncompromising speed, offline reliability, and absolute data ownership. Built for seamless local network operation, it unifies your day-to-day financial operations—from multi-treasury cash flows and supplier procurement to multi-unit inventory, expense controls, employee custody settlements, and automated payroll runs. Everything runs with native desktop responsiveness, complete audit transparency, and zero reliance on third-party cloud hosting.",
+        "ctaText": "Contact Us for Demo & Consultation"
+      },
+      {
+        "languageCode": "ar",
+        "title": "تيك جير للمحاسبة (TechGear ACC) | نظام إدارة الحسابات والمخزون والمؤسسات",
+        "description": "برنامج تيك جير للمحاسبة (TechGear ACC) هو نظام مكتبي متكامل لإدارة الأعمال والموارد صُمم خصيصاً للشركات التي تبحث عن السرعة الفائقة، واستقرار الأداء، والخصوصية التامة لبياناتها المالية. يعمل النظام بكفاءة عبر الشبكة المحلية دون الحاجة لاتصال مستمر بالإنترنت، ويجمع كافة دورتك المستندية في منصة واحدة تشمل إدارة السيولة والخزائن، فواتير المشتريات ومستحقات الموردين، الرقابة الذكية على المخزون متعدد الوحدات، ضبط المصروفات والعهد، وأتمتة مسيرات الرواتب مع تقارير تفصيلية وسجل تدقيق شامل يحمي من التلاعب.",
+        "ctaText": "تواصل معنا لطلب استشارة وعرض توضيحي"
+      }
+    ],
+
+    "featuresSummary": [
+      {
+        "displayOrder": 1,
+        "translations": [
+          { "languageCode": "en", "text": "Instant Cash Flow & Treasury Control" },
+          { "languageCode": "ar", "text": "إدارة فورية للخزائن وحركة النقدية" }
+        ]
+      },
+      {
+        "displayOrder": 2,
+        "translations": [
+          { "languageCode": "en", "text": "Procurement & Supplier Invoicing" },
+          { "languageCode": "ar", "text": "دورة مشتريات وفواتير موردين متكاملة" }
+        ]
+      },
+      {
+        "displayOrder": 3,
+        "translations": [
+          { "languageCode": "en", "text": "Multi-Unit Inventory Management" },
+          { "languageCode": "ar", "text": "مستودعات ذكية وأصناف متعددة الوحدات" }
+        ]
+      },
+      {
+        "displayOrder": 4,
+        "translations": [
+          { "languageCode": "en", "text": "Expense & Overhead Governance" },
+          { "languageCode": "ar", "text": "تبويب وضبط المصروفات التشغيلية" }
+        ]
+      },
+      {
+        "displayOrder": 5,
+        "translations": [
+          { "languageCode": "en", "text": "Staff Custody & Petty Cash Reconciliation" },
+          { "languageCode": "ar", "text": "متابعة وتسوية العهد النقدية وسلف الموظفين" }
+        ]
+      },
+      {
+        "displayOrder": 6,
+        "translations": [
+          { "languageCode": "en", "text": "Automated Monthly Payroll Engine" },
+          { "languageCode": "ar", "text": "محرك آلي لاحتساب مسيرات الرواتب والبدلات" }
+        ]
+      },
+      {
+        "displayOrder": 7,
+        "translations": [
+          { "languageCode": "en", "text": "Executive PDF Reporting & Financial Statements" },
+          { "languageCode": "ar", "text": "تقارير مالية تفصيلية وتصدير فوري لملفات PDF" }
+        ]
+      },
+      {
+        "displayOrder": 8,
+        "translations": [
+          { "languageCode": "en", "text": "On-Premise Security & Tamper-Proof Audit Trail" },
+          { "languageCode": "ar", "text": "أمان كامل للبيانات محلياً مع سجل تدقيق غير قابل للتعديل" }
+        ]
+      }
+    ],
+
+    "featureBlocks": [
+      {
+        "displayOrder": 1,
+        "imagePath": "",
+        "translations": [
+          {
+            "languageCode": "en",
+            "title": "Executive Financial Dashboard & Real-Time KPIs",
+            "description": "Gain an instant panoramic view of your financial health. Live dashboard widgets track liquid balances across accounts, monthly revenues, operational spending, supplier liabilities, and current stock valuation—giving executives the clear metrics needed to steer growth with confidence."
+          },
+          {
+            "languageCode": "ar",
+            "title": "لوحة مؤشرات مالية حية ومتابعة الأداء اللحظي",
+            "description": "رؤية بانورامية متكاملة للوضع المالي لمنشأتك في شاشة واحدة. ترصد لوحة المؤشرات الأرصدة النقدية في الخزائن والبنوك، حركة الإيرادات والمصروفات، مستحقات الموردين القادمة، وقيمة المخزون الإجمالية، مما يمنح الإدارة سرعة ودقة في اتخاذ القرارات اليومية والاستراتيجية."
+          }
+        ]
+      },
+      {
+        "displayOrder": 2,
+        "imagePath": "",
+        "translations": [
+          {
+            "languageCode": "en",
+            "title": "Comprehensive Treasury & Cash Flow Management",
+            "description": "Enforce rigorous accountability across all cash touchpoints. Record deposits, withdrawals, and inter-account transfers with mandatory categorization, user identity logging, and automated reconciliation to eliminate cash discrepancies before they occur."
+          },
+          {
+            "languageCode": "ar",
+            "title": "إدارة الخزائن وحركة النقدية والصناديق",
+            "description": "إحكام تام لرقابة السيولة والتدفقات النقدية. يتيح البرنامج تسجيل كافة حركات الإيداع والصرف والتحويل بين الخزائن مع ربطها بالأبواب المحاسبية وتوثيق المستخدم المسؤول، مما يقضي تماماً على أي عجز أو فروقات نقدية غير مبررة."
+          }
+        ]
+      },
+      {
+        "displayOrder": 3,
+        "imagePath": "",
+        "translations": [
+          {
+            "languageCode": "en",
+            "title": "Supplier Lifecycle, Invoices & Return Workflows",
+            "description": "Keep vendor relationships organized and profitable. Create detailed purchase invoices, record flexible payment installments, track aging balances, and handle product returns with seamless, automatic updates to both inventory quantities and ledger statements."
+          },
+          {
+            "languageCode": "ar",
+            "title": "إدارة المشتريات، حسابات الموردين والمرتجعات",
+            "description": "دورة مشتريات سلسة ومحكمة. سجّل فواتير الشراء بدقة الأصناف والأسعار، وجدول دفعات الموردين النقدية والآجلة، وتابع كشوف الحسابات المحدثة تلقائياً، مع دعم كامل لمعالجة المرتجعات وتسوية كميات المخزون وأرصدة الديون بضغطة زر."
+          }
+        ]
+      },
+      {
+        "displayOrder": 4,
+        "imagePath": "",
+        "translations": [
+          {
+            "languageCode": "en",
+            "title": "Intelligent Multi-Unit Inventory Control",
+            "description": "Prevent stock shortages, overstocking, and shrinkage. Group items into dynamic categories, configure nested units of measurement (e.g., carton, pack, piece), track weighted average costs against retail prices, and set automated reorder alerts for smooth replenishment."
+          },
+          {
+            "languageCode": "ar",
+            "title": "إدارة المستودعات الذكية والأصناف متعددة الوحدات",
+            "description": "حماية المخزون من الهدر ونقص البضائع. قسّم المنتجات إلى مجموعات مرنة، وعرّف وحدات قياس متعددة لكل صنف (كرتون، باقة، حبة) مع نسب التحويل بينها، وتابع تكلفة الشراء وهامش الربح ومستويات إعادة الطلب لضمان تزويد مستمر لمستودعاتك."
+          }
+        ]
+      },
+      {
+        "displayOrder": 5,
+        "imagePath": "",
+        "translations": [
+          {
+            "languageCode": "en",
+            "title": "Structured Expense Tracking & Overhead Allocation",
+            "description": "Uncover hidden operational costs and stay within budget. Categorize expenses across rent, utilities, maintenance, logistics, and hospitality. Analyze spending patterns over customizable periods to pinpoint cost-saving opportunities."
+          },
+          {
+            "languageCode": "ar",
+            "title": "تبويب وضبط المصروفات التشغيلية والنفقات العامة",
+            "description": "معرفة دقيقة لأين تذهب كل تفاصيل الإنفاق. نظّم مصروفاتك وفق مراكز تكلفة وبنود واضحة (إيجارات، فواتير، لوجستيات، صيانة)، واستخرج تقارير مقارنة فورية تُمكّنك من ترشيد النفقات التشغيلية وضبط الميزانية التقديرية بدقة."
+          }
+        ]
+      },
+      {
+        "displayOrder": 6,
+        "imagePath": "",
+        "translations": [
+          {
+            "languageCode": "en",
+            "title": "Petty Cash & Employee Custody Settlements",
+            "description": "Streamline staff operational advances without manual spreadsheets. Disburse project or branch custodies, attach digital expense vouchers, calculate remaining balances, and close settled accounts with a verified history of every transaction."
+          },
+          {
+            "languageCode": "ar",
+            "title": "متابعة وتسوية العهد النقدية للموظفين والمشاريع",
+            "description": "توديع فوضى دفاتر العهد والإكسل اليدوي. يمنحك النظام أدوات مخصصة لتسجيل تسليم العهد النقدية المؤقتة والمستديمة، ومطابقتها مع فواتير وسندات الصرف المقدمة، وإغلاقها بتسوية موثقة تثبت مسؤولية كل طرف وسلامة العمليات."
+          }
+        ]
+      },
+      {
+        "displayOrder": 7,
+        "imagePath": "",
+        "translations": [
+          {
+            "languageCode": "en",
+            "title": "Human Resources & One-Click Payroll Calculation",
+            "description": "Automate payroll distribution without calculation headaches. Manage staff profiles, track base salaries, add performance incentives or allowances, and deduct loan repayments or absences. Produce transparent payroll registers each month with a single click."
+          },
+          {
+            "languageCode": "ar",
+            "title": "شؤون الكوادر البشرية وأتمتة مسيرات الرواتب",
+            "description": "إصدار رواتب الموظفين بدقة وسرعة قياسية. سجّل بيانات الكوادر، وتابع استحقاقات الرواتب، واحتسب البدلات والمكافآت التلقائية، واخصم السلف والغيابات دون أخطاء حسابية، مع إصدار كشف رواتب شهري معتمد وأرشفة كاملة للمستحقات السابقة."
+          }
+        ]
+      },
+      {
+        "displayOrder": 8,
+        "imagePath": "",
+        "translations": [
+          {
+            "languageCode": "en",
+            "title": "Tamper-Proof Audit Trail, PDF Statements & Strict Roles",
+            "description": "Maintain airtight governance over company finances. Generate professional PDF invoices and audited statements ready for printing or sharing. An automated audit log records every creation, modification, and deletion with user name and time for complete accountability."
+          },
+          {
+            "languageCode": "ar",
+            "title": "سجل تدقيق رقابي محكم، صلاحيات دقيقة وتقارير PDF",
+            "description": "أعلى معايير الحوكمة والأمان المالي. طبّق صلاحيات مستخدمين متعددة المستويات، واستخرج كشوف الحسابات والفواتير بتنسيق PDF احترافي وجاهز للطباعة. يوثق سجل التدقيق الداخلي كل عملية إضافة أو تعديل أو حذف بالوقت واسم المنفذ لضمان نزاهة العمليات المحاسبية."
+          }
+        ]
+      }
+    ],
+
+    "faqs": [
+      {
+        "displayOrder": 1,
+        "translations": [
+          {
+            "languageCode": "en",
+            "question": "Why choose a desktop accounting solution instead of a purely cloud-based tool?",
+            "answer": "TechGear ACC is built for operations where speed and independence matter most. Native desktop execution eliminates internet lag, continues working smoothly during network outages, and ensures that your sensitive financial figures remain 100% on your premises and under your direct control."
+          },
+          {
+            "languageCode": "ar",
+            "question": "لماذا نختار برنامجاً محاسبياً مكتبياً بدلاً من الأنظمة السحابية فقط؟",
+            "answer": "صُمم TechGear ACC للشركات التي تضع السرعة القصوى واستقلالية الأعمال كأولوية. يمنحك التطبيق المكتبي استجابة فورية بدون بطء التصفح، واستمرارية كاملة في العمل وتسجيل الفواتير حتى في حال انقطاع الإنترنت، مع ضمان بقاء بياناتك المالية الحساسة تحت سيطرتك المباشرة داخل منشأتك."
+          }
+        ]
+      },
+      {
+        "displayOrder": 2,
+        "translations": [
+          {
+            "languageCode": "en",
+            "question": "Can multiple accountants and branch managers work on the system simultaneously?",
+            "answer": "Yes. TechGear ACC natively supports multi-user collaboration over your local area network (LAN) or secure virtual networks, allowing cashiers, warehouse staff, and accountants to work concurrently in real time with individual access permissions."
+          },
+          {
+            "languageCode": "ar",
+            "question": "هل يستطيع أكثر من محاسب أو موظف العمل على النظام في نفس الوقت؟",
+            "answer": "نعم بكل تأكيد. يدعم النظام العمل المتزامن لعدة أجهزة عبر الشبكة المحلية (LAN) أو الشبكات الافتراضية الآمنة، مما يسمح لأمين الصندوق، ومسؤول المستودع، والمحاسب العام بالعمل معاً في نفس اللحظة وفق صلاحيات محددة لكل مستخدم."
+          }
+        ]
+      },
+      {
+        "displayOrder": 3,
+        "translations": [
+          {
+            "languageCode": "en",
+            "question": "Does the system handle partial vendor payments, credit balances, and returns?",
+            "answer": "Yes. You can record multi-stage installment payments, monitor outstanding dues with aging indicators, and execute partial or full purchase returns with automatic synchronization of both supplier ledgers and warehouse inventory."
+          },
+          {
+            "languageCode": "ar",
+            "question": "هل يدعم النظام جدولة دفعات الموردين والمدفوعات الجزئية ومرتجعات الشراء؟",
+            "answer": "نعم. يوفر النظام مرونة كاملة في سداد الفواتير على دفعات، ومتابعة الأرصدة المتبقية لكل مورد، وتسجيل مرتجعات البضائع الكلية أو الجزئية مع ضبط آلي وفوري لأرصدة الحسابات ومستويات المخزون."
+          }
+        ]
+      },
+      {
+        "displayOrder": 4,
+        "translations": [
+          {
+            "languageCode": "en",
+            "question": "How does TechGear ACC prevent internal tampering with financial records?",
+            "answer": "The platform enforces strict role-based access controls and an automated, unalterable Audit Log that records every transaction, invoice modification, or deletion alongside the specific user account and exact timestamp."
+          },
+          {
+            "languageCode": "ar",
+            "question": "كيف يحمي النظام السجلات المحاسبية من التلاعب أو الحذف غير المصرح به؟",
+            "answer": "يطبق البرنامج صلاحيات وصول مشددة ومخصصة لكل مستخدم، مع سجل تدقيق داخلي (Audit Log) غير قابل للتعديل يُسجل كل حركة مالية أو تعديل فاتورة أو حذف مع توثيق اسم المستخدم وتاريخ وساعة العملية بدقة متناهية."
+          }
+        ]
+      },
+      {
+        "displayOrder": 5,
+        "translations": [
+          {
+            "languageCode": "en",
+            "question": "Can we print official invoices, vouchers, and statements directly to PDF?",
+            "answer": "Yes. The system includes built-in, beautifully formatted PDF report templates for purchase invoices, payment vouchers, customer/supplier statements, and monthly payroll slips, ready for printing or instant sharing."
+          },
+          {
+            "languageCode": "ar",
+            "question": "هل يمكن طباعة الفواتير والسندات وكشوف الحسابات بتنسيق PDF رسمي؟",
+            "answer": "نعم. يشتمل النظام على قوالب PDF مصممة باحترافية للفواتير، سندات القبض والصرف، كشوف حسابات الموردين، ومسيرات الرواتب، وهي جاهزة للطباعة الورقية المباشرة أو المشاركة والأرشفة الرقمية."
+          }
+        ]
+      },
+      {
+        "displayOrder": 6,
+        "translations": [
+          {
+            "languageCode": "en",
+            "question": "How can we get started and evaluate TechGear ACC for our business?",
+            "answer": "Because TechGear ACC is customized to match your organizational structure and device setup, our technical consulting team provides a personalized consultation and live walkthrough. Contact us directly to schedule your demo and discuss onboarding."
+          },
+          {
+            "languageCode": "ar",
+            "question": "كيف يمكننا تجربة النظام والبدء في تطبيقه داخل مؤسستنا؟",
+            "answer": "نظراً لأن نظام تيك جير للمحاسبة مصمم ليلائم الهيكل التشغيلي وشبكة الأجهزة الخاصة بشركتك، يقدم فريقنا الاستشاري جلسة استعراض حي وتوضيح عملي لكافة المزايا. تواصل معنا مباشرة لحجز استشارتك وجدولة العرض التوضيحي."
+          }
+        ]
+      }
+    ],
+
+    "reviews": []
+  }
+]

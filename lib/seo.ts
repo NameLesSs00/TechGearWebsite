@@ -78,9 +78,9 @@ export function constructMetadata({
     alternates: {
       canonical: url,
       languages: {
-        en: `${url}?lang=en`,
-        ar: `${url}?lang=ar`,
-        "x-default": url,
+        en: getFullUrl(`/en${path ? (path.startsWith('/') ? path : `/${path}`) : ''}`),
+        ar: getFullUrl(`/ar${path ? (path.startsWith('/') ? path : `/${path}`) : ''}`),
+        "x-default": getFullUrl(`/en${path ? (path.startsWith('/') ? path : `/${path}`) : ''}`),
       },
     },
     openGraph: {
